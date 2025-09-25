@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpha Workout</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .font-anton {
+            font-family: 'Anton', sans-serif;
+        }
+        .screen {
+            display: none;
+        }
+        .active {
+            display: flex;
+        }
+        .background-image {
+            background-image: url('https://images.unsplash.com/photo-1599399225734-518c7a2e4682?q=80&w=2070&auto=format&fit=crop'); /* Lion */
+        }
+        .evening-background-image {
+             background-image: url('https://images.unsplash.com/photo-1547407139-2432a5b65113?q=80&w=2070&auto=format&fit=crop'); /* Wolf */
+        }
+        .bg-overlay {
+            background-color: rgba(0, 0, 0, 0.75);
+        }
+        .progress-bar-inner {
+            transition: width 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-black text-white">
+
+    <!-- Main Menu Screen -->
+    <div id="menu-screen" class="screen active min-h-screen w-full flex-col items-center justify-center p-4 background-image bg-cover bg-center">
+        <div class="bg-overlay absolute top-0 left-0 w-full h-full"></div>
+        <div class="z-10 text-center">
+            <h1 class="font-anton text-5xl md:text-8xl text-amber-400 tracking-wider">ALPHA WORKOUT</h1>
+            <p class="text-base md:text-2xl text-gray-300 mt-2 mb-10">Conquer Your Day. Dominate Your Night.</p>
+            <div class="space-y-4">
+                <button id="morning-btn" class="w-full md:w-80 bg-amber-500/80 hover:bg-amber-500 border-2 border-amber-400 text-black font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
+                    MORNING
+                </button>
+                <button id="evening-btn" class="w-full md:w-80 bg-gray-700/80 hover:bg-gray-600 border-2 border-gray-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
+                    EVENING
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quote Screen -->
+    <div id="quote-screen" class="screen min-h-screen w-full flex-col items-center justify-center p-6 text-center">
+         <div id="quote-background" class="bg-overlay absolute top-0 left-0 w-full h-full bg-cover bg-center"></div>
+         <div class="bg-overlay absolute top-0 left-0 w-full h-full"></div>
+        <div class="z-10 max-w-3xl">
+            <blockquote id="quote-text" class="text-xl md:text-4xl italic text-gray-100"></blockquote>
+            <cite id="quote-author" class="block text-amber-400 font-semibold text-lg md:text-xl mt-4"></cite>
+        </div>
+        <button id="start-btn" class="z-10 mt-12 bg-green-600/90 hover:bg-green-500 border-2 border-green-400 text-white font-bold py-4 px-12 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
+            GET STARTED
+        </button>
+    </div>
+
+    <!-- Workout Screen -->
+    <div id="workout-screen" class="screen min-h-screen w-full flex-col items-center justify-between p-4">
+        <div id="workout-background" class="bg-overlay absolute top-0 left-0 w-full h-full bg-cover bg-center"></div>
+        <div class="bg-overlay absolute top-0 left-0 w-full h-full"></div>
+        <div class="z-10 text-center w-full max-w-4xl mx-auto flex flex-col justify-between h-full py-8">
+            <!-- Progress Bar -->
+            <div class="w-full bg-gray-700 rounded-full h-4 mb-4 shrink-0">
+                <div id="progress-bar" class="bg-amber-400 h-4 rounded-full progress-bar-inner" style="width: 0%"></div>
+            </div>
+
+            <!-- Main Info -->
+            <div class="flex-grow flex flex-col items-center justify-center">
+                <p id="status-text" class="font-anton text-3xl md:text-5xl text-amber-400 uppercase tracking-wider mb-2">Get Ready</p>
+                <p id="current-exercise" class="text-4xl md:text-6xl font-bold mb-4 capitalize px-2"></p>
+                <div id="timer-display" class="font-anton text-7xl sm:text-8xl md:text-9xl text-white mb-6">10</div>
+            </div>
+            
+            <!-- Next Up -->
+            <div class="h-20 shrink-0">
+                 <div id="next-up-container" class="bg-black/30 rounded-lg p-4">
+                    <p class="text-gray-400 text-lg uppercase tracking-widest">Next Up</p>
+                    <p id="next-exercise" class="text-xl md:text-3xl font-semibold capitalize"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Completion Screen -->
+    <div id="completion-screen" class="screen min-h-screen w-full flex-col items-center justify-center p-6 text-center">
+         <div id="completion-background" class="bg-overlay absolute top-0 left-0 w-full h-full bg-cover bg-center"></div>
+         <div class="bg-overlay absolute top-0 left-0 w-full h-full"></div>
+        <div class="z-10">
+            <h2 class="font-anton text-5xl md:text-8xl text-amber-400 tracking-wider">WORKOUT COMPLETE</h2>
+            <p class="text-lg md:text-3xl text-gray-200 mt-4">You've conquered it. Rest and recover.</p>
+            <button id="menu-btn" class="mt-12 bg-amber-500/80 hover:bg-amber-500 border-2 border-amber-400 text-black font-bold py-3 px-10 text-lg md:text-xl tracking-widest transition duration-300 transform hover:scale-105">
+                MAIN MENU
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const screens = {
+            menu: document.getElementById('menu-screen'),
+            quote: document.getElementById('quote-screen'),
+            workout: document.getElementById('workout-screen'),
+            completion: document.getElementById('completion-screen')
+        };
+        const quoteText = document.getElementById('quote-text');
+        const quoteAuthor = document.getElementById('quote-author');
+        const timerDisplay = document.getElementById('timer-display');
+        const currentExerciseDisplay = document.getElementById('current-exercise');
+        const nextExerciseDisplay = document.getElementById('next-exercise');
+        const statusText = document.getElementById('status-text');
+        const nextUpContainer = document.getElementById('next-up-container');
+        const progressBar = document.getElementById('progress-bar');
+        
+        const quoteBg = document.getElementById('quote-background');
+        const workoutBg = document.getElementById('workout-background');
+        const completionBg = document.getElementById('completion-background');
+        
+
+        let currentWorkout = null;
+        let workoutRoutine = [];
+        let currentStepIndex = 0;
+        let timerInterval = null;
+        let timeLeft = 0;
+        let synth;
+
+        // --- Sound Synthesis ---
+        // Initialize synth on first user interaction
+        function initializeAudio() {
+            if (typeof Tone !== 'undefined' && !synth) {
+                synth = new Tone.Synth().toDestination();
+                Tone.start();
+            }
+        }
+
+        function playSound(note, duration) {
+            if (synth) {
+                synth.triggerAttackRelease(note, duration);
+            }
+        }
+
+        // --- Quotes ---
+        const quotes = [
+            { quote: "The last three or four reps is what makes the muscle grow. This area of pain divides a champion from someone who is not a champion.", author: "Arnold Schwarzenegger" },
+            { quote: "Success isn’t always about greatness. It’s about consistency. Consistent hard work gains success. Greatness will come.", author: "Dwayne 'The Rock' Johnson" },
+            { quote: "The wolf on the hill is not as hungry as the wolf climbing the hill.", author: "Arnold Schwarzenegger" },
+            { quote: "If you think lifting is dangerous, try being weak. Being weak is dangerous.", author: "Bret Contreras" },
+            { quote: "The only place where success comes before work is in the dictionary.", author: "Vidal Sassoon" },
+            { quote: "All our dreams can come true if we have the courage to pursue them.", author: "Walt Disney" },
+            { quote: "The successful warrior is the average man, with laser-like focus.", author: "Bruce Lee" },
+            { quote: "Things may come to those who wait, but only the things left by those who hustle.", author: "Abraham Lincoln" },
+            { quote: "Don't count the days, make the days count.", author: "Muhammad Ali" },
+            { quote: "If you want something you’ve never had, you must be willing to do something you’ve never done.", author: "Thomas Jefferson" },
+            { quote: "To be a warrior is to learn to be genuine in every moment of your life.", author: "Chogyam Trungpa" },
+            { quote: "I fear not the man who has practiced 10,000 kicks once, but I fear the man who has practiced one kick 10,000 times.", author: "Bruce Lee" },
+            { quote: "There is no substitute for hard work.", author: "Thomas Edison" },
+            { quote: "The difference between the impossible and the possible lies in a man’s determination.", author: "Tommy Lasorda" },
+            { quote: "You have to expect things of yourself before you can do them.", author: "Michael Jordan" },
+            { quote: "It’s not the will to win that matters—everyone has that. It’s the will to prepare to win that matters.", author: "Paul 'Bear' Bryant" },
+            { quote: "Strength does not come from winning. Your struggles develop your strengths.", author: "Arnold Schwarzenegger" },
+            { quote: "Pain is temporary. Quitting lasts forever.", author: "Lance Armstrong" },
+            { quote: "A champion is someone who gets up when he can’t.", author: "Jack Dempsey" },
+            { quote: "Today I will do what others won’t, so tomorrow I can do what others can’t.", author: "Jerry Rice" },
+            { quote: "What hurts today makes you stronger tomorrow.", author: "Jay Cutler" },
+            { quote: "If you're not first, you're last.", author: "Ricky Bobby" },
+            { quote: "Motivation is what gets you started. Habit is what keeps you going.", author: "Jim Ryun" },
+            { quote: "The pain you feel today will be the strength you feel tomorrow.", author: "Unknown" },
+            { quote: "The mind is the limit. As long as the mind can envision the fact that you can do something, you can do it.", author: "Arnold Schwarzenegger" },
+            { quote: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", author: "Aristotle" },
+            { quote: "The iron never lies to you. You can walk outside and listen to all kinds of talk, get told that you're a god or a total bastard. The iron will always kick you the real deal.", author: "Henry Rollins" },
+            { quote: "Obsessed is a word the lazy use to describe the dedicated.", author: "Anonymous" },
+            { quote: "Go the extra mile. It’s never crowded.", author: "Wayne Dyer" },
+            { quote: "Your body can stand almost anything. It’s your mind that you have to convince.", author: "Unknown" },
+            { quote: "The best way to predict the future is to create it.", author: "Peter Drucker" },
+            { quote: "You miss 100% of the shots you don’t take.", author: "Wayne Gretzky" },
+            { quote: "There may be people that have more talent than you, but there's no excuse for anyone to work harder than you do.", author: "Derek Jeter" },
+            { quote: "I’m not telling you it is going to be easy, I’m telling you it’s going to be worth it.", author: "Art Williams" },
+            { quote: "The road to success is dotted with many tempting parking spaces.", author: "Will Rogers" },
+            { quote: "Do what you have to do until you can do what you want to do.", author: "Oprah Winfrey" },
+            { quote: "Look in the mirror. That’s your competition.", author: "John Assaraf" },
+            { quote: "It’s hard to beat a person who never gives up.", author: "Babe Ruth" },
+            { quote: "Victory is reserved for those who are willing to pay its price.", author: "Sun Tzu" },
+            { quote: "The greatest pleasure in life is doing what people say you cannot do.", author: "Walter Bagehot" },
+            { quote: "If you are not willing to risk the usual, you will have to settle for the ordinary.", author: "Jim Rohn" },
+            { quote: "Hard work beats talent when talent doesn’t work hard.", author: "Tim Notke" },
+            { quote: "The harder the battle, the sweeter the victory.", author: "Les Brown" },
+            { quote: "Discipline is the bridge between goals and accomplishment.", author: "Jim Rohn" },
+            { quote: "I’ve failed over and over and over again in my life and that is why I succeed.", author: "Michael Jordan" },
+            { quote: "Push yourself because no one else is going to do it for you.", author: "Unknown" },
+            { quote: "Once you learn to quit, it becomes a habit.", author: "Vince Lombardi" },
+            { quote: "Don't be afraid of failure. This is the way to succeed.", author: "LeBron James" },
+            { quote: "It is a shame for a man to grow old without seeing the beauty and strength of which his body is capable.", author: "Socrates" },
+            { quote: "Believe you can and you’re halfway there.", author: "Theodore Roosevelt" }
+        ];
+
+        // --- Workouts ---
+        const workouts = {
+            morning: [
+                { type: 'warmup', name: 'Marching in Place', duration: 30 },
+                { type: 'warmup', name: 'Gentle Arm Circles', duration: 30 },
+                { type: 'warmup', name: 'Torso Twists', duration: 30 },
+                { type: 'warmup', name: 'Leg Swings', duration: 30 },
+                ...Array(4).fill(null).flatMap(() => [{ type: 'work', name: 'Push-ups', duration: 10 }, { type: 'rest', name: 'Rest', duration: 10 }]),
+                ...Array(4).fill(null).flatMap(() => [{ type: 'work', name: 'Air Squats', duration: 10 }, { type: 'rest', name: 'Rest', duration: 10 }]),
+                ...Array(4).fill(null).flatMap(() => [{ type: 'work', name: 'Burpees', duration: 10 }, { type: 'rest', name: 'Rest', duration: 10 }]),
+                ...Array(4).fill(null).flatMap(() => [{ type: 'work', name: 'Mountain Climbers', duration: 10 }, { type: 'rest', name: 'Rest', duration: 10 }]),
+                { type: 'cooldown', name: 'Standing Quad Stretch (Right)', duration: 30 },
+                { type: 'cooldown', name: 'Standing Quad Stretch (Left)', duration: 30 },
+                { type: 'cooldown', name: 'Standing Hamstring Stretch (Right)', duration: 30 },
+                { type: 'cooldown', name: 'Standing Hamstring Stretch (Left)', duration: 30 },
+                { type: 'cooldown', name: "Child's Pose", duration: 60 },
+            ],
+            evening: [
+                { type: 'warmup', name: 'Cat-Cow Stretch', duration: 60 },
+                { type: 'warmup', name: 'Glute Bridges', duration: 60 },
+                ...Array(2).fill(null).flatMap(() => [
+                    { type: 'work', name: 'Chair Dips', duration: 30 }, { type: 'rest', name: 'Rest', duration: 15 },
+                    { type: 'work', name: 'Wall Sit', duration: 30 }, { type: 'rest', name: 'Rest', duration: 15 },
+                    { type: 'work', name: 'Forearm Plank', duration: 30 }, { type: 'rest', name: 'Rest', duration: 15 },
+                    { type: 'work', name: 'Bird Dog', duration: 30 }, { type: 'rest', name: 'Rest', duration: 15 },
+                ]),
+                { type: 'cooldown', name: 'Knees-to-Chest Stretch', duration: 60 },
+                { type: 'cooldown', name: 'Frog Stretch', duration: 60 },
+                { type: 'cooldown', name: 'Figure-4 Stretch (Right)', duration: 30 },
+                { type: 'cooldown', name: 'Figure-4 Stretch (Left)', duration: 30 },
+            ]
+        };
+        
+        // --- Navigation ---
+        function switchScreen(screenName) {
+            Object.values(screens).forEach(screen => screen.classList.remove('active'));
+            screens[screenName].classList.add('active');
+        }
+
+        function selectWorkout(type) {
+            initializeAudio(); // Initialize audio context on first user action
+            currentWorkout = type;
+            workoutRoutine = workouts[type];
+            const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+            quoteText.textContent = `"${randomQuote.quote}"`;
+            quoteAuthor.textContent = `- ${randomQuote.author}`;
+            
+            if (type === 'evening') {
+                quoteBg.classList.add('evening-background-image');
+                workoutBg.classList.add('evening-background-image');
+                completionBg.classList.add('evening-background-image');
+            } else {
+                quoteBg.classList.remove('evening-background-image');
+                workoutBg.classList.remove('evening-background-image');
+                completionBg.classList.remove('evening-background-image');
+            }
+            
+            switchScreen('quote');
+        }
+
+        function startWorkout() {
+            currentStepIndex = 0;
+            switchScreen('workout');
+            startInitialCountdown();
+        }
+
+        function goToMenu() {
+            clearInterval(timerInterval);
+            switchScreen('menu');
+        }
+
+        // --- Timer Logic ---
+        function startInitialCountdown() {
+            timeLeft = 10;
+            updateUIForStep();
+            statusText.textContent = 'GET READY';
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+                if (timeLeft <= 3 && timeLeft > 0) playSound('C4', '0.1');
+                if (timeLeft <= 0) {
+                    playSound('G4', '0.2');
+                    clearInterval(timerInterval);
+                    runCurrentStep();
+                }
+            }, 1000);
+        }
+
+        function runCurrentStep() {
+            if (currentStepIndex >= workoutRoutine.length) {
+                workoutComplete();
+                return;
+            }
+            
+            const step = workoutRoutine[currentStepIndex];
+            timeLeft = step.duration;
+            updateUIForStep();
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+                if (timeLeft <= 3 && timeLeft > 0) playSound('C4', '0.1');
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    moveToNextStep();
+                }
+            }, 1000);
+        }
+        
+        function moveToNextStep() {
+            const currentStep = workoutRoutine[currentStepIndex];
+            const nextStep = workoutRoutine[currentStepIndex + 1];
+            
+            currentStepIndex++;
+
+            if (!nextStep) {
+                workoutComplete();
+                return;
+            }
+
+            // Transition logic
+            if (currentStep.type !== 'rest' && nextStep.type !== 'rest') {
+                startTransition();
+            } else {
+                playSound('G4', '0.2');
+                runCurrentStep();
+            }
+        }
+
+        function startTransition() {
+            timeLeft = 5;
+            statusText.textContent = 'TRANSITION';
+            playSound('A4', '0.2');
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+                if (timeLeft <= 3 && timeLeft > 0) playSound('C4', '0.1');
+                if (timeLeft <= 0) {
+                    playSound('G4', '0.2');
+                    clearInterval(timerInterval);
+                    runCurrentStep();
+                }
+            }, 1000);
+        }
+
+        function updateUIForStep() {
+            if (currentStepIndex >= workoutRoutine.length) return;
+            
+            const step = workoutRoutine[currentStepIndex];
+            const nextStep = workoutRoutine[currentStepIndex + 1];
+
+            currentExerciseDisplay.textContent = step.name;
+            timerDisplay.textContent = step.duration;
+
+            if (step.type === 'rest') {
+                statusText.textContent = 'REST';
+            } else if(step.type === 'work') {
+                statusText.textContent = 'WORK';
+            } else {
+                 statusText.textContent = step.type;
+            }
+            
+            if (nextStep) {
+                nextUpContainer.style.visibility = 'visible';
+                nextExerciseDisplay.textContent = nextStep.name;
+            } else {
+                nextUpContainer.style.visibility = 'hidden';
+            }
+            
+            // Update progress bar
+            const progress = (currentStepIndex / workoutRoutine.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+        
+        function workoutComplete() {
+            playSound('C5', '0.5');
+            progressBar.style.width = '100%';
+            switchScreen('completion');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('morning-btn').addEventListener('click', () => selectWorkout('morning'));
+            document.getElementById('evening-btn').addEventListener('click', () => selectWorkout('evening'));
+            document.getElementById('start-btn').addEventListener('click', startWorkout);
+            document.getElementById('menu-btn').addEventListener('click', goToMenu);
+        });
+
+    </script>
+</body>
+</html>
+
+
