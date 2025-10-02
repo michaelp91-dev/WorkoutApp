@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sound Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js"></script>
+    <style>
+        body { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            font-family: sans-serif; 
+            text-align: center;
+            background-color: #222;
+            color: white;
+        }
+        #test-btn {
+            padding: 25px 50px;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>Audio Playback Test</h1>
+        <p>Tap the button below to attempt to play a sound.</p>
+        <button id="test-btn">Play Sound</button>
+    </div>
+
+    <script>
+        const testBtn = document.getElementById('test-btn');
+        let synth;
+
+        // 3. Set up the click event listener
+        testBtn.addEventListener('click', () => {
+            console.log('Button clicked.');
+
+            // Check if Tone.js is available
+            if (typeof Tone === 'undefined') {
+                alert('Error: Tone.js library did not load.');
+                return;
+            }
+
+            // Initialize the audio context and synth on the first click
+            if (!synth) {
+                try {
+                    // This must be done inside a user interaction (like a click)
+                    Tone.start();
+                    synth = new Tone.Synth().toDestination();
+                    console.log('Audio context started successfully.');
+                } catch (e) {
+                    alert('An error occurred while starting the audio: ' + e.message);
+                    console.error(e);
+                    return;
+                }
+            }
+
+            // Play a sound
+            try {
+                if (synth && Tone.context.state === 'running') {
+                    console.log('Playing sound...');
+                    // Play the note C4 for a duration of 0.5 seconds
+                    synth.triggerAttackRelease('C4', '0.5');
+                } else {
+                    alert('Audio context is not running. Please tap the button again.');
+                    console.warn('Audio context not in a running state.');
+                }
+            } catch (e) {
+                alert('An error occurred while playing the sound: ' + e.message);
+                console.error(e);
+            }
+        });
+    </script>
+</body>
+</html>
