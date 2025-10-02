@@ -9,10 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js"></script>
-    <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#1a1a1a">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="apple-touch-icon" href="https://i.ibb.co/9g0g2g7/wolf-icon.png">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -26,12 +24,6 @@
         .active {
             display: flex;
         }
-        .background-image {
-            background-image: url('https://images.unsplash.com/photo-1599399225734-518c7a2e4682?q=80&w=2070&auto=format&fit=crop'); /* Lion */
-        }
-        .evening-background-image {
-             background-image: url('https://images.unsplash.com/photo-1547407139-2432a5b65113?q=80&w=2070&auto=format&fit=crop'); /* Wolf */
-        }
         .bg-overlay {
             background-color: rgba(0, 0, 0, 0.75);
         }
@@ -42,8 +34,7 @@
 </head>
 <body class="bg-black text-white">
 
-    <!-- Main Menu Screen -->
-    <div id="menu-screen" class="screen active min-h-screen w-full flex-col items-center justify-center p-4 background-image bg-cover bg-center">
+    <div id="menu-screen" class="screen active min-h-screen w-full flex-col items-center justify-center p-4 bg-cover bg-center">
         <button id="install-btn" class="hidden absolute top-4 right-4 z-20 bg-gray-700/80 text-white font-bold py-2 px-4 rounded text-sm transition duration-300 transform hover:scale-105">Add to Home Screen</button>
         <div class="bg-overlay absolute top-0 left-0 w-full h-full"></div>
         <div class="z-10 text-center">
@@ -60,9 +51,8 @@
         </div>
     </div>
 
-    <!-- Quote Screen -->
     <div id="quote-screen" class="screen min-h-screen w-full flex-col items-center justify-center p-6 text-center">
-         <div id="quote-background" class="bg-overlay absolute top-0 left-0 w-full h-full bg-cover bg-center"></div>
+         <div class="bg-overlay absolute top-0 left-0 w-full h-full bg-cover bg-center"></div>
          <div class="bg-overlay absolute top-0 left-0 w-full h-full"></div>
         <div class="z-10 max-w-3xl">
             <blockquote id="quote-text" class="text-xl md:text-4xl italic text-gray-100"></blockquote>
@@ -73,24 +63,20 @@
         </button>
     </div>
 
-    <!-- Workout Screen -->
     <div id="workout-screen" class="screen min-h-screen w-full flex-col items-center justify-between p-4">
-        <div id="workout-background" class="bg-overlay absolute top-0 left-0 w-full h-full bg-cover bg-center"></div>
+        <div class="bg-overlay absolute top-0 left-0 w-full h-full bg-cover bg-center"></div>
         <div class="bg-overlay absolute top-0 left-0 w-full h-full"></div>
         <div class="z-10 text-center w-full max-w-4xl mx-auto flex flex-col justify-between h-full py-8">
-            <!-- Progress Bar -->
             <div class="w-full bg-gray-700 rounded-full h-4 mb-4 shrink-0">
                 <div id="progress-bar" class="bg-amber-400 h-4 rounded-full progress-bar-inner" style="width: 0%"></div>
             </div>
 
-            <!-- Main Info -->
             <div class="flex-grow flex flex-col items-center justify-center">
                 <p id="status-text" class="font-anton text-3xl md:text-5xl text-amber-400 uppercase tracking-wider mb-2">Get Ready</p>
                 <p id="current-exercise" class="text-4xl md:text-6xl font-bold mb-4 capitalize px-2"></p>
                 <div id="timer-display" class="font-anton text-7xl sm:text-8xl md:text-9xl text-white mb-6">10</div>
             </div>
             
-            <!-- Next Up -->
             <div class="h-20 shrink-0">
                  <div id="next-up-container" class="bg-black/30 rounded-lg p-4">
                     <p class="text-gray-400 text-lg uppercase tracking-widest">Next Up</p>
@@ -100,9 +86,8 @@
         </div>
     </div>
 
-    <!-- Completion Screen -->
     <div id="completion-screen" class="screen min-h-screen w-full flex-col items-center justify-center p-6 text-center">
-         <div id="completion-background" class="bg-overlay absolute top-0 left-0 w-full h-full bg-cover bg-center"></div>
+         <div class="bg-overlay absolute top-0 left-0 w-full h-full bg-cover bg-center"></div>
          <div class="bg-overlay absolute top-0 left-0 w-full h-full"></div>
         <div class="z-10">
             <h2 class="font-anton text-5xl md:text-8xl text-amber-400 tracking-wider">WORKOUT COMPLETE</h2>
@@ -128,10 +113,6 @@
         const statusText = document.getElementById('status-text');
         const nextUpContainer = document.getElementById('next-up-container');
         const progressBar = document.getElementById('progress-bar');
-        
-        const quoteBg = document.getElementById('quote-background');
-        const workoutBg = document.getElementById('workout-background');
-        const completionBg = document.getElementById('completion-background');
         
         let currentWorkout = null;
         let workoutRoutine = [];
@@ -186,7 +167,7 @@
             { quote: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", author: "Aristotle" },
             { quote: "The iron never lies to you. You can walk outside and listen to all kinds of talk, get told that you're a god or a total bastard. The iron will always kick you the real deal.", author: "Henry Rollins" },
             { quote: "Obsessed is a word the lazy use to describe the dedicated.", author: "Anonymous" },
-            { quote: "Go the extra mile. It’s never crowded.", author: "Wayne Dyer" },
+            { quote: "Go the a mile. It’s never crowded.", author: "Wayne Dyer" },
             { quote: "Your body can stand almost anything. It’s your mind that you have to convince.", author: "Unknown" },
             { quote: "The best way to predict the future is to create it.", author: "Peter Drucker" },
             { quote: "You miss 100% of the shots you don’t take.", author: "Wayne Gretzky" },
@@ -267,20 +248,11 @@
             quoteText.textContent = `"${randomQuote.quote}"`;
             quoteAuthor.textContent = `- ${randomQuote.author}`;
             
-            if (type === 'evening') {
-                quoteBg.classList.add('evening-background-image');
-                workoutBg.classList.add('evening-background-image');
-                completionBg.classList.add('evening-background-image');
-            } else {
-                quoteBg.classList.remove('evening-background-image');
-                workoutBg.classList.remove('evening-background-image');
-                completionBg.classList.remove('evening-background-image');
-            }
-            
             switchScreen('quote');
         }
 
         function startWorkout() {
+            initializeAudio(); // Wake up the audio context right before starting
             currentStepIndex = 0;
             switchScreen('workout');
             startInitialCountdown();
@@ -414,15 +386,7 @@
                 "background_color": "#000000",
                 "theme_color": "#1a1a1a",
                 "description": "Morning and evening workout tracker.",
-                "icons": [{
-                    "src": "https://i.ibb.co/9g0g2g7/wolf-icon.png",
-                    "sizes": "192x192",
-                    "type": "image/png"
-                }, {
-                    "src": "https://i.ibb.co/9g0g2g7/wolf-icon.png",
-                    "sizes": "512x512",
-                    "type": "image/png"
-                }]
+                "icons": []
             };
             const manifestString = JSON.stringify(manifest);
             const blob = new Blob([manifestString], { type: 'application/json' });
@@ -460,5 +424,3 @@
     </script>
 </body>
 </html>
-
-
