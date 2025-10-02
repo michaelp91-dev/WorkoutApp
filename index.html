@@ -8,7 +8,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.min.js"></script>
     <meta name="theme-color" content="#1a1a1a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <style>
@@ -119,23 +118,54 @@
         let currentStepIndex = 0;
         let timerInterval = null;
         let timeLeft = 0;
-        let synth;
         let deferredPrompt;
+        
+        // --- Native Web Audio API Implementation ---
+        let audioCtx; 
 
-        // --- Sound Synthesis ---
-        // Initialize synth on first user interaction
+        // Map note names to frequencies (Hz)
+        const noteFrequencies = {
+            'C4': 261.63, 'G4': 392.00, 'A4': 440.00, 'C5': 523.25
+        };
+
         function initializeAudio() {
-            if (typeof Tone !== 'undefined' && !synth) {
-                synth = new Tone.Synth().toDestination();
-                Tone.start();
+            if (!audioCtx) {
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    audioCtx = new AudioContext();
+                } catch (e) {
+                    console.error("Web Audio API is not supported in this browser");
+                }
             }
         }
 
         function playSound(note, duration) {
-            if (synth) {
-                synth.triggerAttackRelease(note, duration);
+            if (!audioCtx || !noteFrequencies[note]) {
+                return;
             }
+
+            // On mobile, the audio context often needs to be resumed
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(noteFrequencies[note], audioCtx.currentTime);
+            
+            // Fade out the sound to avoid clicks
+            gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + parseFloat(duration));
+
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + parseFloat(duration));
         }
+
 
         // --- Quotes ---
         const quotes = [
@@ -167,7 +197,7 @@
             { quote: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", author: "Aristotle" },
             { quote: "The iron never lies to you. You can walk outside and listen to all kinds of talk, get told that you're a god or a total bastard. The iron will always kick you the real deal.", author: "Henry Rollins" },
             { quote: "Obsessed is a word the lazy use to describe the dedicated.", author: "Anonymous" },
-            { quote: "Go the a mile. It’s never crowded.", author: "Wayne Dyer" },
+            { quote: "Go the extra mile. It’s never crowded.", author: "Wayne Dyer" },
             { quote: "Your body can stand almost anything. It’s your mind that you have to convince.", author: "Unknown" },
             { quote: "The best way to predict the future is to create it.", author: "Peter Drucker" },
             { quote: "You miss 100% of the shots you don’t take.", author: "Wayne Gretzky" },
@@ -420,7 +450,6 @@
                 }
             });
         });
-
     </script>
 </body>
 </html>
