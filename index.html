@@ -348,10 +348,15 @@
         }
 
         function startTransition() {
-            // This function handles the countdown for 'rest' or 'transition' periods
             const nextStep = workoutRoutine[currentStepIndex];
-            timeLeft = nextStep ? nextStep.duration : 10; // Default to 10 if next step is undefined
-            statusText.textContent = nextStep ? (nextStep.type === 'rest' ? 'REST' : 'TRANSITION') : 'TRANSITION';
+            
+            if (nextStep && nextStep.type === 'rest') {
+                timeLeft = nextStep.duration;
+                statusText.textContent = 'REST';
+            } else {
+                timeLeft = 10; // This is a transition between exercises
+                statusText.textContent = 'TRANSITION';
+            }
 
             timerInterval = setInterval(() => {
                 timeLeft--;
@@ -360,12 +365,11 @@
                 if (timeLeft <= 0) {
                     playSound('C5', '0.3');
                     clearInterval(timerInterval);
-                    currentStepIndex++; // Move to the actual exercise step
                     runCurrentStep();
                 }
             }, 1000);
         }
-
+        
         function updateUIForStep() {
             if (currentStepIndex >= workoutRoutine.length) return;
             
