@@ -329,7 +329,6 @@
         }
         
         function moveToNextStep() {
-            const currentStep = workoutRoutine[currentStepIndex];
             const nextStep = workoutRoutine[currentStepIndex + 1];
             
             currentStepIndex++;
@@ -339,13 +338,15 @@
                 return;
             }
 
-            // Transition logic for rests or between different exercises
-            if (nextStep.type === 'rest' || (currentStep.type !== 'rest' && nextStep.type !== 'rest')) {
-                startTransition();
-            } else {
+            // If the next step is a rest period, just run it directly.
+            // Otherwise, start a transition.
+            if (nextStep.type === 'rest') {
                 runCurrentStep();
+            } else {
+                startTransition();
             }
         }
+        
 
         function startTransition() {
             const nextStep = workoutRoutine[currentStepIndex];
