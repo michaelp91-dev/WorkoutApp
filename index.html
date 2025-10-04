@@ -330,7 +330,7 @@
         
         function moveToNextStep() {
             const nextStep = workoutRoutine[currentStepIndex + 1];
-            
+    
             currentStepIndex++;
 
             if (!nextStep) {
@@ -338,38 +338,9 @@
                 return;
             }
 
-            // If the next step is a rest period, just run it directly.
-            // Otherwise, start a transition.
-            if (nextStep.type === 'rest' || nextStep.type === 'work') {
-                runCurrentStep();
-            } else {
-                startTransition();
-            }
+            runCurrentStep();
         }
         
-
-        function startTransition() {
-            const nextStep = workoutRoutine[currentStepIndex];
-            
-            if (nextStep && nextStep.type === 'rest') {
-                timeLeft = nextStep.duration;
-                statusText.textContent = 'REST';
-            } else {
-                timeLeft = 10; // This is a transition between exercises
-                statusText.textContent = 'TRANSITION';
-            }
-
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                timerDisplay.textContent = timeLeft;
-                if (timeLeft <= 3 && timeLeft > 0) playSound('C4', '0.1');
-                if (timeLeft <= 0) {
-                    playSound('C5', '0.3');
-                    clearInterval(timerInterval);
-                    runCurrentStep();
-                }
-            }, 1000);
-        }
         
         function updateUIForStep() {
             if (currentStepIndex >= workoutRoutine.length) return;
