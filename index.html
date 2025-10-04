@@ -340,7 +340,7 @@
 
             // If the next step is a rest period, just run it directly.
             // Otherwise, start a transition.
-            if (nextStep.type === 'rest') {
+            if (nextStep.type === 'rest' || nextStep.type === 'work') {
                 runCurrentStep();
             } else {
                 startTransition();
