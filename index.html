@@ -238,9 +238,7 @@
             const restDuration = 30; // 30 seconds rest after each round
             const totalRounds = repCounts.length;
 
-            // Add a brief warmup to the start
-            routine.push({ type: 'warmup', name: 'Dynamic Warmup', duration: 60 });
-            routine.push({ type: 'rest', name: 'Get Focused', duration: 10});
+            // Warmup/Cooldown removed per user request.
 
             repCounts.forEach((reps, roundIndex) => {
                 const roundNumber = roundIndex + 1;
@@ -264,12 +262,7 @@
                 });
             });
             
-            // Change the final rest step to a cooldown
-            routine[routine.length - 1] = { 
-                type: 'cooldown', 
-                name: 'Final Stretch', 
-                duration: 90 
-            };
+            // The final rest step remains a rest step as no cooldown is needed.
 
             return routine;
         }
@@ -329,6 +322,8 @@
             initializeAudio(); // Initialize audio context on first user action
             currentWorkout = type;
             workoutRoutine = workouts[type];
+            
+            // Reverted the bypass for apex8: all workouts now go to the quote screen
             const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
             quoteText.textContent = `"${randomQuote.quote}"`;
             quoteAuthor.textContent = `- ${randomQuote.author}`;
@@ -462,7 +457,7 @@
             // Button Event Listeners
             document.getElementById('morning-btn').addEventListener('click', () => selectWorkout('morning'));
             document.getElementById('evening-btn').addEventListener('click', () => selectWorkout('evening'));
-            // NEW EVENT LISTENER
+            // APEX 8 event listener now directs to selectWorkout, which handles the quote screen
             document.getElementById('apex8-btn').addEventListener('click', () => selectWorkout('apex8')); 
             document.getElementById('start-btn').addEventListener('click', startWorkout);
             document.getElementById('menu-btn').addEventListener('click', goToMenu);
