@@ -48,6 +48,9 @@
                 <button id="evening-btn" class="w-full md:w-80 bg-gray-700/80 hover:bg-gray-600 border-2 border-gray-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
                     EVENING
                 </button>
+                <button id="apex8-btn" class="w-full md:w-80 bg-red-700/80 hover:bg-red-600 border-2 border-red-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
+                    APEX 8
+                </button>
             </div>
         </div>
     </div>
@@ -74,8 +77,26 @@
 
             <div class="flex-grow flex flex-col items-center justify-center">
                 <p id="status-text" class="font-anton text-3xl md:text-5xl text-amber-400 uppercase tracking-wider mb-2">Get Ready</p>
+                
                 <p id="current-exercise" class="text-4xl md:text-6xl font-bold mb-4 capitalize px-2"></p>
-                <div id="timer-display" class="font-anton text-7xl sm:text-8xl md:text-9xl text-white mb-6">10</div>
+                
+                <div id="timed-content" class="w-full">
+                    <div id="timer-display" class="font-anton text-7xl sm:text-8xl md:text-9xl text-white mb-6">10</div>
+                </div>
+
+                <div id="rep-content" class="hidden w-full max-w-lg mx-auto">
+                    <div id="apex8-exercise-list" class="text-left text-xl md:text-3xl font-semibold mb-8 space-y-2 bg-gray-800/50 p-6 rounded-lg mx-auto">
+                        <p>- Med Ball Slams</p>
+                        <p>- Med Ball Goblet Squats</p>
+                        <p>- Pike Push-Ups</p>
+                        <p>- Pull-Ups</p>
+                        <p>- Med Ball Push-Ups</p>
+                    </div>
+                    <button id="round-complete-btn" class="z-10 bg-green-600/90 hover:bg-green-500 border-2 border-green-400 text-white font-bold py-4 px-12 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
+                        ROUND COMPLETE
+                    </button>
+                </div>
+
             </div>
             
             <div class="h-20 shrink-0">
@@ -115,6 +136,11 @@
         const nextUpContainer = document.getElementById('next-up-container');
         const progressBar = document.getElementById('progress-bar');
         
+        // NEW DOM REFERENCES
+        const timedContent = document.getElementById('timed-content');
+        const repContent = document.getElementById('rep-content');
+        const roundCompleteBtn = document.getElementById('round-complete-btn');
+
         let currentWorkout = null;
         let workoutRoutine = [];
         let currentStepIndex = 0;
@@ -220,6 +246,40 @@
             { quote: "Believe you can and you’re halfway there.", author: "Theodore Roosevelt" }
         ];
 
+        // --- Workout Generation Functions ---
+        function generateApex8Routine() {
+            const routine = [];
+            // The ladder: 1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1
+            const repCounts = [1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1];
+            const restDuration = 30;
+            const totalRounds = repCounts.length;
+
+            repCounts.forEach((reps, roundIndex) => {
+                const roundNumber = roundIndex + 1;
+                
+                // 1. Work Step (User-Paced, Reps displayed)
+                routine.push({
+                    type: 'rep_work', // New custom type for user-paced work
+                    name: `${reps} Rep${reps > 1 ? 's' : ''}`, // Displays "1 Rep" or "X Reps"
+                    duration: null, // No duration
+                    round: `Round ${roundNumber}/${totalRounds}`
+                });
+
+                // 2. Rest Step (Timed)
+                // Skip the rest after the final round
+                if (roundIndex < totalRounds - 1) {
+                    routine.push({
+                        type: 'rest',
+                        name: 'Round Rest',
+                        duration: restDuration,
+                        round: `Round ${roundNumber}/${totalRounds}`
+                    });
+                }
+            });
+            
+            return routine;
+        }
+
         // --- Workouts ---
         const workouts = {
             morning: [
@@ -260,7 +320,9 @@
                 { type: 'cooldown', name: 'Frog Stretch', duration: 60 }, { type: 'rest', name: 'Rest', duration: 5},
                 { type: 'cooldown', name: 'Figure-4 Stretch (Right)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 5},
                 { type: 'cooldown', name: 'Figure-4 Stretch (Left)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 5},
-            ]
+            ],
+            // NEW WORKOUT: APEX 8
+            apex8: generateApex8Routine()
         };
         
         // --- Navigation ---
@@ -294,9 +356,15 @@
 
         // --- Timer Logic ---
         function startInitialCountdown() {
+            // Hide the rep-based content and show the timer content
+            timedContent.classList.remove('hidden');
+            repContent.classList.add('hidden');
+
             timeLeft = 10;
-            updateUIForStep();
+            updateUIForStep(true); // Initial Countdown doesn't need to know the next step yet
             statusText.textContent = 'GET READY';
+            currentExerciseDisplay.textContent = ''; // Clear exercise name during countdown
+
             timerInterval = setInterval(() => {
                 timeLeft--;
                 timerDisplay.textContent = timeLeft;
@@ -316,6 +384,20 @@
             }
             
             const step = workoutRoutine[currentStepIndex];
+            
+            // Handle User-Paced Rep Work
+            if (step.type === 'rep_work') {
+                clearInterval(timerInterval);
+                updateUIForStep();
+                // Timer remains cleared, waiting for 'Round Complete' button click
+                return;
+            }
+
+            // Handle Timed Steps (Rest, Work, Warmup, Cooldown)
+            // Show the timer content
+            timedContent.classList.remove('hidden');
+            repContent.classList.add('hidden');
+            
             timeLeft = step.duration;
             updateUIForStep();
 
@@ -323,7 +405,7 @@
                 timeLeft--;
                 timerDisplay.textContent = timeLeft;
                 if (timeLeft <= 0) {
-                    playSound('C4', '0.3'); // Sound for exercise completion
+                    playSound('C4', '0.3'); // Sound for exercise/rest completion
                     clearInterval(timerInterval);
                     moveToNextStep();
                 }
@@ -350,29 +432,49 @@
             const step = workoutRoutine[currentStepIndex];
             const nextStep = workoutRoutine[currentStepIndex + 1];
 
-            if (step.round) {
-                currentExerciseDisplay.textContent = `${step.name} (${step.round})`;
+            // 1. Update Display Based on Step Type
+            if (step.type === 'rep_work') {
+                // APEX 8 Work Phase: Hide Timer, Show Rep Content
+                timedContent.classList.add('hidden');
+                repContent.classList.remove('hidden');
+                
+                statusText.textContent = 'WORKOUT';
+                currentExerciseDisplay.textContent = step.name; // E.g., "1 Rep"
             } else {
-                currentExerciseDisplay.textContent = step.name;
-            }
-            timerDisplay.textContent = step.duration;
+                // Timed Phase (Countdown, Rest, Work, etc.): Show Timer, Hide Rep Content
+                timedContent.classList.remove('hidden');
+                repContent.classList.add('hidden');
 
-            if (step.type === 'rest') {
-                statusText.textContent = 'REST';
-            } else if(step.type === 'work') {
-                statusText.textContent = 'WORK';
-            } else {
-                 statusText.textContent = step.type.toUpperCase();
+                if (step.round) {
+                    currentExerciseDisplay.textContent = `${step.name} (${step.round})`;
+                } else {
+                    currentExerciseDisplay.textContent = step.name;
+                }
+                timerDisplay.textContent = step.duration;
+
+                if (step.type === 'rest') {
+                    statusText.textContent = 'REST';
+                } else if(step.type === 'work') {
+                    statusText.textContent = 'WORK';
+                } else {
+                    statusText.textContent = step.type.toUpperCase();
+                }
             }
             
+            // 2. Update Next Up Display
             if (nextStep) {
                 nextUpContainer.style.visibility = 'visible';
-                nextExerciseDisplay.textContent = nextStep.name;
+                // For rep_work steps, show the next step name. If it's rest, show 'Rest'.
+                if (step.type === 'rep_work' && nextStep.type === 'rest') {
+                    nextExerciseDisplay.textContent = `30 SEC REST`;
+                } else {
+                     nextExerciseDisplay.textContent = nextStep.name;
+                }
             } else {
                 nextUpContainer.style.visibility = 'hidden';
             }
             
-            // Update progress bar
+            // 3. Update progress bar
             const progress = (currentStepIndex / workoutRoutine.length) * 100;
             progressBar.style.width = `${progress}%`;
         }
@@ -406,8 +508,16 @@
             // Button Event Listeners
             document.getElementById('morning-btn').addEventListener('click', () => selectWorkout('morning'));
             document.getElementById('evening-btn').addEventListener('click', () => selectWorkout('evening'));
+            document.getElementById('apex8-btn').addEventListener('click', () => selectWorkout('apex8')); 
             document.getElementById('start-btn').addEventListener('click', startWorkout);
             document.getElementById('menu-btn').addEventListener('click', goToMenu);
+
+            // NEW: Listener for the user-paced round completion
+            roundCompleteBtn.addEventListener('click', () => {
+                if (currentWorkout === 'apex8') {
+                    moveToNextStep();
+                }
+            });
 
             // Install Button Logic
             const installBtn = document.getElementById('install-btn');
