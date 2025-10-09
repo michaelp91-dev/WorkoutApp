@@ -34,11 +34,11 @@
 <body class="bg-black text-white">
 
     <div id="menu-screen" class="screen active min-h-screen w-full flex-col items-center justify-center p-4 bg-cover bg-center">
-        <button id="install-btn" class="hidden absolute top-4 right-4 z-50 bg-gray-700/80 text-white font-bold py-2 px-4 rounded text-sm transition duration-300 transform hover:scale-105">Add to Home Screen</button>
-        <div class="bg-overlay absolute top-0 left-0 w-full h-full z-0"></div>
-        <div class="z-30 text-center">
+        <button id="install-btn" class="hidden absolute top-4 right-4 z-20 bg-gray-700/80 text-white font-bold py-2 px-4 rounded text-sm transition duration-300 transform hover:scale-105">Add to Home Screen</button>
+        <div class="bg-overlay absolute top-0 left-0 w-full h-full"></div>
+        <div class="z-10 text-center">
             <h1 class="font-anton text-5xl md:text-8xl text-amber-400 tracking-wider">ALPHA WORKOUT</h1>
-            <p class="text-base md:text-2xl text-gray-300 mt-2 mb-10">Conquer Your Day. Dominante Your Night.</p>
+            <p class="text-base md:text-2xl text-gray-300 mt-2 mb-10">Conquer Your Day. Dominate Your Night.</p>
             <div class="space-y-4">
                 <button id="morning-btn" class="w-full md:w-80 bg-amber-500/80 hover:bg-amber-500 border-2 border-amber-400 text-black font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
                     MORNING
@@ -46,16 +46,13 @@
                 <button id="evening-btn" class="w-full md:w-80 bg-gray-700/80 hover:bg-gray-600 border-2 border-gray-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
                     EVENING
                 </button>
-                <button id="apex8-btn" class="w-full md:w-80 bg-red-700/80 hover:bg-red-600 border-2 border-red-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
-                    APEX 8
-                </button>
             </div>
         </div>
     </div>
 
     <div id="quote-screen" class="screen min-h-screen w-full flex-col items-center justify-center p-6 text-center">
-         <div class="bg-overlay absolute top-0 left-0 w-full h-full bg-cover bg-center z-0"></div>
-         <div class="bg-overlay absolute top-0 left-0 w-full h-full z-0"></div>
+         <div class="bg-overlay absolute top-0 left-0 w-full h-full bg-cover bg-center"></div>
+         <div class="bg-overlay absolute top-0 left-0 w-full h-full"></div>
         <div class="z-10 max-w-3xl">
             <blockquote id="quote-text" class="text-xl md:text-4xl italic text-gray-100"></blockquote>
             <cite id="quote-author" class="block text-amber-400 font-semibold text-lg md:text-xl mt-4"></cite>
@@ -66,8 +63,8 @@
     </div>
 
     <div id="workout-screen" class="screen min-h-screen w-full flex-col items-center justify-between p-4">
-        <div class="bg-overlay absolute top-0 left-0 w-full h-full bg-cover bg-center z-0"></div>
-        <div class="bg-overlay absolute top-0 left-0 w-full h-full z-0"></div>
+        <div class="bg-overlay absolute top-0 left-0 w-full h-full bg-cover bg-center"></div>
+        <div class="bg-overlay absolute top-0 left-0 w-full h-full"></div>
         <div class="z-10 text-center w-full max-w-4xl mx-auto flex flex-col justify-between h-full py-8">
             <div class="w-full bg-gray-700 rounded-full h-4 mb-4 shrink-0">
                 <div id="progress-bar" class="bg-amber-400 h-4 rounded-full progress-bar-inner" style="width: 0%"></div>
@@ -89,8 +86,8 @@
     </div>
 
     <div id="completion-screen" class="screen min-h-screen w-full flex-col items-center justify-center p-6 text-center">
-         <div class="bg-overlay absolute top-0 left-0 w-full h-full bg-cover bg-center z-0"></div>
-         <div class="bg-overlay absolute top-0 left-0 w-full h-full z-0"></div>
+         <div class="bg-overlay absolute top-0 left-0 w-full h-full bg-cover bg-center"></div>
+         <div class="bg-overlay absolute top-0 left-0 w-full h-full"></div>
         <div class="z-10">
             <h2 class="font-anton text-5xl md:text-8xl text-amber-400 tracking-wider">WORKOUT COMPLETE</h2>
             <p class="text-lg md:text-3xl text-gray-200 mt-4">You've conquered it. Rest and recover.</p>
@@ -221,52 +218,6 @@
             { quote: "Believe you can and you’re halfway there.", author: "Theodore Roosevelt" }
         ];
 
-        // --- Workout Generation Functions ---
-        function generateApex8Routine() {
-            const routine = [];
-            // The ladder: 1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1
-            const repCounts = [1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1];
-            const exercises = [
-                'Med Ball Slams',
-                'Med Ball Goblet Squats',
-                'Pike Push-Ups',
-                'Pull-Ups',
-                'Med Ball Push-Ups'
-            ];
-
-            const workDuration = 45; // Time to complete the reps
-            const restDuration = 30; // 30 seconds rest after each round
-            const totalRounds = repCounts.length;
-
-            // Warmup/Cooldown removed per user request.
-
-            repCounts.forEach((reps, roundIndex) => {
-                const roundNumber = roundIndex + 1;
-
-                exercises.forEach((exercise) => {
-                    routine.push({
-                        type: 'work',
-                        name: exercise,
-                        round: `${reps} Reps`, // Display the rep count
-                        duration: workDuration 
-                    });
-                });
-
-                // Add 30 seconds rest after each round
-                routine.push({
-                    type: 'rest',
-                    name: 'Round Rest',
-                    // Use 'round' to show round progress for the rest period
-                    round: `Round ${roundNumber}/${totalRounds} Complete`, 
-                    duration: restDuration
-                });
-            });
-            
-            // The final rest step remains a rest step as no cooldown is needed.
-
-            return routine;
-        }
-
         // --- Workouts ---
         const workouts = {
             morning: [
@@ -307,9 +258,7 @@
                 { type: 'cooldown', name: 'Frog Stretch', duration: 60 }, { type: 'rest", name: 'Rest', duration: 5},
                 { type: 'cooldown', name: 'Figure-4 Stretch (Right)', duration: 30 }, { type: 'rest", name: 'Rest', duration: 5},
                 { type: 'cooldown', name: 'Figure-4 Stretch (Left)', duration: 30 }, { type: 'rest", name: 'Rest', duration: 5},
-            ],
-            // NEW WORKOUT: APEX 8
-            apex8: generateApex8Routine()
+            ]
         };
         
         // --- Navigation ---
@@ -322,8 +271,6 @@
             initializeAudio(); // Initialize audio context on first user action
             currentWorkout = type;
             workoutRoutine = workouts[type];
-            
-            // All workouts now correctly go to the quote screen
             const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
             quoteText.textContent = `"${randomQuote.quote}"`;
             quoteAuthor.textContent = `- ${randomQuote.author}`;
@@ -457,7 +404,6 @@
             // Button Event Listeners
             document.getElementById('morning-btn').addEventListener('click', () => selectWorkout('morning'));
             document.getElementById('evening-btn').addEventListener('click', () => selectWorkout('evening'));
-            document.getElementById('apex8-btn').addEventListener('click', () => selectWorkout('apex8')); 
             document.getElementById('start-btn').addEventListener('click', startWorkout);
             document.getElementById('menu-btn').addEventListener('click', goToMenu);
 
