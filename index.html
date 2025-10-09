@@ -46,6 +46,9 @@
                 <button id="evening-btn" class="w-full md:w-80 bg-gray-700/80 hover:bg-gray-600 border-2 border-gray-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
                     EVENING
                 </button>
+                <button id="apex8-btn" class="w-full md:w-80 bg-red-700/80 hover:bg-red-600 border-2 border-red-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
+                    APEX 8
+                </button>
             </div>
         </div>
     </div>
@@ -218,6 +221,59 @@
             { quote: "Believe you can and you’re halfway there.", author: "Theodore Roosevelt" }
         ];
 
+        // --- Workout Generation Functions ---
+        function generateApex8Routine() {
+            const routine = [];
+            // The ladder: 1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1
+            const repCounts = [1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1];
+            const exercises = [
+                'Med Ball Slams',
+                'Med Ball Goblet Squats',
+                'Pike Push-Ups',
+                'Pull-Ups',
+                'Med Ball Push-Ups'
+            ];
+
+            const workDuration = 45; // Time to complete the reps
+            const restDuration = 30; // 30 seconds rest after each round
+            const totalRounds = repCounts.length;
+
+            // Add a brief warmup to the start
+            routine.push({ type: 'warmup', name: 'Dynamic Warmup', duration: 60 });
+            routine.push({ type: 'rest', name: 'Get Focused', duration: 10});
+
+            repCounts.forEach((reps, roundIndex) => {
+                const roundNumber = roundIndex + 1;
+
+                exercises.forEach((exercise) => {
+                    routine.push({
+                        type: 'work',
+                        name: exercise,
+                        round: `${reps} Reps`, // Display the rep count
+                        duration: workDuration 
+                    });
+                });
+
+                // Add 30 seconds rest after each round
+                routine.push({
+                    type: 'rest',
+                    name: 'Round Rest',
+                    // Use 'round' to show round progress for the rest period
+                    round: `Round ${roundNumber}/${totalRounds} Complete`, 
+                    duration: restDuration
+                });
+            });
+            
+            // Change the final rest step to a cooldown
+            routine[routine.length - 1] = { 
+                type: 'cooldown', 
+                name: 'Final Stretch', 
+                duration: 90 
+            };
+
+            return routine;
+        }
+
         // --- Workouts ---
         const workouts = {
             morning: [
@@ -258,7 +314,9 @@
                 { type: 'cooldown', name: 'Frog Stretch', duration: 60 }, { type: 'rest", name: 'Rest', duration: 5},
                 { type: 'cooldown', name: 'Figure-4 Stretch (Right)', duration: 30 }, { type: 'rest", name: 'Rest', duration: 5},
                 { type: 'cooldown', name: 'Figure-4 Stretch (Left)', duration: 30 }, { type: 'rest", name: 'Rest', duration: 5},
-            ]
+            ],
+            // NEW WORKOUT: APEX 8
+            apex8: generateApex8Routine()
         };
         
         // --- Navigation ---
@@ -404,6 +462,8 @@
             // Button Event Listeners
             document.getElementById('morning-btn').addEventListener('click', () => selectWorkout('morning'));
             document.getElementById('evening-btn').addEventListener('click', () => selectWorkout('evening'));
+            // NEW EVENT LISTENER
+            document.getElementById('apex8-btn').addEventListener('click', () => selectWorkout('apex8')); 
             document.getElementById('start-btn').addEventListener('click', startWorkout);
             document.getElementById('menu-btn').addEventListener('click', goToMenu);
 
