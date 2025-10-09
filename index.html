@@ -356,14 +356,20 @@
 
         // --- Timer Logic ---
         function startInitialCountdown() {
+            // FIX 2: Ensure any prior interval is cleared before starting a new one.
+            clearInterval(timerInterval);
+
             // Hide the rep-based content and show the timer content
             timedContent.classList.remove('hidden');
             repContent.classList.add('hidden');
 
             timeLeft = 10;
-            updateUIForStep(true); // Initial Countdown doesn't need to know the next step yet
+            // Call updateUIForStep() to set up the 'Next Up' exercise.
+            updateUIForStep(); 
+            
             statusText.textContent = 'GET READY';
             currentExerciseDisplay.textContent = ''; // Clear exercise name during countdown
+            timerDisplay.textContent = timeLeft; // FIX 1: Set initial display to 10.
 
             timerInterval = setInterval(() => {
                 timeLeft--;
@@ -378,6 +384,9 @@
         }
 
         function runCurrentStep() {
+            // FIX 2: Ensure any prior interval is cleared before starting a new step or waiting for user input.
+            clearInterval(timerInterval);
+
             if (currentStepIndex >= workoutRoutine.length) {
                 workoutComplete();
                 return;
@@ -387,7 +396,6 @@
             
             // Handle User-Paced Rep Work
             if (step.type === 'rep_work') {
-                clearInterval(timerInterval);
                 updateUIForStep();
                 // Timer remains cleared, waiting for 'Round Complete' button click
                 return;
@@ -450,7 +458,11 @@
                 } else {
                     currentExerciseDisplay.textContent = step.name;
                 }
-                timerDisplay.textContent = step.duration;
+                
+                // IMPORTANT: Only set the timer display here for non-countdown timed steps
+                if (step.duration) {
+                     timerDisplay.textContent = step.duration;
+                }
 
                 if (step.type === 'rest') {
                     statusText.textContent = 'REST';
@@ -508,6 +520,7 @@
             // Button Event Listeners
             document.getElementById('morning-btn').addEventListener('click', () => selectWorkout('morning'));
             document.getElementById('evening-btn').addEventListener('click', () => selectWorkout('evening'));
+            // NEW EVENT LISTENER
             document.getElementById('apex8-btn').addEventListener('click', () => selectWorkout('apex8')); 
             document.getElementById('start-btn').addEventListener('click', startWorkout);
             document.getElementById('menu-btn').addEventListener('click', goToMenu);
@@ -515,6 +528,8 @@
             // NEW: Listener for the user-paced round completion
             roundCompleteBtn.addEventListener('click', () => {
                 if (currentWorkout === 'apex8') {
+                    // Play sound to acknowledge button press
+                    playSound('C4', '0.1'); 
                     moveToNextStep();
                 }
             });
