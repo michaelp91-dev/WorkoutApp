@@ -356,20 +356,26 @@
 
         // --- Timer Logic ---
         function startInitialCountdown() {
-            // FIX 2: Ensure any prior interval is cleared before starting a new one.
             clearInterval(timerInterval);
 
-            // Hide the rep-based content and show the timer content
-            timedContent.classList.remove('hidden');
-            repContent.classList.add('hidden');
+            // Display Setup for Countdown
+            timedContent.classList.remove('hidden'); // Ensure timer display is visible
+            repContent.classList.add('hidden'); // Ensure rep content is hidden
+            
+            // Set up Next Up based on the actual first step
+            const nextStep = workoutRoutine[0]; 
+            if (nextStep) {
+                nextUpContainer.style.visibility = 'visible';
+                // When coming from countdown, next step is always the first work step (e.g., "1 Reps")
+                nextExerciseDisplay.textContent = nextStep.name; 
+            } else {
+                nextUpContainer.style.visibility = 'hidden';
+            }
 
             timeLeft = 10;
-            // Call updateUIForStep() to set up the 'Next Up' exercise.
-            updateUIForStep(); 
-            
             statusText.textContent = 'GET READY';
             currentExerciseDisplay.textContent = ''; // Clear exercise name during countdown
-            timerDisplay.textContent = timeLeft; // FIX 1: Set initial display to 10.
+            timerDisplay.textContent = timeLeft; // CRITICAL FIX: Set initial display to 10 immediately
 
             timerInterval = setInterval(() => {
                 timeLeft--;
@@ -384,7 +390,6 @@
         }
 
         function runCurrentStep() {
-            // FIX 2: Ensure any prior interval is cleared before starting a new step or waiting for user input.
             clearInterval(timerInterval);
 
             if (currentStepIndex >= workoutRoutine.length) {
@@ -397,7 +402,6 @@
             // Handle User-Paced Rep Work
             if (step.type === 'rep_work') {
                 updateUIForStep();
-                // Timer remains cleared, waiting for 'Round Complete' button click
                 return;
             }
 
@@ -449,7 +453,7 @@
                 statusText.textContent = 'WORKOUT';
                 currentExerciseDisplay.textContent = step.name; // E.g., "1 Rep"
             } else {
-                // Timed Phase (Countdown, Rest, Work, etc.): Show Timer, Hide Rep Content
+                // Timed Phase (Rest, Work, etc.): Show Timer, Hide Rep Content
                 timedContent.classList.remove('hidden');
                 repContent.classList.add('hidden');
 
@@ -459,7 +463,6 @@
                     currentExerciseDisplay.textContent = step.name;
                 }
                 
-                // IMPORTANT: Only set the timer display here for non-countdown timed steps
                 if (step.duration) {
                      timerDisplay.textContent = step.duration;
                 }
