@@ -25,6 +25,8 @@
         }
         .bg-overlay {
             background-color: rgba(0, 0, 0, 0.75);
+            /* FIX: Ensures clicks pass through the overlay to the buttons beneath */
+            pointer-events: none;
         }
         .progress-bar-inner {
             transition: width 0.5s ease-in-out;
@@ -221,10 +223,10 @@
         // --- Workouts ---
         const workouts = {
             morning: [
-                { type: 'warmup', name: 'Marching in Place', duration: 30 }, { type: 'rest", name: 'Rest', duration: 5},
-                { type: 'warmup', name: 'Gentle Arm Circles', duration: 30 }, { type: 'rest", name: 'Rest', duration: 5},
-                { type: 'warmup', name: 'Torso Twists', duration: 30 }, { type: 'rest", name: 'Rest', duration: 5},
-                { type: 'warmup', name: 'Leg Swings', duration: 30 }, { type: 'rest", name: 'Rest', duration: 10},
+                { type: 'warmup', name: 'Marching in Place', duration: 30 }, { type: 'rest', name: 'Rest', duration: 5},
+                { type: 'warmup', name: 'Gentle Arm Circles', duration: 30 }, { type: 'rest', name: 'Rest', duration: 5},
+                { type: 'warmup', name: 'Torso Twists', duration: 30 }, { type: 'rest', name: 'Rest', duration: 5},
+                { type: 'warmup', name: 'Leg Swings', duration: 30 }, { type: 'rest', name: 'Rest', duration: 10},
                 // Push-ups: 3 rounds with 10s rest, then 1 final round with 30s rest
                 ...Array(3).fill(null).flatMap((_, i) => [{ type: 'work', name: 'Push-ups', round: `${i + 1}/4`, duration: 10 }, { type: 'rest', name: 'Rest', duration: 10 }]),
                 { type: 'work', name: 'Push-ups', round: '4/4', duration: 10 },
@@ -239,25 +241,25 @@
                 { type: 'rest', name: 'Rest', duration: 30 },
                 // Mountain Climbers: 4 rounds with 10s rest as it's the last one before cooldown
                 ...Array(4).fill(null).flatMap((_, i) => [{ type: 'work', name: 'Mountain Climbers', round: `${i + 1}/4`, duration: 10 }, { type: 'rest', name: 'Rest', duration: 10 }]),
-                { type: 'cooldown', name: 'Standing Quad Stretch (Right)', duration: 30 }, { type: 'rest", name: 'Rest', duration: 5},
-                { type: 'cooldown', name: 'Standing Quad Stretch (Left)', duration: 30 }, { type: 'rest", name: 'Rest', duration: 5},
-                { type: 'cooldown', name: 'Standing Hamstring Stretch (Right)', duration: 30 }, { type: 'rest", name: 'Rest', duration: 5},
-                { type: 'cooldown', name: 'Standing Hamstring Stretch (Left)', duration: 30 }, { type: 'rest", name: 'Rest', duration: 5},
+                { type: 'cooldown', name: 'Standing Quad Stretch (Right)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 5},
+                { type: 'cooldown', name: 'Standing Quad Stretch (Left)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 5},
+                { type: 'cooldown', name: 'Standing Hamstring Stretch (Right)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 5},
+                { type: 'cooldown', name: 'Standing Hamstring Stretch (Left)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 5},
                 { type: 'cooldown', name: "Child's Pose", duration: 60 },
             ],
             evening: [
-                { type: 'warmup', name: 'Cat-Cow Stretch', duration: 60 }, { type: 'rest", name: 'Rest', duration: 5},
-                { type: 'warmup', name: 'Glute Bridges', duration: 60 }, { type: 'rest", name: 'Rest', duration: 10},
+                { type: 'warmup', name: 'Cat-Cow Stretch', duration: 60 }, { type: 'rest', name: 'Rest', duration: 5},
+                { type: 'warmup', name: 'Glute Bridges', duration: 60 }, { type: 'rest', name: 'Rest', duration: 10},
                 ...Array(2).fill(null).flatMap((_, i) => [
                     { type: 'work', name: 'Chair Dips', round: `${i + 1}/2`, duration: 30 }, { type: 'rest', name: 'Rest', duration: 15 },
                     { type: 'work', name: 'Wall Sit', round: `${i + 1}/2`, duration: 30 }, { type: 'rest', name: 'Rest', duration: 15 },
                     { type: 'work', name: 'Forearm Plank', round: `${i + 1}/2`, duration: 30 }, { type: 'rest', name: 'Rest', duration: 15 },
                     { type: 'work', name: 'Bird Dog', round: `${i + 1}/2`, duration: 30 }, { type: 'rest', name: 'Rest', duration: 15 },
                 ]),
-                { type: 'cooldown', name: 'Knees-to-Chest Stretch', duration: 60 }, { type: 'rest", name: 'Rest', duration: 5},
-                { type: 'cooldown', name: 'Frog Stretch', duration: 60 }, { type: 'rest", name: 'Rest', duration: 5},
-                { type: 'cooldown', name: 'Figure-4 Stretch (Right)', duration: 30 }, { type: 'rest", name: 'Rest', duration: 5},
-                { type: 'cooldown', name: 'Figure-4 Stretch (Left)', duration: 30 }, { type: 'rest", name: 'Rest', duration: 5},
+                { type: 'cooldown', name: 'Knees-to-Chest Stretch', duration: 60 }, { type: 'rest', name: 'Rest', duration: 5},
+                { type: 'cooldown', name: 'Frog Stretch', duration: 60 }, { type: 'rest', name: 'Rest', duration: 5},
+                { type: 'cooldown', name: 'Figure-4 Stretch (Right)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 5},
+                { type: 'cooldown', name: 'Figure-4 Stretch (Left)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 5},
             ]
         };
         
