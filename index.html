@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anton:wght@400&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <meta name="theme-color" content="#1a1a1a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <style>
@@ -48,8 +48,11 @@
                 <button id="evening-btn" class="w-full md:w-80 bg-gray-700/80 hover:bg-gray-600 border-2 border-gray-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
                     EVENING
                 </button>
-                <button id="apex8-btn" class="w-full md:w-80 bg-red-700/80 hover:bg-red-600 border-2 border-red-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
-                    APEX 8
+                <button id="apex8-mb-btn" class="w-full md:w-80 bg-red-700/80 hover:bg-red-600 border-2 border-red-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
+                    APEX 8 - MB
+                </button>
+                <button id="apex8-kb-btn" class="w-full md:w-80 bg-red-700/80 hover:bg-red-600 border-2 border-red-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
+                    APEX 8 - KB
                 </button>
             </div>
         </div>
@@ -86,12 +89,7 @@
 
                 <div id="rep-content" class="hidden w-full max-w-lg mx-auto">
                     <div id="apex8-exercise-list" class="text-left text-xl md:text-3xl font-semibold mb-8 space-y-2 bg-gray-800/50 p-6 rounded-lg mx-auto">
-                        <p>- Med Ball Slams</p>
-                        <p>- Med Ball Goblet Squats</p>
-                        <p>- Pike Push-Ups</p>
-                        <p>- Pull-Ups</p>
-                        <p>- Med Ball Push-Ups</p>
-                    </div>
+                        </div>
                     <button id="round-complete-btn" class="z-10 bg-green-600/90 hover:bg-green-500 border-2 border-green-400 text-white font-bold py-4 px-12 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
                         ROUND COMPLETE
                     </button>
@@ -140,6 +138,7 @@
         const timedContent = document.getElementById('timed-content');
         const repContent = document.getElementById('rep-content');
         const roundCompleteBtn = document.getElementById('round-complete-btn');
+        const apex8ExerciseList = document.getElementById('apex8-exercise-list'); // Added new reference
 
         let currentWorkout = null;
         let workoutRoutine = [];
@@ -247,7 +246,8 @@
         ];
 
         // --- Workout Generation Functions ---
-        function generateApex8Routine() {
+        // Refactored to accept a list of exercises
+        function generateApex8Routine(exercises) {
             const routine = [];
             // The ladder: 1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1
             const repCounts = [1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1];
@@ -262,7 +262,8 @@
                     type: 'rep_work', // New custom type for user-paced work
                     name: `${reps} Rep${reps > 1 ? 's' : ''}`, // Displays "1 Rep" or "X Reps"
                     duration: null, // No duration
-                    round: `Round ${roundNumber}/${totalRounds}`
+                    round: `Round ${roundNumber}/${totalRounds}`,
+                    exercises: exercises // Store the exercises in the work step
                 });
 
                 // 2. Rest Step (Timed)
@@ -280,7 +281,24 @@
             return routine;
         }
 
-        // --- Workouts ---
+        // --- Exercise Lists and Workouts ---
+
+        const apex8_mb_exercises = [
+            'Med Ball Slams',
+            'Med Ball Goblet Squats',
+            'Pike Push-Ups',
+            'Pull-Ups',
+            'Med Ball Push-Ups'
+        ];
+
+        const apex8_kb_exercises = [
+            'KB Swings',
+            'Front Squats',
+            'Shoulder Press',
+            'Renegade Row',
+            'KB Push-Ups'
+        ];
+        
         const workouts = {
             morning: [
                 { type: 'warmup', name: 'Marching in Place', duration: 30 }, { type: 'rest', name: 'Rest', duration: 5},
@@ -321,8 +339,9 @@
                 { type: 'cooldown', name: 'Figure-4 Stretch (Right)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 5},
                 { type: 'cooldown', name: 'Figure-4 Stretch (Left)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 5},
             ],
-            // NEW WORKOUT: APEX 8
-            apex8: generateApex8Routine()
+            // Updated to two separate Apex 8 routines
+            'apex8-mb': generateApex8Routine(apex8_mb_exercises),
+            'apex8-kb': generateApex8Routine(apex8_kb_exercises)
         };
         
         // --- Navigation ---
@@ -452,6 +471,12 @@
                 
                 statusText.textContent = 'WORKOUT';
                 currentExerciseDisplay.textContent = step.name; // E.g., "1 Rep"
+
+                // NEW: Populate the exercise list dynamically
+                if (step.exercises) {
+                    apex8ExerciseList.innerHTML = step.exercises.map(ex => `<p>- ${ex}</p>`).join('');
+                }
+
             } else {
                 // Timed Phase (Rest, Work, etc.): Show Timer, Hide Rep Content
                 timedContent.classList.remove('hidden');
@@ -523,14 +548,16 @@
             // Button Event Listeners
             document.getElementById('morning-btn').addEventListener('click', () => selectWorkout('morning'));
             document.getElementById('evening-btn').addEventListener('click', () => selectWorkout('evening'));
-            // NEW EVENT LISTENER
-            document.getElementById('apex8-btn').addEventListener('click', () => selectWorkout('apex8')); 
+            // Updated event listeners for the two Apex 8 variants
+            document.getElementById('apex8-mb-btn').addEventListener('click', () => selectWorkout('apex8-mb'));
+            document.getElementById('apex8-kb-btn').addEventListener('click', () => selectWorkout('apex8-kb')); 
+
             document.getElementById('start-btn').addEventListener('click', startWorkout);
             document.getElementById('menu-btn').addEventListener('click', goToMenu);
 
-            // NEW: Listener for the user-paced round completion
+            // Updated: Listener for the user-paced round completion (checks if it's any apex8 variant)
             roundCompleteBtn.addEventListener('click', () => {
-                if (currentWorkout === 'apex8') {
+                if (currentWorkout && currentWorkout.startsWith('apex8')) { 
                     // Play sound to acknowledge button press
                     playSound('C4', '0.1'); 
                     moveToNextStep();
