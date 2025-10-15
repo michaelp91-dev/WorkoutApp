@@ -65,7 +65,7 @@
                     MORNING
                 </button>
                 <button id="evening-btn" class="w-full md:w-80 bg-gray-700/80 hover:bg-gray-600 border-2 border-gray-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
-                    EVENING
+                    RUNNING ACCESSORY
                 </button>
                 <button id="apex8-mb-btn" class="w-full md:w-80 bg-red-700/80 hover:bg-red-600 border-2 border-red-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
                     APEX 8 - MB
@@ -377,18 +377,20 @@
                 { type: 'cooldown', name: "Child's Pose", duration: 60 },
             ],
             evening: [
-                { type: 'warmup', name: 'Cat-Cow Stretch', duration: 60 }, { type: 'rest', name: 'Rest', duration: 5},
+                { type: 'warmup', name: 'Cat-Cow Stretch', duration: 60 }, { type: 'rest', name: 'Rest', duration: 10},
                 { type: 'warmup', name: 'Glute Bridges', duration: 60 }, { type: 'rest', name: 'Rest', duration: 10},
-                ...Array(2).fill(null).flatMap((_, i) => [
-                    { type: 'work', name: 'Chair Dips', round: `${i + 1}/2`, duration: 30 }, { type: 'rest', name: 'Rest', duration: 15 },
-                    { type: 'work', name: 'Wall Sit', round: `${i + 1}/2`, duration: 30 }, { type: 'rest', name: 'Rest', duration: 15 },
-                    { type: 'work', name: 'Forearm Plank', round: `${i + 1}/2`, duration: 30 }, { type: 'rest', name: 'Rest', duration: 15 },
-                    { type: 'work', name: 'Bird Dog', round: `${i + 1}/2`, duration: 30 }, { type: 'rest', name: 'Rest', duration: 15 },
+                { type: 'warmup', name: 'Dead Hang', duration: 30 }, { type: 'rest', name: 'Rest', duration: 10 },
+                ...Array(3).fill(null).flatMap((_, i) => [
+                    { type: 'work', name: 'High Knees', round: `${i + 1}/2`, duration: 45 }, { type: 'rest', name: 'Rest', duration: 15 },
+                    { type: 'work', name: 'Reverse Lunges', round: `${i + 1}/2`, duration: 45 }, { type: 'rest', name: 'Rest', duration: 15 },
+                    { type: 'work', name: 'Bench Dips', round: `${i + 1}/2`, duration: 45 }, { type: 'rest', name: 'Rest', duration: 15 },
+                    { type: 'work', name: 'Wall Sit', round: `${i + 1}/2`, duration: 45 }, { type: 'rest', name: 'Rest', duration: 15 },
+                    { type: 'work', name: 'Crunches', round: `${i + 1}/2`, duration: 45 }, { type: 'rest', name: 'Rest', duration: 15 },
                 ]),
-                { type: 'cooldown', name: 'Knees-to-Chest Stretch', duration: 60 }, { type: 'rest', name: 'Rest', duration: 5},
-                { type: 'cooldown', name: 'Frog Stretch', duration: 60 }, { type: 'rest', name: 'Rest', duration: 5},
-                { type: 'cooldown', name: 'Figure-4 Stretch (Right)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 5},
-                { type: 'cooldown', name: 'Figure-4 Stretch (Left)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 5},
+                { type: 'cooldown', name: 'Knees-to-Chest Stretch', duration: 60 }, { type: 'rest', name: 'Rest', duration: 10},
+                { type: 'cooldown', name: 'Frog Stretch', duration: 60 }, { type: 'rest', name: 'Rest', duration: 10},
+                { type: 'cooldown', name: 'Figure-4 Stretch (Right)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 10},
+                { type: 'cooldown', name: 'Figure-4 Stretch (Left)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 10},
             ],
             'apex8-mb': generateApex8Routine(apex8_mb_exercises),
             'apex8-kb': generateApex8Routine(apex8_kb_exercises) // Re-added the KB routine
