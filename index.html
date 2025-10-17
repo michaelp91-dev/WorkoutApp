@@ -8,8 +8,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Anton:wght@400&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- Habit Tracker Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     
     <meta name="theme-color" content="#1a1a1a">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -23,9 +21,6 @@
         .font-anton {
             font-family: 'Anton', sans-serif;
         }
-        .mono {
-            font-family: 'Space Mono', monospace;
-        }
         .screen {
             display: none;
         }
@@ -38,16 +33,6 @@
         }
         .progress-bar-inner {
             transition: width 0.5s ease-in-out;
-        }
-        /* Style for Habit Tracker screen */
-        .bg-habit {
-            background-color: #030712; /* Gray 950 */
-        }
-        .text-emerald-500 {
-            color: #10b981;
-        }
-        .border-emerald-700 {
-            border-color: #047857;
         }
     </style>
 </head>
@@ -67,16 +52,8 @@
                 <button id="evening-btn" class="w-full md:w-80 bg-gray-700/80 hover:bg-gray-600 border-2 border-gray-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
                     RUNNING ACCESSORY
                 </button>
-                <button id="apex8-mb-btn" class="w-full md:w-80 bg-red-700/80 hover:bg-red-600 border-2 border-red-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
-                    APEX 8 - MB
-                </button>
-                <!-- RE-ADDED APEX 8 - KB WORKOUT -->
                 <button id="apex8-kb-btn" class="w-full md:w-80 bg-red-700/80 hover:bg-red-600 border-2 border-red-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
                     APEX 8 - KB
-                </button>
-                <!-- HABIT TRACKER MOVED TO BOTTOM, NEW STYLE -->
-                <button id="habit-tracker-btn" class="w-full md:w-80 bg-teal-600/80 hover:bg-teal-500 border-2 border-teal-400 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105 mt-4">
-                    HABIT TRACKER
                 </button>
             </div>
         </div>
@@ -147,41 +124,6 @@
         </div>
     </div>
 
-    <!-- HABIT TRACKER SCREEN -->
-    <div id="habit-screen" class="screen bg-habit min-h-screen w-full flex-col items-center justify-start pb-20">
-        <header class="pt-8 pb-4 border-b border-gray-800 px-4 max-w-lg w-full relative">
-            <button id="habit-back-btn" class="absolute left-4 top-8 text-gray-400 hover:text-white transition-colors p-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-            </button>
-            <h1 class="text-center text-4xl font-extrabold tracking-tight text-white">
-                PROTOCOL <span class="text-emerald-500">ALPHA</span>
-            </h1>
-            <p class="text-center text-sm text-gray-500 mt-1 mono">HABIT ADHERENCE SYSTEM</p>
-        </header>
-
-        <main id="habit-app-content" class="mx-auto max-w-lg w-full"></main>
-
-        <nav class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-emerald-700/50 shadow-2xl z-20">
-            <div id="habit-navbar" class="flex justify-around max-w-lg mx-auto p-2">
-            </div>
-        </nav>
-    </div>
-
-    <!-- CUSTOM MODAL (Used by Habit Tracker) -->
-    <div id="custom-modal" class="fixed inset-0 bg-black bg-opacity-70 hidden z-50 justify-center items-center p-4">
-        <div class="bg-gray-800 p-6 rounded-xl shadow-2xl max-w-sm w-full border border-emerald-700">
-            <h3 id="modal-title" class="text-xl font-bold text-white mb-3">Confirmation</h3>
-            <p id="modal-message" class="text-gray-300 mb-6"></p>
-            <div class="flex justify-end space-x-3">
-                <button id="modal-cancel" class="py-2 px-4 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">Cancel</button>
-                <button id="modal-confirm" class="py-2 px-4 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors">Confirm</button>
-            </div>
-        </div>
-    </div>
-
-
     <script>
         // --- WORKOUT APP REFERENCES ---
         const screens = {
@@ -189,7 +131,6 @@
             quote: document.getElementById('quote-screen'),
             workout: document.getElementById('workout-screen'),
             completion: document.getElementById('completion-screen'),
-            habit: document.getElementById('habit-screen') // New screen reference
         };
         const quoteText = document.getElementById('quote-text');
         const quoteAuthor = document.getElementById('quote-author');
@@ -211,12 +152,6 @@
         let timeLeft = 0;
         let deferredPrompt;
         
-        // --- HABIT TRACKER REFERENCES ---
-        const habitContent = document.getElementById('habit-app-content');
-        const habitNavbar = document.getElementById('habit-navbar');
-        const modal = document.getElementById('custom-modal');
-
-
         // --- UTILITY: Audio ---
         let audioCtx; 
         const noteFrequencies = { 'C4': 261.63, 'C5': 523.25 };
@@ -338,14 +273,6 @@
             return routine;
         }
 
-        const apex8_mb_exercises = [
-            'Med Ball Slams',
-            'Med Ball Goblet Squats',
-            'Pike Push-Ups',
-            'Pull-Ups',
-            'Med Ball Push-Ups'
-        ];
-
         const apex8_kb_exercises = [
             'KB Swings',
             'Front Squats',
@@ -359,7 +286,7 @@
                 { type: 'warmup', name: 'Downward Dog to Seal', duration: 30 }, { type: 'rest', name: 'Rest', duration: 5},
                 { type: 'warmup', name: 'Gentle Arm Circles', duration: 30 }, { type: 'rest', name: 'Rest', duration: 5},
                 { type: 'warmup', name: 'Lunge Twists, Right', duration: 30 }, { type: 'rest', name: 'Rest', duration: 5},
-                { type: 'warmup', name: 'Lunge Twists, Left', duration: 30 }, { type: 'rest', name: 'Rest', duration: 5},
+                { type: 'warmup', 'name': 'Lunge Twists, Left', duration: 30 }, { type: 'rest', name: 'Rest', duration: 5},
                 { type: 'warmup', name: 'Leg Swings', duration: 30 }, { type: 'rest', name: 'Rest', duration: 10},
                 ...Array(3).fill(null).flatMap((_, i) => [{ type: 'work', name: 'Push-ups', round: `${i + 1}/4`, duration: 10 }, { type: 'rest', name: 'Rest', duration: 10 }]),
                 { type: 'work', name: 'Push-ups', round: '4/4', duration: 10 },
@@ -393,22 +320,13 @@
                 { type: 'cooldown', name: 'Figure-4 Stretch (Right)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 10},
                 { type: 'cooldown', name: 'Figure-4 Stretch (Left)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 10},
             ],
-            'apex8-mb': generateApex8Routine(apex8_mb_exercises),
-            'apex8-kb': generateApex8Routine(apex8_kb_exercises) // Re-added the KB routine
+            'apex8-kb': generateApex8Routine(apex8_kb_exercises)
         };
         
         // --- WORKOUT APP: Navigation and Timer Logic ---
         function switchScreen(screenName) {
             Object.values(screens).forEach(screen => screen.classList.remove('active'));
             screens[screenName].classList.add('active');
-            
-            // Special handling for habit tracker background and re-render
-            if (screenName === 'habit') {
-                document.body.classList.add('bg-habit');
-                habitRenderApp(); // Ensure the habit app is rendered when switching to it
-            } else {
-                document.body.classList.remove('bg-habit');
-            }
         }
 
         function selectWorkout(type) {
@@ -420,10 +338,6 @@
             quoteAuthor.textContent = `- ${randomQuote.author}`;
             
             switchScreen('quote');
-        }
-        
-        function goToHabitTracker() {
-            switchScreen('habit');
         }
         
         function startWorkout() {
@@ -577,453 +491,13 @@
             switchScreen('completion');
         }
 
-        // --- HABIT TRACKER: CORE LOGIC ---
-        const APP_KEY = 'alphaTrackerHabits';
-        let habitCurrentTab = 'today';
-        
-        const PERIODS = {
-            morning: { label: 'Morning Protocol', range: '4:00 - 11:00' },
-            day: { label: 'Day Protocol', range: '11:00 - 17:00' },
-            all_day: { label: 'All Day Protocol', range: 'Flexible' },
-            evening: { label: 'Evening Protocol', range: '17:00 - 4:00' },
-        };
-
-        function habitLoadState() {
-            const stored = localStorage.getItem(APP_KEY);
-            let state = stored ? JSON.parse(stored) : {
-                habits: [
-                    { id: 'h1', name: "Morning Devotional", order: 1, created: Date.now(), period: 'morning' },
-                    { id: 'h2', name: "Morning Workout", order: 2, created: Date.now(), period: 'morning' },
-                    { id: 'h3', name: "Evening Review", order: 3, created: Date.now(), period: 'evening' },
-                    { id: 'h4', name: "Hydration Check", order: 4, created: Date.now(), period: 'all_day' },
-                ],
-                logs: {}
-            };
-
-            state.habits = state.habits.map(h => {
-                if (!h.period) { h.period = 'all_day'; }
-                return h;
-            });
-
-            return state;
-        }
-
-        function habitSaveState(state) {
-            localStorage.setItem(APP_KEY, JSON.stringify(state));
-        }
-
-        function getTodayDate() {
-            const date = new Date();
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            
-            return `${year}-${month}-${day}`;
-        }
-
-        function toggleHabitCompletion(habitId) {
-            const state = habitLoadState();
-            const today = getTodayDate();
-            
-            if (!state.logs[today]) {
-                state.logs[today] = {};
-            }
-
-            const currentStatus = state.logs[today][habitId] || false;
-            state.logs[today][habitId] = !currentStatus;
-
-            habitSaveState(state);
-            habitRenderApp();
-        }
-
-        function addHabit(name, period) {
-            const state = habitLoadState();
-            const newOrder = state.habits.length > 0 ? Math.max(...state.habits.map(h => h.order)) + 1 : 1;
-            
-            const newHabit = {
-                id: 'h' + Date.now(),
-                name: name.trim(),
-                order: newOrder,
-                created: Date.now(),
-                period: period 
-            };
-            
-            state.habits.push(newHabit);
-            state.habits.sort((a, b) => a.order - b.order); 
-            
-            habitSaveState(state);
-            habitRenderApp();
-        }
-
-        function deleteHabit(habitId) {
-            const state = habitLoadState();
-            
-            state.habits = state.habits.filter(h => h.id !== habitId);
-
-            for (const date in state.logs) {
-                delete state.logs[date][habitId];
-            }
-
-            habitSaveState(state);
-            habitRenderApp();
-        }
-        
-        // --- HABIT TRACKER: RENDERING ---
-
-        function habitRenderHabitCard(habit, isCompleted) {
-            const bgColor = isCompleted ? 'bg-emerald-700' : 'bg-gray-800 hover:bg-gray-700';
-            const checkIcon = isCompleted 
-                ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`
-                : `<div class="h-6 w-6 border-2 border-emerald-500 rounded-full"></div>`;
-            
-            const textClass = isCompleted ? 'text-gray-300 line-through' : 'text-white';
-
-            return `
-                <div onclick="toggleHabitCompletion('${habit.id}')"
-                    class="flex items-center justify-between p-4 mb-3 rounded-xl transition-all duration-300 ${bgColor} cursor-pointer shadow-lg transform active:scale-[0.98]">
-                    <span class="font-semibold text-lg md:text-xl ${textClass}">${habit.name}</span>
-                    <div class="p-1 flex-shrink-0">${checkIcon}</div>
-                </div>
-            `;
-        }
-        
-        function habitRenderTodayView() {
-            const state = habitLoadState();
-            const today = getTodayDate();
-            const dailyChecks = state.logs[today] || {};
-            const habits = state.habits;
-
-            const totalHabits = habits.length;
-            const completedCount = habits.filter(h => dailyChecks[h.id]).length;
-            const percentage = totalHabits > 0 ? Math.round((completedCount / totalHabits) * 100) : 0;
-
-            const habitsByPeriod = { morning: [], day: [], all_day: [], evening: [] };
-            habits.forEach(habit => {
-                const periodKey = habit.period && PERIODS[habit.period] ? habit.period : 'all_day';
-                habitsByPeriod[periodKey].push(habit);
-            });
-
-            function renderPeriodSection(periodKey) {
-                const periodHabits = habitsByPeriod[periodKey];
-                if (periodHabits.length === 0) return '';
-                
-                const periodInfo = PERIODS[periodKey];
-                
-                let sectionHtml = `
-                    <h3 class="text-xl font-bold text-emerald-400 mt-6 mb-3 uppercase tracking-wider">${periodInfo.label}
-                        <span class="text-sm font-normal text-gray-500 ml-2">(${periodInfo.range})</span>
-                    </h3>
-                    <div class="space-y-3">
-                `;
-                
-                periodHabits.sort((a, b) => {
-                    const aCompleted = dailyChecks[a.id];
-                    const bCompleted = dailyChecks[b.id];
-                    return (aCompleted === bCompleted) ? 0 : aCompleted ? 1 : -1;
-                }).forEach(habit => {
-                    sectionHtml += habitRenderHabitCard(habit, dailyChecks[habit.id] || false);
-                });
-                
-                sectionHtml += `</div>`;
-                return sectionHtml;
-            }
-
-
-            let html = `
-                <div class="p-4 pt-6">
-                    <h2 class="text-2xl font-extrabold text-emerald-500 mb-6 uppercase tracking-wider border-b border-gray-700 pb-2">
-                        Daily Protocol: ${today}
-                    </h2>
-                    
-                    <div class="mb-8 bg-gray-800 p-4 rounded-xl shadow-xl">
-                        <div class="text-center mb-3">
-                            <span class="text-4xl font-extrabold text-white">${percentage}%</span>
-                            <p class="text-sm text-gray-400">Completion Rate</p>
-                        </div>
-                        <div class="w-full bg-gray-700 rounded-full h-2">
-                            <div
-                                class="bg-emerald-600 h-2 rounded-full transition-all duration-500"
-                                style="width: ${percentage}%;"
-                            ></div>
-                        </div>
-                    </div>
-
-                    <div class="habit-list">
-            `;
-
-            if (totalHabits === 0) {
-                 html += `<p class="text-gray-500 text-center mt-10 p-4 bg-gray-800 rounded-xl">No protocols defined. Use the GOALS tab to set your Protocol.</p>`;
-            } else {
-                html += renderPeriodSection('morning');
-                html += renderPeriodSection('day');
-                html += renderPeriodSection('all_day'); 
-                html += renderPeriodSection('evening');
-            }
-
-            html += `</div></div>`;
-            return html;
-        }
-
-        function habitRenderStatsView() {
-            const state = habitLoadState();
-            const habits = state.habits;
-            const logs = state.logs;
-            
-            const getDailyPercentage = (checks) => {
-                const totalCount = habits.length;
-                const completedCount = habits.filter(h => checks[h.id]).length;
-                return totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-            };
-
-            const renderGridBlock = (percentage) => {
-                const colorClass = percentage === 100 ? 'bg-emerald-600' :
-                                   percentage > 50 ? 'bg-emerald-800' :
-                                   percentage > 0 ? 'bg-emerald-900' :
-                                   'bg-gray-800';
-                const opacity = percentage === 0 ? 0.4 : 1;
-
-                return `
-                    <div class="w-5 h-5 m-0.5 rounded-sm shadow-sm ${colorClass} transform hover:scale-110" 
-                        style="opacity: ${opacity};" title="${percentage}% Completion">
-                    </div>
-                `;
-            };
-
-            let daysHtml = '';
-            for (let i = 29; i >= 0; i--) { 
-                const date = new Date();
-                date.setDate(date.getDate() - i);
-                const dateString = date.toISOString().split('T')[0]; 
-                const log = logs[dateString];
-                const percentage = log ? getDailyPercentage(log) : 0;
-                daysHtml += renderGridBlock(percentage);
-            }
-
-            let habitStatsHtml = '';
-            habits.forEach(habit => {
-                let totalDays = 0;
-                let daysCompleted = 0;
-
-                const habitCreationDate = new Date(habit.created);
-                habitCreationDate.setHours(0, 0, 0, 0);
-
-                for (const date in logs) {
-                    const logDate = new Date(date + 'T00:00:00');
-                    
-                    if (logDate >= habitCreationDate) {
-                        totalDays++;
-                        if (logs[date][habit.id]) {
-                            daysCompleted++;
-                        }
-                    }
-                }
-                const habitSuccessRate = totalDays > 0 ? Math.round((daysCompleted / totalDays) * 100) : 0;
-
-                habitStatsHtml += `
-                    <div class="mb-4">
-                        <div class="flex justify-between items-center text-white text-sm mb-1">
-                            <span class="font-semibold">${habit.name}</span>
-                            <span>${daysCompleted}/${totalDays} Days (${habitSuccessRate}%)</span>
-                        </div>
-                        <div class="w-full bg-gray-700 rounded-full h-2">
-                            <div
-                                class="bg-emerald-600 h-2 rounded-full transition-all duration-500"
-                                style="width: ${habitSuccessRate}%;"
-                            ></div>
-                        </div>
-                    </div>
-                `;
-            });
-
-            return `
-                <div class="p-4 pt-6">
-                    <h2 class="text-2xl font-extrabold text-emerald-500 mb-6 uppercase tracking-wider border-b border-gray-700 pb-2">
-                        Adherence Log
-                    </h2>
-
-                    <div class="bg-gray-800 p-4 rounded-xl shadow-xl mb-8">
-                        <p class="text-sm text-gray-400 mb-3 font-semibold">30-Day Protocol Streak</p>
-                        <div class="flex flex-wrap justify-center">
-                            ${daysHtml}
-                        </div>
-                        <div class="flex justify-between text-xs text-gray-500 mt-4">
-                            <span>(Past)</span>
-                            <span>(Today)</span>
-                        </div>
-                    </div>
-
-                    <div class="mt-4">
-                        <h3 class="xl font-bold text-white mb-4">Habit Success Rate</h3>
-                        ${habits.length === 0 ? '<p class="text-gray-500">No habits to analyze.</p>' : habitStatsHtml}
-                    </div>
-                </div>
-            `;
-        }
-
-        function habitRenderGoalsView() {
-            const state = habitLoadState();
-            const habits = state.habits;
-
-            let currentHabitsHtml = habits.map(habit => `
-                <div class="flex justify-between items-center p-3 bg-gray-800 rounded-xl shadow-md">
-                    <span class="text-white font-medium">${habit.name} 
-                        <span class="text-gray-400 text-xs italic ml-2">(${PERIODS[habit.period]?.label || 'Unassigned'})</span>
-                    </span>
-                    <button onclick="showDeleteModal('${habit.id}', '${habit.name}')"
-                        class="text-red-400 hover:text-red-500 p-2 rounded transition-colors flex-shrink-0"
-                        title="Remove Habit">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                            <line x1="10" y1="11" x2="10" y2="17"></line>
-                            <line x1="14" y1="11" x2="14" y2="17"></line>
-                        </svg>
-                    </button>
-                </div>
-            `).join('');
-
-            return `
-                <div class="p-4 pt-6">
-                    <h2 class="text-2xl font-extrabold text-emerald-500 mb-6 uppercase tracking-wider border-b border-gray-700 pb-2">
-                        Edit Protocol
-                    </h2>
-
-                    <div class="mb-8 bg-gray-800 p-4 rounded-xl shadow-xl">
-                        <h3 class="text-xl font-bold text-white mb-4">Add New Habit</h3>
-                        <form id="add-habit-form" class="space-y-4">
-                            <input
-                                type="text"
-                                id="new-habit-name"
-                                placeholder="Habit Name (e.g., Read 10 Pages)"
-                                class="w-full p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-emerald-500 focus:border-emerald-500 text-base"
-                                required
-                            />
-                            
-                            <div>
-                                <label for="new-habit-period" class="block text-sm font-medium text-gray-300 mb-1">Time Period</label>
-                                <select id="new-habit-period" class="w-full p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:ring-emerald-500 focus:border-emerald-500 text-base" required>
-                                    <option value="morning">Morning (4:00 - 11:00)</option>
-                                    <option value="day">Day (11:00 - 17:00)</option>
-                                    <option value="all_day" selected>All Day (Flexible)</option>
-                                    <option value="evening">Evening (17:00 - 4:00)</option>
-                                </select>
-                            </div>
-
-                            <button
-                                type="submit"
-                                class="w-full py-3 bg-emerald-600 text-white font-bold rounded-lg uppercase tracking-widest shadow-lg hover:bg-emerald-700 transition-colors"
-                            >
-                                Add To Protocol
-                            </button>
-                        </form>
-                    </div>
-
-                    <div class="space-y-3">
-                        <h3 class="xl font-bold text-white mb-4">Current Protocol Habits</h3>
-                        ${habits.length === 0 ? '<p class="text-gray-500 p-4 bg-gray-800 rounded-xl">No active protocols.</p>' : currentHabitsHtml}
-                    </div>
-                </div>
-            `;
-        }
-        
-        // --- HABIT TRACKER: MODAL ---
-        function showDeleteModal(habitId, habitName) {
-            document.getElementById('modal-title').textContent = "Confirm Protocol Deletion";
-            document.getElementById('modal-message').innerHTML = `Are you sure you want to permanently remove <b>${habitName}</b> from the Protocol? This cannot be undone.`;
-            
-            const confirmBtn = document.getElementById('modal-confirm');
-            const newConfirmBtn = confirmBtn.cloneNode(true);
-            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-            
-            newConfirmBtn.onclick = () => {
-                deleteHabit(habitId);
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            };
-
-            document.getElementById('modal-cancel').onclick = () => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            };
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-
-        // --- HABIT TRACKER: MAIN RENDER ---
-        function habitRenderNavbar() {
-            const tabs = [
-                { name: 'TODAY', view: 'today' },
-                { name: 'STATS', view: 'stats' },
-                { name: 'GOALS', view: 'goals' }
-            ];
-
-            const navHtml = tabs.map(tab => {
-                const activeClass = tab.view === habitCurrentTab 
-                    ? 'text-emerald-500 border-b-2 border-emerald-500' 
-                    : 'text-gray-400 hover:text-white';
-                return `
-                    <button onclick="habitSetCurrentTab('${tab.view}')"
-                        class="flex flex-col items-center p-2 rounded-lg transition-colors duration-200 uppercase tracking-wide text-xs md:text-sm font-bold ${activeClass}">
-                        ${tab.name}
-                    </button>
-                `;
-            }).join('');
-
-            habitNavbar.innerHTML = navHtml;
-        }
-
-        function habitRenderApp() {
-            let contentHtml = '';
-
-            switch (habitCurrentTab) {
-                case 'stats':
-                    contentHtml = habitRenderStatsView();
-                    break;
-                case 'goals':
-                    contentHtml = habitRenderGoalsView();
-                    break;
-                case 'today':
-                default:
-                    contentHtml = habitRenderTodayView();
-                    break;
-            }
-
-            habitContent.innerHTML = contentHtml;
-            habitRenderNavbar();
-            attachFormListeners();
-        }
-        
-        function habitSetCurrentTab(tabName) {
-            habitCurrentTab = tabName;
-            habitRenderApp();
-        }
-
-        function attachFormListeners() {
-            if (habitCurrentTab === 'goals') {
-                const form = document.getElementById('add-habit-form');
-                if (form) {
-                    form.onsubmit = function(e) {
-                        e.preventDefault();
-                        const name = document.getElementById('new-habit-name').value;
-                        const period = document.getElementById('new-habit-period').value;
-                        
-                        if (name && period) {
-                            addHabit(name, period);
-                        }
-                    };
-                }
-            }
-        }
-
         // --- INITIALIZATION ---
         window.addEventListener('DOMContentLoaded', () => {
             // PWA Manifest setup
             const manifest = {
                 "name": "Alpha Workout", "short_name": "Alpha", "start_url": ".",
                 "display": "standalone", "background_color": "#000000",
-                "theme_color": "#1a1a1a", "description": "Workout and habit tracker.",
+                "theme_color": "#1a1a1a", "description": "Workout tracker.",
                 // 1. UPDATED ICONS ARRAY FOR MANIFEST
                 "icons": [
                     {
@@ -1049,15 +523,7 @@
             // Workout Button Event Listeners
             document.getElementById('morning-btn').addEventListener('click', () => selectWorkout('morning'));
             document.getElementById('evening-btn').addEventListener('click', () => selectWorkout('evening'));
-            document.getElementById('apex8-mb-btn').addEventListener('click', () => selectWorkout('apex8-mb'));
-            
-            // Re-added Apex 8 - KB button listener
             document.getElementById('apex8-kb-btn').addEventListener('click', () => selectWorkout('apex8-kb')); 
-
-            // Habit Tracker Button
-            document.getElementById('habit-tracker-btn').addEventListener('click', goToHabitTracker);
-            document.getElementById('habit-back-btn').addEventListener('click', goToMenu); // Back button
-
             document.getElementById('start-btn').addEventListener('click', startWorkout);
             document.getElementById('menu-btn-from-completion').addEventListener('click', goToMenu); 
 
