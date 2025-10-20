@@ -11,7 +11,6 @@
     
     <meta name="theme-color" content="#1a1a1a">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <!-- 2. ADD APPLE TOUCH ICON FOR iOS -->
     <link rel="apple-touch-icon" href="https://placehold.co/180x180/1a1a1a/ffc107?text=A" sizes="180x180">
 
     <style>
@@ -38,7 +37,6 @@
 </head>
 <body class="bg-black text-white">
 
-    <!-- MENU SCREEN -->
     <div id="menu-screen" class="screen active min-h-screen w-full flex-col items-center justify-center p-4 bg-cover bg-center">
         <button id="install-btn" class="hidden absolute top-4 right-4 z-20 bg-gray-700/80 text-white font-bold py-2 px-4 rounded text-sm transition duration-300 transform hover:scale-105">Add to Home Screen</button>
         <div class="bg-overlay absolute top-0 left-0 w-full h-full"></div>
@@ -52,6 +50,9 @@
                 <button id="evening-btn" class="w-full md:w-80 bg-gray-700/80 hover:bg-gray-600 border-2 border-gray-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
                     RUNNING ACCESSORY
                 </button>
+                <button id="kids-fun-btn" class="w-full md:w-80 bg-pink-500/80 hover:bg-pink-500 border-2 border-pink-400 text-black font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
+                    ADVENTURE WORKOUT
+                </button>
                 <button id="apex8-kb-btn" class="w-full md:w-80 bg-red-700/80 hover:bg-red-600 border-2 border-red-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
                     APEX 8
                 </button>
@@ -59,7 +60,6 @@
         </div>
     </div>
 
-    <!-- QUOTE SCREEN (Pre-Workout) -->
     <div id="quote-screen" class="screen min-h-screen w-full flex-col items-center justify-center p-6 text-center">
          <div class="bg-overlay absolute top-0 left-0 w-full h-full bg-cover bg-center"></div>
          <div class="bg-overlay absolute top-0 left-0 w-full h-full"></div>
@@ -72,7 +72,6 @@
         </button>
     </div>
 
-    <!-- WORKOUT SCREEN -->
     <div id="workout-screen" class="screen min-h-screen w-full flex-col items-center justify-between p-4">
         <div class="bg-overlay absolute top-0 left-0 w-full h-full bg-cover bg-center"></div>
         <div class="bg-overlay absolute top-0 left-0 w-full h-full"></div>
@@ -91,10 +90,8 @@
                 </div>
 
                 <div id="rep-content" class="hidden w-full max-w-lg mx-auto">
-                    <!-- Exercise list will be dynamically populated by JS -->
                     <div id="apex8-exercise-list" class="text-left text-xl md:text-3xl font-semibold mb-8 space-y-2 bg-gray-800/50 p-6 rounded-lg mx-auto">
-                        <!-- Exercises will be inserted here by JavaScript -->
-                    </div>
+                        </div>
                     <button id="round-complete-btn" class="z-10 bg-green-600/90 hover:bg-green-500 border-2 border-green-400 text-white font-bold py-4 px-12 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
                         ROUND COMPLETE
                     </button>
@@ -111,7 +108,6 @@
         </div>
     </div>
 
-    <!-- COMPLETION SCREEN -->
     <div id="completion-screen" class="screen min-h-screen w-full flex-col items-center justify-center p-6 text-center">
          <div class="bg-overlay absolute top-0 left-0 w-full h-full bg-cover bg-center"></div>
          <div class="bg-overlay absolute top-0 left-0 w-full h-full"></div>
@@ -320,7 +316,35 @@
                 { type: 'cooldown', name: 'Figure-4 Stretch (Right)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 10},
                 { type: 'cooldown', name: 'Figure-4 Stretch (Left)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 10},
             ],
-            'apex8-kb': generateApex8Routine(apex8_kb_exercises)
+            'apex8-kb': generateApex8Routine(apex8_kb_exercises),
+            'kids-fun': [
+                // Warmup (~1:30)
+                { type: 'warmup', name: 'Wiggle Dance', duration: 30 }, { type: 'rest', name: 'Rest', duration: 10},
+                { type: 'warmup', name: 'Big Wings (Arm Circles)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 10},
+                { type: 'warmup', name: 'Touch Your Toes!', duration: 30 }, 
+                
+                // Main Set 1 (~2:30)
+                { type: 'rest', name: 'Get Ready to Play!', duration: 30 }, // Transition
+                { type: 'work', name: 'Star Jumps (Jumping Jacks)', round: 'Round 1/2', duration: 30 }, { type: 'rest', name: 'Rest', duration: 15 },
+                { type: 'work', name: 'Run in Place (High Knees)', round: 'Round 1/2', duration: 30 }, { type: 'rest', name: 'Rest', duration: 15 },
+                { type: 'work', name: 'Crab Walk (Silly Walk)', round: 'Round 1/2', duration: 30 }, { type: 'rest', name: 'Rest', duration: 15 },
+                { type: 'work', name: 'Bear Crawl (Animal Walk)', round: 'Round 1/2', duration: 30 }, 
+                
+                // Transition Rest (30s)
+                { type: 'rest', name: 'Big Water Break', duration: 30 },
+
+                // Main Set 2 (~2:30)
+                { type: 'work', name: 'Star Jumps (Jumping Jacks)', round: 'Round 2/2', duration: 30 }, { type: 'rest', name: 'Rest', duration: 15 },
+                { type: 'work', name: 'Run in Place (High Knees)', round: 'Round 2/2', duration: 30 }, { type: 'rest', name: 'Rest', duration: 15 },
+                { type: 'work', name: 'Crab Walk (Silly Walk)', round: 'Round 2/2', duration: 30 }, { type: 'rest', name: 'Rest', duration: 15 },
+                { type: 'work', name: 'Bear Crawl (Animal Walk)', round: 'Round 2/2', duration: 30 },
+                
+                // Cooldown (~1:40)
+                { type: 'rest', name: 'Take a Deep Breath', duration: 30 },
+                { type: 'cooldown', name: 'Big Butterfly (Leg Stretch)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 10},
+                { type: 'cooldown', name: 'Trunk Hug (Big Stretch)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 10},
+                { type: 'cooldown', name: 'Lie Still Like a Log', duration: 30 },
+            ]
         };
         
         // --- WORKOUT APP: Navigation and Timer Logic ---
@@ -523,6 +547,7 @@
             // Workout Button Event Listeners
             document.getElementById('morning-btn').addEventListener('click', () => selectWorkout('morning'));
             document.getElementById('evening-btn').addEventListener('click', () => selectWorkout('evening'));
+            document.getElementById('kids-fun-btn').addEventListener('click', () => selectWorkout('kids-fun'));
             document.getElementById('apex8-kb-btn').addEventListener('click', () => selectWorkout('apex8-kb')); 
             document.getElementById('start-btn').addEventListener('click', startWorkout);
             document.getElementById('menu-btn-from-completion').addEventListener('click', goToMenu); 
