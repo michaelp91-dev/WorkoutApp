@@ -56,7 +56,10 @@
                 <button id="apex8-kb-btn" class="w-full md:w-80 bg-red-700/80 hover:bg-red-600 border-2 border-red-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
                     APEX 8
                 </button>
-            </div>
+                <button id="back-pain-btn" class="w-full md:w-80 bg-blue-500/80 hover:bg-blue-500 border-2 border-blue-400 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
+                    BACK PAIN WORKOUT
+                </button>
+                </div>
         </div>
     </div>
 
@@ -269,6 +272,86 @@
             return routine;
         }
 
+        // NEW WORKOUT ROUTINE GENERATOR
+        function getBackPainWorkoutRoutine() {
+            const plankOptions = [
+                'Side Planks',
+                'One Leg Planks',
+                'Plank Jacks',
+                'Opposing Limb Extension'
+            ];
+            const mainExercises = [
+                'Pike push ups',
+                'RDLs',
+                'Plank Placeholder',
+                'Hip bridge',
+                'Pull-ups'
+            ];
+            const totalRounds = 3;
+            const workDuration = 45;
+            const restDuration = 15;
+
+            const backPainWorkoutBody = [];
+
+            for (let i = 0; i < totalRounds; i++) {
+                const roundNumber = i + 1;
+                const roundString = `${roundNumber}/${totalRounds}`;
+                
+                // Add a longer rest between rounds after Round 1 and Round 2
+                if (i > 0) {
+                     backPainWorkoutBody.push({ type: 'rest', name: 'Round Transition', duration: 60 });
+                }
+                
+                mainExercises.forEach(exercise => {
+                    if (exercise === 'Plank Placeholder') {
+                        const selectedPlank = plankOptions[Math.floor(Math.random() * plankOptions.length)];
+                        
+                        if (selectedPlank === 'Side Planks' || selectedPlank === 'One Leg Planks') {
+                            // Left and Right intervals needed
+                            backPainWorkoutBody.push(
+                                { type: 'work', name: `${selectedPlank} (Left)`, round: roundString, duration: workDuration },
+                                { type: 'rest', name: 'Rest', duration: restDuration },
+                                { type: 'work', name: `${selectedPlank} (Right)`, round: roundString, duration: workDuration },
+                                { type: 'rest', name: 'Rest', duration: restDuration } // Rest after the right side plank
+                            );
+                        } else {
+                            // Single interval
+                            backPainWorkoutBody.push(
+                                { type: 'work', name: selectedPlank, round: roundString, duration: workDuration },
+                                { type: 'rest', name: 'Rest', duration: restDuration }
+                            );
+                        }
+
+                    } else {
+                        // All other exercises
+                        backPainWorkoutBody.push(
+                            { type: 'work', name: exercise, round: roundString, duration: workDuration },
+                            { type: 'rest', name: 'Rest', duration: restDuration }
+                        );
+                    }
+                });
+            }
+            
+            // Remove the very last 'rest' step of the main body (it will be an interval rest)
+            if (backPainWorkoutBody.length > 0 && backPainWorkoutBody[backPainWorkoutBody.length - 1].type === 'rest') {
+                backPainWorkoutBody.pop(); 
+            }
+
+            const routine = [
+                // Warmup
+                { type: 'warmup', name: 'Bird Dogs', duration: 60 }, { type: 'rest', name: 'Rest', duration: 10},
+                { type: 'rest', name: 'Transition to Work', duration: 30 }, // Transition rest before main set
+                // Main Body
+                ...backPainWorkoutBody,
+                // Cooldown
+                { type: 'rest', name: 'Begin Cool Down', duration: 30 }, // Transition rest before cool down
+                { type: 'cooldown', name: 'Seated Side Twist, Left', duration: 60 }, { type: 'rest', name: 'Rest', duration: 10},
+                { type: 'cooldown', name: 'Seated Side Twist, Right', duration: 60 }, 
+            ];
+            
+            return routine;
+        }
+
         const apex8_kb_exercises = [
             'KB Swings',
             'Front Squats',
@@ -344,7 +427,9 @@
                 { type: 'cooldown', name: 'Big Butterfly (Leg Stretch)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 10},
                 { type: 'cooldown', name: 'Trunk Hug (Big Stretch)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 10},
                 { type: 'cooldown', name: 'Lie Still Like a Log', duration: 30 },
-            ]
+            ],
+            // NEW WORKOUT ADDED HERE
+            'back-pain': getBackPainWorkoutRoutine()
         };
         
         // --- WORKOUT APP: Navigation and Timer Logic ---
@@ -356,7 +441,13 @@
         function selectWorkout(type) {
             initializeAudio(); 
             currentWorkout = type;
-            workoutRoutine = workouts[type];
+            // The routine is generated here to ensure the random plank is picked for each start
+            if (typeof workouts[type] === 'function') {
+                workoutRoutine = workouts[type](); 
+            } else {
+                workoutRoutine = workouts[type];
+            }
+
             const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
             quoteText.textContent = `"${randomQuote.quote}"`;
             quoteAuthor.textContent = `- ${randomQuote.author}`;
@@ -549,6 +640,8 @@
             document.getElementById('evening-btn').addEventListener('click', () => selectWorkout('evening'));
             document.getElementById('kids-fun-btn').addEventListener('click', () => selectWorkout('kids-fun'));
             document.getElementById('apex8-kb-btn').addEventListener('click', () => selectWorkout('apex8-kb')); 
+            // NEW BUTTON LISTENER
+            document.getElementById('back-pain-btn').addEventListener('click', () => selectWorkout('back-pain'));
             document.getElementById('start-btn').addEventListener('click', startWorkout);
             document.getElementById('menu-btn-from-completion').addEventListener('click', goToMenu); 
 
