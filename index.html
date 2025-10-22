@@ -297,11 +297,6 @@
                 const roundNumber = i + 1;
                 const roundString = `${roundNumber}/${totalRounds}`;
                 
-                // Add a longer rest between rounds after Round 1 and Round 2
-                if (i > 0) {
-                     backPainWorkoutBody.push({ type: 'rest', name: 'Round Transition', duration: 60 });
-                }
-                
                 mainExercises.forEach(exercise => {
                     if (exercise === 'Plank Placeholder') {
                         const selectedPlank = plankOptions[Math.floor(Math.random() * plankOptions.length)];
@@ -340,13 +335,17 @@
             const routine = [
                 // Warmup
                 { type: 'warmup', name: 'Bird Dogs', duration: 60 }, { type: 'rest', name: 'Rest', duration: 10},
-                { type: 'rest', name: 'Transition to Work', duration: 30 }, // Transition rest before main set
+                { type: 'warmup', name: 'Scapula Push-Ups', duration: 60 }, { type: 'rest', name: 'Rest', duration: 10},
+                { type: 'warmup', name: 'Line Hops', duration: 60 }, { type: 'rest', name: 'Rest', duration: 10},
                 // Main Body
                 ...backPainWorkoutBody,
                 // Cooldown
                 { type: 'rest', name: 'Begin Cool Down', duration: 30 }, // Transition rest before cool down
                 { type: 'cooldown', name: 'Seated Side Twist, Left', duration: 60 }, { type: 'rest', name: 'Rest', duration: 10},
-                { type: 'cooldown', name: 'Seated Side Twist, Right', duration: 60 }, 
+                { type: 'cooldown', name: 'Seated Side Twist, Right', duration: 60 }, { type: 'rest', name: 'Rest', duration: 10},
+                { type: 'cooldown', name: 'Pancake', duration: 60 }, { type: 'rest', name: 'Rest', duration: 10},
+                { type: 'cooldown', name: 'Bench Tricep Stretch, Left', duration: 30 }, { type: 'rest', name: 'Rest', duration: 10},
+                { type: 'cooldown', name: 'Bench Tricep Stretch, Right', duration: 30 },
             ];
             
             return routine;
