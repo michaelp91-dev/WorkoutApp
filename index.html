@@ -56,9 +56,6 @@
                 <button id="apex8-kb-btn" class="w-full md:w-80 bg-red-700/80 hover:bg-red-600 border-2 border-red-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
                     APEX 8
                 </button>
-                <button id="back-pain-btn" class="w-full md:w-80 bg-blue-500/80 hover:bg-blue-500 border-2 border-blue-400 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
-                    BACK PAIN WORKOUT
-                </button>
                 </div>
         </div>
     </div>
@@ -272,91 +269,12 @@
             return routine;
         }
 
-        // NEW WORKOUT ROUTINE GENERATOR
-        function getBackPainWorkoutRoutine() {
-            const plankOptions = [
-                'Side Planks',
-                'One Leg Planks',
-                'Plank Jacks',
-                'Opposing Limb Extension'
-            ];
-            const mainExercises = [
-                'Pike push ups',
-                'RDLs',
-                'Plank Placeholder',
-                'Hip bridge',
-                'Pull-ups'
-            ];
-            const totalRounds = 3;
-            const workDuration = 45;
-            const restDuration = 15;
-
-            const backPainWorkoutBody = [];
-
-            for (let i = 0; i < totalRounds; i++) {
-                const roundNumber = i + 1;
-                const roundString = `${roundNumber}/${totalRounds}`;
-                
-                mainExercises.forEach(exercise => {
-                    if (exercise === 'Plank Placeholder') {
-                        const selectedPlank = plankOptions[Math.floor(Math.random() * plankOptions.length)];
-                        
-                        if (selectedPlank === 'Side Planks' || selectedPlank === 'One Leg Planks') {
-                            // Left and Right intervals needed
-                            backPainWorkoutBody.push(
-                                { type: 'work', name: `${selectedPlank} (Left)`, round: roundString, duration: workDuration },
-                                { type: 'rest', name: 'Rest', duration: restDuration },
-                                { type: 'work', name: `${selectedPlank} (Right)`, round: roundString, duration: workDuration },
-                                { type: 'rest', name: 'Rest', duration: restDuration } // Rest after the right side plank
-                            );
-                        } else {
-                            // Single interval
-                            backPainWorkoutBody.push(
-                                { type: 'work', name: selectedPlank, round: roundString, duration: workDuration },
-                                { type: 'rest', name: 'Rest', duration: restDuration }
-                            );
-                        }
-
-                    } else {
-                        // All other exercises
-                        backPainWorkoutBody.push(
-                            { type: 'work', name: exercise, round: roundString, duration: workDuration },
-                            { type: 'rest', name: 'Rest', duration: restDuration }
-                        );
-                    }
-                });
-            }
-            
-            // Remove the very last 'rest' step of the main body (it will be an interval rest)
-            if (backPainWorkoutBody.length > 0 && backPainWorkoutBody[backPainWorkoutBody.length - 1].type === 'rest') {
-                backPainWorkoutBody.pop(); 
-            }
-
-            const routine = [
-                // Warmup
-                { type: 'warmup', name: 'Bird Dogs', duration: 60 }, { type: 'rest', name: 'Rest', duration: 10},
-                { type: 'warmup', name: 'Scapula Push-Ups', duration: 60 }, { type: 'rest', name: 'Rest', duration: 10},
-                { type: 'warmup', name: 'Line Hops', duration: 60 }, { type: 'rest', name: 'Rest', duration: 10},
-                // Main Body
-                ...backPainWorkoutBody,
-                // Cooldown
-                { type: 'rest', name: 'Begin Cool Down', duration: 30 }, // Transition rest before cool down
-                { type: 'cooldown', name: 'Seated Side Twist, Left', duration: 60 }, { type: 'rest', name: 'Rest', duration: 10},
-                { type: 'cooldown', name: 'Seated Side Twist, Right', duration: 60 }, { type: 'rest', name: 'Rest', duration: 10},
-                { type: 'cooldown', name: 'Pancake', duration: 60 }, { type: 'rest', name: 'Rest', duration: 10},
-                { type: 'cooldown', name: 'Bench Tricep Stretch, Left', duration: 30 }, { type: 'rest', name: 'Rest', duration: 10},
-                { type: 'cooldown', name: 'Bench Tricep Stretch, Right', duration: 30 },
-            ];
-            
-            return routine;
-        }
-
         const apex8_kb_exercises = [
             'KB Swings',
             'Front Squats',
-            'Z-Press',
-            'Alt KB Row',
-            'KB Push-Ups'
+            'Shoulder Press',
+            'Row',
+            'Push-Ups'
         ];
         
         const workouts = {
@@ -428,8 +346,6 @@
                 { type: 'cooldown', name: 'Trunk Hug (Big Stretch)', duration: 30 }, { type: 'rest', name: 'Rest', duration: 10},
                 { type: 'cooldown', name: 'Lie Still Like a Log', duration: 30 },
             ],
-            // NEW WORKOUT ADDED HERE
-            'back-pain': getBackPainWorkoutRoutine()
         };
         
         // --- WORKOUT APP: Navigation and Timer Logic ---
@@ -641,7 +557,6 @@
             document.getElementById('kids-fun-btn').addEventListener('click', () => selectWorkout('kids-fun'));
             document.getElementById('apex8-kb-btn').addEventListener('click', () => selectWorkout('apex8-kb')); 
             // NEW BUTTON LISTENER
-            document.getElementById('back-pain-btn').addEventListener('click', () => selectWorkout('back-pain'));
             document.getElementById('start-btn').addEventListener('click', startWorkout);
             document.getElementById('menu-btn-from-completion').addEventListener('click', goToMenu); 
 
