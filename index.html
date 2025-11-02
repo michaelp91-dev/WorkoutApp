@@ -497,13 +497,8 @@
 
             // Workout Button Event Listeners
             document.getElementById('morning-btn').addEventListener('click', () => selectWorkout('morning'));
-            document.getElementById('evening-btn').addEventListener('click', () => selectWorkout('evening'));
-            document.getElementById('kids-fun-btn').addEventListener('click', () => selectWorkout('kids-fun'));
             document.getElementById('apex8-kb-btn').addEventListener('click', () => selectWorkout('apex8-kb')); 
-            // NEW BUTTON LISTENER
-            document.getElementById('start-btn').addEventListener('click', startWorkout);
-            document.getElementById('menu-btn-from-completion').addEventListener('click', goToMenu); 
-
+            
             // Listener for the user-paced round completion (checks if it's any apex8 variant)
             roundCompleteBtn.addEventListener('click', () => {
                 if (currentWorkout && currentWorkout.startsWith('apex8')) { 
