@@ -90,7 +90,7 @@
                     <div id="apex8-exercise-list" class="text-left text-xl md:text-3xl font-semibold mb-8 space-y-2 bg-gray-800/50 p-6 rounded-lg mx-auto">
                         </div>
                     <button id="round-complete-btn" class="z-10 bg-green-600/90 hover:bg-green-500 border-2 border-green-400 text-white font-bold py-4 px-12 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
-                        ROUND COMPLETE
+                        NEXT MOVEMENT
                     </button>
                 </div>
 
@@ -295,14 +295,13 @@
             'apex8-kb': generateApex8Routine(apex8_kb_exercises),
             morning_movement: [
                 { type: 'work', name: 'Bouncing on Toes & Nose Breathing', duration: 60 },
-                { type: 'work', name: 'Shoulder Pinches', duration: 10, round: '10 Reps' },
-                { type: 'work', name: 'Arm Circles (Forward)', duration: 10, round: '10 Reps' },
-                { type: 'work', name: 'Arm Circles (Backward)', duration: 10, round: '10 Reps' },
-                { type: 'work', name: 'Hip Bridge and Hold', duration: 10, round: '10 Reps' },
-                { type: 'work', name: 'Bent Windshield Wipers', duration: 10, round: '10 Reps' },
-                { type: 'work', name: 'Single Leg Hug (Right)', duration: 10, round: '10 Reps' },
-                { type: 'work', name: 'Single Leg Hug (Left)', duration: 10, round: '10 Reps' },
-                { type: 'work', name: 'Bird Dogs', duration: 10, round: '10 Reps' },
+                { type: 'rep_work', name: 'Shoulder Pinches', duration: null, round: '10 Reps', exercises: ['10 Reps'] },
+                { type: 'rep_work', name: 'Arm Circles', duration: null, round: '10 Fwd / 10 Bwd', exercises: ['10 Reps Forward', '10 Reps Backward'] },
+                { type: 'rep_work', name: 'Hip Bridge and Hold', duration: null, round: '10 Reps', exercises: ['10 Reps'] },
+                { type: 'rep_work', name: 'Bent Windshield Wipers', duration: null, round: '10 Reps', exercises: ['10 Reps'] },
+                { type: 'rep_work', name: 'Single Leg Hug (Right)', duration: null, round: '10 Reps', exercises: ['10 Reps'] },
+                { type: 'rep_work', name: 'Single Leg Hug (Left)', duration: null, round: '10 Reps', exercises: ['10 Reps'] },
+                { type: 'rep_work', name: 'Bird Dogs', duration: null, round: '10 Reps', exercises: ['10 Reps'] },
                 { type: 'cooldown', name: "Child's Pose", duration: 60 },
             ],
         };
@@ -428,11 +427,16 @@
                 timedContent.classList.add('hidden');
                 repContent.classList.remove('hidden');
                 
-                statusText.textContent = 'WORKOUT';
-                currentExerciseDisplay.textContent = step.name;
+                // For rep-based exercises
+                statusText.textContent = 'REPS'; 
+                currentExerciseDisplay.textContent = `${step.name} (${step.round})`; 
 
                 if (step.exercises) {
-                    apex8ExerciseList.innerHTML = step.exercises.map(ex => `<p>- ${ex}</p>`).join('');
+                    // Display the list of rep instructions
+                    apex8ExerciseList.innerHTML = step.exercises.map(ex => `<p class="text-white">${ex}</p>`).join('');
+                } else {
+                    // Fallback for simple rep work
+                    apex8ExerciseList.innerHTML = `<p class="text-white">Complete ${step.round}</p>`;
                 }
 
             } else {
@@ -511,18 +515,17 @@
             document.head.appendChild(link);
 
             // Workout Button Event Listeners
+            document.getElementById('morning-movement-btn').addEventListener('click', () => selectWorkout('morning_movement'));
             document.getElementById('morning-btn').addEventListener('click', () => selectWorkout('morning'));
             document.getElementById('apex8-kb-btn').addEventListener('click', () => selectWorkout('apex8-kb')); 
             document.getElementById('start-btn').addEventListener('click', startWorkout);
             document.getElementById('menu-btn-from-completion').addEventListener('click', goToMenu); 
-            document.getElementById('morning-movement-btn').addEventListener('click', () => selectWorkout('morning_movement')); 
             
-            // Listener for the user-paced round completion (checks if it's any apex8 variant)
+            
+            // Listener for the user-paced round completion (checks if it's any rep_work variant)
             roundCompleteBtn.addEventListener('click', () => {
-                if (currentWorkout && currentWorkout.startsWith('apex8')) { 
-                    playSound('C4', '0.1'); 
-                    moveToNextStep();
-                }
+                playSound('C4', '0.1'); 
+                moveToNextStep();
             });
 
             // Install Button Logic
