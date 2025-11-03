@@ -44,6 +44,9 @@
             <h1 class="font-anton text-5xl md:text-8xl text-amber-400 tracking-wider">ALPHA WORKOUT</h1>
             <p class="text-base md:text-2xl text-gray-300 mt-2 mb-10">Conquer Your Day. Dominate Your Night.</p>
             <div class="space-y-4">
+                <button id="morning-movement-btn" class="w-full md:w-80 bg-blue-500/80 hover:bg-blue-500 border-2 border-blue-400 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
+                    MORNING MOVEMENT
+                </button>
                 <button id="morning-btn" class="w-full md:w-80 bg-amber-500/80 hover:bg-amber-500 border-2 border-amber-400 text-black font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
                     MORNING
                 </button>
@@ -290,6 +293,18 @@
                 { type: 'cooldown', name: "Child's Pose", duration: 60 },
             ],
             'apex8-kb': generateApex8Routine(apex8_kb_exercises),
+            morning_movement: [
+                { type: 'work', name: 'Bouncing on Toes & Nose Breathing', duration: 60 },
+                { type: 'work', name: 'Shoulder Pinches', duration: 10, round: '10 Reps' },
+                { type: 'work', name: 'Arm Circles (Forward)', duration: 10, round: '10 Reps' },
+                { type: 'work', name: 'Arm Circles (Backward)', duration: 10, round: '10 Reps' },
+                { type: 'work', name: 'Hip Bridge and Hold', duration: 10, round: '10 Reps' },
+                { type: 'work', name: 'Bent Windshield Wipers', duration: 10, round: '10 Reps' },
+                { type: 'work', name: 'Single Leg Hug (Right)', duration: 10, round: '10 Reps' },
+                { type: 'work', name: 'Single Leg Hug (Left)', duration: 10, round: '10 Reps' },
+                { type: 'work', name: 'Bird Dogs', duration: 10, round: '10 Reps' },
+                { type: 'cooldown', name: "Child's Pose", duration: 60 },
+            ],
         };
         
         // --- WORKOUT APP: Navigation and Timer Logic ---
@@ -500,6 +515,7 @@
             document.getElementById('apex8-kb-btn').addEventListener('click', () => selectWorkout('apex8-kb')); 
             document.getElementById('start-btn').addEventListener('click', startWorkout);
             document.getElementById('menu-btn-from-completion').addEventListener('click', goToMenu); 
+            document.getElementById('morning-btn').addEventListener('click', () => selectWorkout('morning'));
             
             
             // Listener for the user-paced round completion (checks if it's any apex8 variant)
