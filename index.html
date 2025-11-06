@@ -33,6 +33,10 @@
         .progress-bar-inner {
             transition: width 0.5s ease-in-out;
         }
+        /* New styles for history list */
+        .history-item {
+            border-left: 4px solid #fbbf24; /* amber-400 */
+        }
     </style>
 </head>
 <body class="bg-black text-white">
@@ -40,10 +44,10 @@
     <div id="menu-screen" class="screen active min-h-screen w-full flex-col items-center justify-center p-4 bg-cover bg-center">
         <button id="install-btn" class="hidden absolute top-4 right-4 z-20 bg-gray-700/80 text-white font-bold py-2 px-4 rounded text-sm transition duration-300 transform hover:scale-105">Add to Home Screen</button>
         <div class="bg-overlay absolute top-0 left-0 w-full h-full"></div>
-        <div class="z-10 text-center">
+        <div class="z-10 text-center max-h-screen overflow-y-auto no-scrollbar">
             <h1 class="font-anton text-5xl md:text-8xl text-amber-400 tracking-wider">ALPHA WORKOUT</h1>
-            <p class="text-base md:text-2xl text-gray-300 mt-2 mb-10">Conquer Your Day. Dominate Your Night.</p>
-            <div class="space-y-4">
+            <p class="text-base md:text-2xl text-gray-300 mt-2 mb-8">Conquer Your Day. Dominate Your Night.</p>
+            <div class="space-y-4 flex flex-col items-center">
                 <button id="morning-movement-btn" class="w-full md:w-80 bg-blue-500/80 hover:bg-blue-500 border-2 border-blue-400 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
                     WAKE UP MOVEMENT
                 </button>
@@ -53,7 +57,10 @@
                 <button id="apex8-kb-btn" class="w-full md:w-80 bg-red-700/80 hover:bg-red-600 border-2 border-red-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
                     APEX 8
                 </button>
-                </div>
+                <button id="history-btn" class="w-full md:w-80 bg-gray-800/80 hover:bg-gray-700 border-2 border-gray-600 text-gray-300 font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105 mt-4">
+                    HISTORY
+                </button>
+            </div>
         </div>
     </div>
 
@@ -69,10 +76,15 @@
         </button>
     </div>
 
-    <div id="workout-screen" class="screen min-h-screen w-full flex-col items-center justify-between p-4">
+    <div id="workout-screen" class="screen min-h-screen w-full flex-col items-center justify-between p-4 relative">
         <div class="bg-overlay absolute top-0 left-0 w-full h-full bg-cover bg-center"></div>
         <div class="bg-overlay absolute top-0 left-0 w-full h-full"></div>
-        <div class="z-10 text-center w-full max-w-4xl mx-auto flex flex-col justify-between h-full py-8">
+        
+        <div class="z-20 absolute top-4 left-4 bg-black/50 px-3 py-1 rounded text-gray-300 font-mono text-sm md:text-base">
+            TOTAL: <span id="total-time-display" class="text-white font-bold">00:00</span>
+        </div>
+
+        <div class="z-10 text-center w-full max-w-4xl mx-auto flex flex-col justify-between h-full py-8 mt-8 md:mt-0">
             <div class="w-full bg-gray-700 rounded-full h-4 mb-4 shrink-0">
                 <div id="progress-bar" class="bg-amber-400 h-4 rounded-full progress-bar-inner" style="width: 0%"></div>
             </div>
@@ -111,9 +123,28 @@
         <div class="z-10">
             <h2 class="font-anton text-5xl md:text-8xl text-amber-400 tracking-wider">WORKOUT COMPLETE</h2>
             <p class="text-lg md:text-3xl text-gray-200 mt-4">You've conquered it. Rest and recover.</p>
+            <p id="final-time-display" class="text-2xl md:text-4xl text-white font-bold mt-6"></p>
+            
             <button id="menu-btn-from-completion" class="mt-12 bg-amber-500/80 hover:bg-amber-500 border-2 border-amber-400 text-black font-bold py-3 px-10 text-lg md:text-xl tracking-widest transition duration-300 transform hover:scale-105">
                 MAIN MENU
             </button>
+        </div>
+    </div>
+
+    <div id="history-screen" class="screen min-h-screen w-full flex-col p-6">
+        <div class="z-10 w-full max-w-3xl mx-auto flex flex-col h-full">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="font-anton text-4xl md:text-6xl text-amber-400 tracking-wider">HISTORY</h2>
+                <button id="back-from-history-btn" class="bg-gray-800 hover:bg-gray-700 text-white px-6 py-2 rounded font-bold tracking-wider transition">
+                    BACK
+                </button>
+            </div>
+            
+            <div id="history-list" class="flex-grow overflow-y-auto space-y-4 pr-2">
+                </div>
+             <div id="no-history-msg" class="hidden text-center text-gray-400 text-xl mt-20">
+                No workouts logged yet. Time to get to work.
+            </div>
         </div>
     </div>
 
@@ -124,6 +155,7 @@
             quote: document.getElementById('quote-screen'),
             workout: document.getElementById('workout-screen'),
             completion: document.getElementById('completion-screen'),
+            history: document.getElementById('history-screen'), // New Screen
         };
         const quoteText = document.getElementById('quote-text');
         const quoteAuthor = document.getElementById('quote-author');
@@ -137,6 +169,10 @@
         const repContent = document.getElementById('rep-content');
         const roundCompleteBtn = document.getElementById('round-complete-btn');
         const apex8ExerciseList = document.getElementById('apex8-exercise-list'); 
+        const totalTimeDisplay = document.getElementById('total-time-display'); // New reference
+        const finalTimeDisplay = document.getElementById('final-time-display'); // New reference
+        const historyList = document.getElementById('history-list'); // New reference
+        const noHistoryMsg = document.getElementById('no-history-msg'); // New reference
 
         let currentWorkout = null;
         let workoutRoutine = [];
@@ -145,6 +181,10 @@
         let timeLeft = 0;
         let deferredPrompt;
         
+        // New Global Timer variables
+        let totalTimerInterval = null;
+        let workoutStartTime = null;
+
         // --- UTILITY: Audio ---
         let audioCtx; 
         const noteFrequencies = { 'C4': 261.63, 'C5': 523.25 };
@@ -183,7 +223,7 @@
 
         // --- WORKOUT APP: Quotes & Routines ---
         const quotes = [
-            // ... (Quotes remain the same)
+             // ... (Quotes remain the same, truncated for brevity in this view)
             { quote: "The last three or four reps is what makes the muscle grow. This area of pain divides a champion from someone who is not a champion.", author: "Arnold Schwarzenegger" },
             { quote: "Success isn’t always about greatness. It’s about consistency. Consistent hard work gains success. Greatness will come.", author: "Dwayne 'The Rock' Johnson" },
             { quote: "The wolf on the hill is not as hungry as the wolf climbing the hill.", author: "Arnold Schwarzenegger" },
@@ -305,6 +345,13 @@
                 { type: 'cooldown', name: "Child's Pose", duration: 60 },
             ],
         };
+
+        // --- UTILITY: Time Formatting ---
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
         
         // --- WORKOUT APP: Navigation and Timer Logic ---
         function switchScreen(screenName) {
@@ -315,7 +362,6 @@
         function selectWorkout(type) {
             initializeAudio(); 
             currentWorkout = type;
-            // The routine is generated here to ensure the random plank is picked for each start
             if (typeof workouts[type] === 'function') {
                 workoutRoutine = workouts[type](); 
             } else {
@@ -332,12 +378,28 @@
         function startWorkout() {
             initializeAudio(); 
             currentStepIndex = 0;
+            
+            // Reset Total Timer Display
+            totalTimeDisplay.textContent = "00:00";
+            workoutStartTime = Date.now();
+            
             switchScreen('workout');
             startInitialCountdown();
         }
 
+        function startTotalTimer() {
+             // Start the global timer after initial countdown
+             workoutStartTime = Date.now();
+             clearInterval(totalTimerInterval);
+             totalTimerInterval = setInterval(() => {
+                const elapsedSeconds = Math.floor((Date.now() - workoutStartTime) / 1000);
+                totalTimeDisplay.textContent = formatTime(elapsedSeconds);
+             }, 1000);
+        }
+
         function goToMenu() {
             clearInterval(timerInterval);
+            clearInterval(totalTimerInterval); // Ensure global timer is stopped
             switchScreen('menu');
         }
 
@@ -366,6 +428,7 @@
                 if (timeLeft <= 0) {
                     playSound('C5', '0.3');
                     clearInterval(timerInterval);
+                    startTotalTimer(); // Start the actual workout clock now
                     runCurrentStep();
                 }
             }, 1000);
@@ -414,7 +477,6 @@
 
             runCurrentStep();
         }
-        
         
         function updateUIForStep() {
             if (currentStepIndex >= workoutRoutine.length) return;
@@ -481,8 +543,82 @@
         
         function workoutComplete() {
             playSound('C5', '0.5'); 
+            clearInterval(totalTimerInterval); // Stop the global timer
             progressBar.style.width = '100%';
+
+            // Calculate final time
+            const totalSeconds = Math.floor((Date.now() - workoutStartTime) / 1000);
+            const formattedTotalTime = formatTime(totalSeconds);
+            
+            // Display final time on completion screen
+            finalTimeDisplay.textContent = `TOTAL TIME: ${formattedTotalTime}`;
+
+            // Save to history
+            saveWorkoutLog(currentWorkout, formattedTotalTime);
+
             switchScreen('completion');
+        }
+
+        // --- HISTORY & STORAGE ---
+        const STORAGE_KEY = 'alphaWorkout.history';
+
+        function saveWorkoutLog(type, duration) {
+            const history = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            const logEntry = {
+                id: Date.now(), // Unique ID based on timestamp
+                date: new Date().toISOString(),
+                type: type,
+                duration: duration
+            };
+            history.push(logEntry);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+        }
+
+        function getNiceWorkoutName(type) {
+            switch(type) {
+                case 'morning_movement': return 'Wake Up Movement';
+                case 'morning': return 'Morning Workout';
+                case 'apex8-kb': return 'Apex 8';
+                default: return type.replace('-', ' ').toUpperCase();
+            }
+        }
+
+        function renderHistory() {
+            const history = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            historyList.innerHTML = '';
+
+            if (history.length === 0) {
+                noHistoryMsg.classList.remove('hidden');
+                return;
+            }
+
+            noHistoryMsg.classList.add('hidden');
+            // Sort newest first
+            history.sort((a, b) => b.id - a.id);
+
+            history.forEach(log => {
+                const date = new Date(log.date);
+                const niceDate = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                const niceTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                const item = document.createElement('div');
+                item.className = 'history-item bg-gray-800/50 p-4 rounded-r-lg flex justify-between items-center';
+                item.innerHTML = `
+                    <div>
+                        <p class="text-white font-bold text-lg md:text-xl">${getNiceWorkoutName(log.type)}</p>
+                        <p class="text-gray-400 text-sm">${niceDate} at ${niceTime}</p>
+                    </div>
+                    <div class="text-amber-400 font-anton text-2xl md:text-3xl tracking-wider">
+                        ${log.duration}
+                    </div>
+                `;
+                historyList.appendChild(item);
+            });
+        }
+
+        function showHistory() {
+            renderHistory();
+            switchScreen('history');
         }
 
         // --- INITIALIZATION ---
@@ -492,7 +628,6 @@
                 "name": "Alpha Workout", "short_name": "Alpha", "start_url": ".",
                 "display": "standalone", "background_color": "#000000",
                 "theme_color": "#1a1a1a", "description": "Workout tracker.",
-                // 1. UPDATED ICONS ARRAY FOR MANIFEST
                 "icons": [
                     {
                         "src": "https://placehold.co/192x192/1a1a1a/ffc107?text=A",
@@ -521,7 +656,10 @@
             document.getElementById('start-btn').addEventListener('click', startWorkout);
             document.getElementById('menu-btn-from-completion').addEventListener('click', goToMenu); 
             
-            
+            // New History Button Listeners
+            document.getElementById('history-btn').addEventListener('click', showHistory);
+            document.getElementById('back-from-history-btn').addEventListener('click', goToMenu);
+
             // Listener for the user-paced round completion (checks if it's any rep_work variant)
             roundCompleteBtn.addEventListener('click', () => {
                 playSound('C4', '0.1'); 
