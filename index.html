@@ -58,7 +58,7 @@
                     APEX 8
                 </button>
                 <button id="calisthenics-emom-btn" class="w-full md:w-80 bg-green-700/80 hover:bg-green-600 border-2 border-green-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
-                    20 MIN CALISTHENICS EMOM
+                    CALISTHENICS
                 </button>
                 <button id="history-btn" class="w-full md:w-80 bg-gray-800/80 hover:bg-gray-700 border-2 border-gray-600 text-gray-300 font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105 mt-4">
                     HISTORY
@@ -353,25 +353,27 @@
             // NEW WORKOUT: 20 MIN CALISTHENICS EMOM
             'emom-calisthenics': [
                 // WARM-UP (3 minutes)
-                { type: 'cooldown', name: 'Warm-up: Jumping Jacks / High Knees', duration: 60, round: '1/3' },
-                { type: 'cooldown', name: 'Warm-up: Dynamic Lunge Twists', duration: 60, round: '2/3' },
-                { type: 'cooldown', name: 'Warm-up: Arm & Wrist Circles', duration: 60, round: '3/3' },
+                { type: 'warmup', name: 'Jumping Jacks', duration: 30},
+                { type: 'warmup', name: 'High Knees', duration: 30},
+                { type: 'warmup', name: 'Dynamic Lunge Twists', duration: 30},
+                { type: 'warmup', name: 'Arm circles', duration: 30},
+                { type: 'warmup', name: 'Wrist circles', duration: 30},
 
                 // MAIN EMOM (14 minutes, user-paced)
-                { type: 'rep_work', name: 'Pull-Ups', round: 'Min 1/14', exercises: ['5-10 Reps (Rest remainder of minute)'] },
-                { type: 'rep_work', name: 'Plank', round: 'Min 2/14', exercises: ['30-45 Second Hold (Rest remainder of minute)'] },
-                { type: 'rep_work', name: 'Push-Ups', round: 'Min 3/14', exercises: ['12-20 Reps (Rest remainder of minute)'] },
-                { type: 'rep_work', name: 'Leg Lifts', round: 'Min 4/14', exercises: ['10-15 Reps (Rest remainder of minute)'] },
-                { type: 'rep_work', name: 'Pull-Ups', round: 'Min 5/14', exercises: ['5-10 Reps (Rest remainder of minute)'] },
-                { type: 'rep_work', name: 'Pike Push-Ups', round: 'Min 6/14', exercises: ['5-10 Reps (Rest remainder of minute)'] },
-                { type: 'rep_work', name: 'Push-Ups', round: 'Min 7/14', exercises: ['12-20 Reps (Rest remainder of minute)'] },
-                { type: 'rep_work', name: 'Lunge', round: 'Min 8/14', exercises: ['20-30 Total Reps (Rest remainder of minute)'] },
-                { type: 'rep_work', name: 'Plank', round: 'Min 9/14', exercises: ['30-45 Second Hold (Rest remainder of minute)'] },
-                { type: 'rep_work', name: 'V-ups / L-sits', round: 'Min 10/14', exercises: ['10-15 Reps or 20-30s Hold (Rest remainder of minute)'] },
-                { type: 'rep_work', name: 'Lunge', round: 'Min 11/14', exercises: ['20-30 Total Reps (Rest remainder of minute)'] },
-                { type: 'rep_work', name: 'Plank', round: 'Min 12/14', exercises: ['30-45 Second Hold (Rest remainder of minute)'] },
-                { type: 'rep_work', name: 'Pike Push-Ups', round: 'Min 13/14', exercises: ['5-10 Reps (Rest remainder of minute)'] },
-                { type: 'rep_work', name: 'Push-Ups', round: 'Min 14/14', exercises: ['12-20 Reps (Rest remainder of minute)'] },
+                { type: 'work', name: 'Pull-Ups', exercises: ['5-10 Reps (Rest remainder of minute)'] },
+                { type: 'work', name: 'Plank', exercises: ['30-45 Second Hold (Rest remainder of minute)'] },
+                { type: 'work', name: 'Push-Ups', exercises: ['12-20 Reps (Rest remainder of minute)'] },
+                { type: 'work', name: 'Leg Lifts', exercises: ['10-15 Reps (Rest remainder of minute)'] },
+                { type: 'work', name: 'Pull-Ups', exercises: ['5-10 Reps (Rest remainder of minute)'] },
+                { type: 'work', name: 'Pike Push-Ups', exercises: ['5-10 Reps (Rest remainder of minute)'] },
+                { type: 'work', name: 'Push-Ups', exercises: ['12-20 Reps (Rest remainder of minute)'] },
+                { type: 'work', name: 'Lunge', exercises: ['20-30 Total Reps (Rest remainder of minute)'] },
+                { type: 'work', name: 'Plank', exercises: ['30-45 Second Hold (Rest remainder of minute)'] },
+                { type: 'work', name: 'V-ups / L-sits', exercises: ['10-15 Reps or 20-30s Hold (Rest remainder of minute)'] },
+                { type: 'work', name: 'Lunge', exercises: ['20-30 Total Reps (Rest remainder of minute)'] },
+                { type: 'work', name: 'Plank', exercises: ['30-45 Second Hold (Rest remainder of minute)'] },
+                { type: 'work', name: 'Pike Push-Ups', exercises: ['5-10 Reps (Rest remainder of minute)'] },
+                { type: 'work', name: 'Push-Ups', exercises: ['12-20 Reps (Rest remainder of minute)'] },
 
                 // COOL-DOWN (3 minutes)
                 { type: 'cooldown', name: 'Triceps Stretch', duration: 30 },
