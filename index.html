@@ -57,9 +57,6 @@
                 <button id="apex8-kb-btn" class="w-full md:w-80 bg-red-700/80 hover:bg-red-600 border-2 border-red-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
                     APEX 8
                 </button>
-                <button id="calisthenics-emom-btn" class="w-full md:w-80 bg-green-700/80 hover:bg-green-600 border-2 border-green-500 text-white font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105">
-                    CALISTHENICS
-                </button>
                 <button id="history-btn" class="w-full md:w-80 bg-gray-800/80 hover:bg-gray-700 border-2 border-gray-600 text-gray-300 font-bold py-4 px-8 text-xl md:text-2xl tracking-widest transition duration-300 transform hover:scale-105 mt-4">
                     HISTORY
                 </button>
@@ -351,37 +348,6 @@
                 { type: 'rep_work', name: 'Bird Dogs', duration: null, round: '10 Reps', exercises: ['10 Reps'] },
                 { type: 'cooldown', name: "Child's Pose", duration: 60 },
             ],
-            // NEW WORKOUT: 20 MIN CALISTHENICS EMOM
-            'emom-calisthenics': [
-                // WARM-UP (3 minutes)
-                { type: 'warmup', name: 'Push up shrugs', duration: 30}, { type: 'rest', name: 'Rest', duration: 3},
-                { type: 'warmup', name: 'Hanging shrugs', duration: 30}, { type: 'rest', name: 'Rest', duration: 3},
-                { type: 'warmup', name: 'Dynamic Lunge Twists', duration: 30}, { type: 'rest', name: 'Rest', duration: 3},
-                { type: 'warmup', name: 'Arm circles', duration: 30}, { type: 'rest', name: 'Rest', duration: 3},
-                { type: 'warmup', name: 'Wrist circles', duration: 30}, { type: 'rest', name: 'Rest', duration: 15},
-
-                // MAIN EMOM (14 minutes, user-paced)
-                { type: 'work', name: 'Pull-Ups', exercises: ['5-10 Reps (Rest remainder of minute)'], duration: 60 },
-                { type: 'work', name: 'Plank', exercises: ['30-45 Second Hold (Rest remainder of minute)'], duration: 60 },
-                { type: 'work', name: 'Push-Ups', exercises: ['12-20 Reps (Rest remainder of minute)'], duration: 60 },
-                { type: 'work', name: 'Leg Lifts', exercises: ['10-15 Reps (Rest remainder of minute)'], duration: 60 },
-                { type: 'work', name: 'Pull-Ups', exercises: ['5-10 Reps (Rest remainder of minute)'], duration: 60 },
-                { type: 'work', name: 'Pike Push-Ups', exercises: ['5-10 Reps (Rest remainder of minute)'], duration: 60 },
-                { type: 'work', name: 'Push-Ups', exercises: ['12-20 Reps (Rest remainder of minute)'], duration: 60 },
-                { type: 'work', name: 'Lunge', exercises: ['20-30 Total Reps (Rest remainder of minute)'], duration: 60 },
-                { type: 'work', name: 'Plank', exercises: ['30-45 Second Hold (Rest remainder of minute)'], duration: 60 },
-                { type: 'work', name: 'V-ups / L-sits', exercises: ['10-15 Reps or 20-30s Hold (Rest remainder of minute)'], duration: 60 },
-                { type: 'work', name: 'Lunge', exercises: ['20-30 Total Reps (Rest remainder of minute)'], duration: 60 },
-                { type: 'work', name: 'Plank', exercises: ['30-45 Second Hold (Rest remainder of minute)'], duration: 60 },
-                { type: 'work', name: 'Pike Push-Ups', exercises: ['5-10 Reps (Rest remainder of minute)'], duration: 60 },
-                { type: 'work', name: 'Dips', exercises: ['12-20 Reps (Rest remainder of minute)'], duration: 60 },
-
-                // COOL-DOWN (3 minutes)
-                { type: 'cooldown', name: 'Triceps Stretch', duration: 30 },
-                { type: 'cooldown', name: 'Chest Stretch', duration: 30 },
-                { type: 'cooldown', name: 'Forward Fold / Hamstring Stretch', duration: 60 },
-                { type: 'cooldown', name: 'Child\'s Pose', duration: 60 },
-            ],
         };
 
         // --- UTILITY: Time Formatting ---
@@ -617,7 +583,6 @@
                 case 'morning_movement': return 'Wake Up Movement';
                 case 'morning': return 'Morning Workout';
                 case 'apex8-kb': return 'Apex 8';
-                case 'emom-calisthenics': return '20 Min Calisthenics EMOM';
                 default: return type.replace('-', ' ').toUpperCase();
             }
         }
@@ -692,7 +657,6 @@
             document.getElementById('morning-movement-btn').addEventListener('click', () => selectWorkout('morning_movement'));
             document.getElementById('morning-btn').addEventListener('click', () => selectWorkout('morning'));
             document.getElementById('apex8-kb-btn').addEventListener('click', () => selectWorkout('apex8-kb')); 
-            document.getElementById('calisthenics-emom-btn').addEventListener('click', () => selectWorkout('emom-calisthenics')); // NEW Listener
             document.getElementById('start-btn').addEventListener('click', startWorkout);
             document.getElementById('menu-btn-from-completion').addEventListener('click', goToMenu); 
             
