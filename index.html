@@ -94,21 +94,25 @@
     </div>
 
     <div id="editor-select-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl text-center">
-            <h2 class="font-heading text-2xl text-wolf-accent mb-6 tracking-wide">EDIT PROGRAM</h2>
-            <div class="space-y-3">
-                <button onclick="openEditor('morning_movement')" class="w-full py-4 btn-secondary hover:border-wolf-accent">Wake Up</button>
-                <button onclick="openEditor('morning')" class="w-full py-4 btn-secondary hover:border-wolf-accent">Morning Grind</button>
-                <button onclick="openEditor('apex')" class="w-full py-4 btn-secondary hover:border-wolf-accent">Apex</button>
+        <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl flex flex-col max-h-[90vh]">
+            <h2 class="font-heading text-2xl text-wolf-accent mb-6 tracking-wide text-center">MANAGE PROTOCOLS</h2>
+            
+            <div class="flex gap-2 mb-6 border-b border-wolf-border pb-6">
+                <input type="text" id="new-workout-name" placeholder="New Protocol Name" class="flex-1 bg-wolf-bg border border-wolf-border text-white px-4 py-2 rounded text-sm focus:border-wolf-accent outline-none">
+                <button onclick="createNewWorkout()" class="btn-primary px-4 py-2 text-xl font-bold">+</button>
             </div>
-            <button onclick="closeModal('editor-select-modal')" class="mt-6 text-wolf-muted hover:text-white uppercase text-xs tracking-widest">Cancel</button>
+
+            <div id="manager-list" class="flex-grow overflow-y-auto space-y-3 pr-1">
+                </div>
+            
+            <button onclick="closeModal('editor-select-modal')" class="mt-6 text-wolf-muted hover:text-white uppercase text-xs tracking-widest text-center">Close Manager</button>
         </div>
     </div>
 
     <div id="editor-screen" class="screen h-full w-full flex-col bg-wolf-bg p-4">
         <div class="flex justify-between items-center mb-6 pb-4 border-b border-wolf-border">
-            <h2 id="editor-title" class="font-heading text-3xl text-wolf-text">EDIT</h2>
-            <div class="flex gap-2">
+            <h2 id="editor-title" class="font-heading text-3xl text-wolf-text truncate max-w-[50%]">EDIT</h2>
+            <div class="flex gap-2 shrink-0">
                 <button onclick="saveRoutineChanges()" class="btn-primary px-4 py-2 text-sm">Save</button>
                 <button onclick="switchScreen('menu')" class="btn-secondary px-4 py-2 text-sm">Exit</button>
             </div>
@@ -151,16 +155,17 @@
                 </div>
             </div>
 
-            <div class="space-y-3 flex flex-col w-full">
-                <button onclick="selectWorkout('morning_movement')" class="btn-secondary py-4 text-lg">Wake Up</button>
-                <button onclick="selectWorkout('morning')" class="btn-primary py-4 text-xl shadow-lg shadow-orange-900/20">Morning Grind</button>
-                <button onclick="openApexConfig()" class="btn-secondary py-4 text-lg border-wolf-accent text-wolf-accent hover:bg-wolf-accent hover:text-white">Apex</button>
-                
-                <div class="grid grid-cols-2 gap-3 mt-2">
+            <div id="workout-list-container" class="w-full space-y-3">
+                </div>
+
+            <div class="w-full space-y-3 mt-3 pt-3 border-t border-wolf-border">
+                 <button onclick="openApexConfig()" class="w-full btn-secondary py-4 text-lg border-wolf-accent text-wolf-accent hover:bg-wolf-accent hover:text-white">Apex</button>
+                 <div class="grid grid-cols-2 gap-3 mt-2">
                     <button onclick="showHistory()" class="btn-secondary py-3 text-xs tracking-widest text-wolf-muted">History</button>
-                    <button onclick="openModal('editor-select-modal')" class="btn-secondary py-3 text-xs tracking-widest text-wolf-muted">Edit Program</button>
+                    <button onclick="openManager()" class="btn-secondary py-3 text-xs tracking-widest text-wolf-muted">Edit Program</button>
                 </div>
             </div>
+            
             <div id="sync-status" class="mt-6 text-[10px] text-wolf-muted uppercase tracking-widest opacity-50">Local Storage Active</div>
         </div>
     </div>
@@ -168,7 +173,6 @@
     <div id="apex-config-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-wolf-surface border border-wolf-border p-8 w-full max-w-sm rounded-xl text-center shadow-2xl">
             <h2 class="font-heading text-4xl text-wolf-accent mb-6">APEX CONFIG</h2>
-            
             <div class="mb-6 text-left">
                 <label class="block text-wolf-muted text-xs font-bold mb-2 uppercase tracking-wide">Ladder Peak (Reps)</label>
                 <div class="flex items-center bg-wolf-bg rounded-lg border border-wolf-border">
@@ -258,13 +262,22 @@
     </div>
 
     <script>
-        // --- DATA ---
+        // --- CONFIG ---
         const STORAGE_KEY_HIST = 'wolf_history';
         const STORAGE_KEY_ROUTINES = 'wolf_routines';
         const SYNC_URL_KEY = 'wolf_sync_url';
 
         const defaultRoutines = {
-            morning: [
+            'Wake Up': [
+                { type: 'work', name: 'Bounce & Breathe', duration: 60 },
+                { type: 'rep_work', name: 'Shoulder Pinches', exercises: ['10 Reps'] },
+                { type: 'rep_work', name: 'Arm Circles', exercises: ['10 Fwd / 10 Bwd'] },
+                { type: 'rep_work', name: 'Hip Bridges', exercises: ['10 Reps + Hold'] },
+                { type: 'rep_work', name: 'Windshield Wipers', exercises: ['10 Reps'] },
+                { type: 'rep_work', name: 'Cat-Cow', exercises: ['10 Reps'] },
+                { type: 'cooldown', name: "Child's Pose", duration: 60 }
+            ],
+            'Morning Grind': [
                 { type: 'work', name: 'Push-ups', round: '1/4', duration: 40 }, { type: 'rest', name: 'Shake It Out', duration: 15 },
                 { type: 'work', name: 'Push-ups', round: '2/4', duration: 40 }, { type: 'rest', name: 'Shake It Out', duration: 15 },
                 { type: 'work', name: 'Push-ups', round: '3/4', duration: 40 }, { type: 'rest', name: 'Shake It Out', duration: 15 },
@@ -279,15 +292,6 @@
                 { type: 'work', name: 'Burpees', round: '4/4', duration: 40 }, { type: 'rest', name: 'Recover', duration: 45 },
                 { type: 'work', name: 'Mountain Climbers', duration: 45 },
                 { type: 'cooldown', name: 'Stretch', duration: 60 }
-            ],
-            morning_movement: [
-                { type: 'work', name: 'Bounce & Breathe', duration: 60 },
-                { type: 'rep_work', name: 'Shoulder Pinches', exercises: ['10 Reps'] },
-                { type: 'rep_work', name: 'Arm Circles', exercises: ['10 Fwd / 10 Bwd'] },
-                { type: 'rep_work', name: 'Hip Bridges', exercises: ['10 Reps + Hold'] },
-                { type: 'rep_work', name: 'Windshield Wipers', exercises: ['10 Reps'] },
-                { type: 'rep_work', name: 'Cat-Cow', exercises: ['10 Reps'] },
-                { type: 'cooldown', name: "Child's Pose", duration: 60 }
             ],
             apex_config: {
                 exercises: ['KB Swings', 'Front Squats', 'Shoulder Press', 'Row', 'Push-Ups'],
@@ -318,7 +322,10 @@
             totalTime: document.getElementById('total-time-display'),
             finalTime: document.getElementById('final-time-display'),
             syncInput: document.getElementById('sync-url-input'),
-            syncStatus: document.getElementById('sync-status')
+            syncStatus: document.getElementById('sync-status'),
+            workoutList: document.getElementById('workout-list-container'),
+            managerList: document.getElementById('manager-list'),
+            newWorkoutName: document.getElementById('new-workout-name')
         };
 
         let currentWorkoutType = null;
@@ -328,7 +335,7 @@
         let totalInt = null;
         let startTime = null;
         let isManual = false;
-        let isTracking = true; // Default On
+        let isTracking = true;
         let audioCtx;
         let editingRoutineKey = null;
         let editingCopy = null;
@@ -341,17 +348,104 @@
                 els.syncStatus.classList.add('text-wolf-accent');
                 syncRoutines(savedUrl); 
             }
+            renderMenuWorkouts();
             document.getElementById('start-btn').addEventListener('click', startWorkoutSession);
         });
 
-        // --- CONTROL ---
+        // --- DYNAMIC MENU ---
+        function renderMenuWorkouts() {
+            els.workoutList.innerHTML = '';
+            // Render custom workouts
+            Object.keys(routines).forEach(key => {
+                if(key === 'apex_config') return; // Skip Apex, handled separately
+                
+                const btn = document.createElement('button');
+                btn.className = "w-full btn-secondary py-4 text-lg";
+                if(key === 'Morning Grind') btn.className = "w-full btn-primary py-4 text-xl shadow-lg shadow-orange-900/20";
+                
+                btn.textContent = key;
+                btn.onclick = () => selectWorkout(key);
+                els.workoutList.appendChild(btn);
+            });
+        }
+
+        // --- WORKOUT MANAGER ---
+        function openManager() {
+            renderManagerList();
+            openModal('editor-select-modal');
+        }
+
+        function renderManagerList() {
+            els.managerList.innerHTML = '';
+            
+            // Apex (Fixed)
+            const apexItem = document.createElement('div');
+            apexItem.className = "flex justify-between items-center bg-wolf-bg p-3 rounded border border-wolf-border";
+            apexItem.innerHTML = `
+                <span class="text-wolf-text font-bold">APEX PROTOCOL</span>
+                <button onclick="openEditor('apex')" class="text-wolf-accent text-sm font-bold uppercase hover:text-white">Edit</button>
+            `;
+            els.managerList.appendChild(apexItem);
+
+            // Custom Routines
+            Object.keys(routines).forEach(key => {
+                if(key === 'apex_config') return;
+                
+                const item = document.createElement('div');
+                item.className = "flex justify-between items-center bg-wolf-bg p-3 rounded border border-wolf-border";
+                item.innerHTML = `
+                    <span class="text-wolf-text truncate max-w-[60%]">${key}</span>
+                    <div class="flex gap-4">
+                        <button onclick="openEditor('${key}')" class="text-wolf-muted text-sm font-bold uppercase hover:text-white">Edit</button>
+                        <button onclick="deleteWorkout('${key}')" class="text-red-900 text-sm font-bold uppercase hover:text-red-500">Delete</button>
+                    </div>
+                `;
+                els.managerList.appendChild(item);
+            });
+        }
+
+        async function createNewWorkout() {
+            const name = els.newWorkoutName.value.trim();
+            if(!name) return alert("Enter a name first.");
+            if(routines[name]) return alert("Name already exists.");
+            
+            // Default Template
+            routines[name] = [
+                { type: 'work', name: 'First Exercise', duration: 30 },
+                { type: 'rest', name: 'Rest', duration: 30 }
+            ];
+            
+            await saveRoutinesToStorage();
+            els.newWorkoutName.value = '';
+            renderManagerList();
+            renderMenuWorkouts();
+        }
+
+        async function deleteWorkout(key) {
+            if(!confirm(`Delete ${key} permanently?`)) return;
+            delete routines[key];
+            await saveRoutinesToStorage();
+            renderManagerList();
+            renderMenuWorkouts();
+        }
+
+        async function saveRoutinesToStorage() {
+            localStorage.setItem(STORAGE_KEY_ROUTINES, JSON.stringify(routines));
+            const url = localStorage.getItem(SYNC_URL_KEY);
+            if(url) {
+                try {
+                    await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'save_routine', data: routines }) });
+                } catch(e) {}
+            }
+        }
+
+        // --- RUNTIME ---
         window.toggleMode = (val) => { isManual = val; };
         window.toggleTracking = (val) => { isTracking = val; };
 
         function selectWorkout(type) {
             currentWorkoutType = type;
-            if(type === 'apex') return;
-            activeRoutine = routines[type] || defaultRoutines[type];
+            activeRoutine = routines[type];
             goToQuote();
         }
 
@@ -369,35 +463,33 @@
         function startWorkoutSession() {
             initAudio();
             stepIndex = 0;
-            startTime = null; // Don't start clock yet
-            els.totalTime.textContent = "--:--"; // Reset display
+            startTime = null; 
+            els.totalTime.textContent = "--:--"; 
             switchScreen('workout');
             startCountdown();
         }
 
         function startCountdown() {
-            // Clear previous exercise text
             els.currEx.textContent = ""; 
             els.nextEx.textContent = ""; 
             runStep({ type: 'countdown', duration: 10, name: '' });
         }
 
         function startMissionClock() {
-            if(!isTracking) return; // Don't run clock if not tracking
+            if(!isTracking) return;
             startTime = Date.now();
             clearInterval(totalInt);
             totalInt = setInterval(() => {
                 const s = Math.floor((Date.now() - startTime) / 1000);
                 els.totalTime.textContent = formatTime(s);
             }, 1000);
-            els.totalTime.textContent = "00:00"; // Initial set
+            els.totalTime.textContent = "00:00"; 
         }
 
         function runStep(step) {
             clearInterval(timerInt);
             const pct = (stepIndex / activeRoutine.length) * 100;
             els.bar.style.width = `${pct}%`;
-            
             els.status.textContent = step.type === 'countdown' ? 'GET READY' : step.type.toUpperCase();
             
             if (step.type !== 'countdown') {
@@ -422,19 +514,12 @@
                 timerInt = setInterval(() => {
                     timeLeft--;
                     els.timer.textContent = timeLeft;
-                    
-                    if (timeLeft <= 3 && timeLeft > 0) {
-                        beep('Low');
-                        els.timer.classList.add('text-wolf-accent');
-                    }
-                    
+                    if (timeLeft <= 3 && timeLeft > 0) { beep('Low'); els.timer.classList.add('text-wolf-accent'); }
                     if (timeLeft <= 0) {
                         clearInterval(timerInt);
                         beep('High');
-                        
-                        // Transition Logic
                         if (step.type === 'countdown') {
-                            startMissionClock(); // Start global timer NOW
+                            startMissionClock();
                             nextStep();
                         } else if (isManual && (step.type === 'work' || step.type === 'rest')) {
                             els.timer.textContent = "0";
@@ -449,10 +534,7 @@
 
         function nextStep() {
             if(els.status.textContent !== 'GET READY') stepIndex++;
-            if (stepIndex >= activeRoutine.length) {
-                finishWorkout();
-                return;
-            }
+            if (stepIndex >= activeRoutine.length) { finishWorkout(); return; }
             runStep(activeRoutine[stepIndex]);
         }
 
@@ -462,46 +544,27 @@
         function finishWorkout() {
             clearInterval(totalInt);
             beep('High');
-            
             let timeStr = "--:--";
             if (isTracking && startTime) {
                 const s = Math.floor((Date.now() - startTime) / 1000);
                 timeStr = formatTime(s);
-                const entry = {
-                    date: new Date().toISOString(),
-                    type: currentWorkoutType,
-                    duration: timeStr,
-                    details: activeRoutine.details || {}
-                };
+                const entry = { date: new Date().toISOString(), type: currentWorkoutType, duration: timeStr, details: activeRoutine.details || {} };
                 saveHistoryLog(entry);
             }
-            
             els.finalTime.textContent = timeStr;
             const extraDiv = document.getElementById('final-stats-extra');
-            
-            // Only show stats if we have them (Apex)
             if (currentWorkoutType === 'apex') {
                 extraDiv.innerHTML = `
                     <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <p class="text-wolf-muted uppercase text-[10px] tracking-widest">Peak</p>
-                            <p class="text-2xl text-wolf-accent font-heading">${activeRoutine.details.maxReps}</p>
-                        </div>
-                        <div>
-                            <p class="text-wolf-muted uppercase text-[10px] tracking-widest">Load</p>
-                            <p class="text-2xl text-white font-heading">${activeRoutine.details.weight}</p>
-                        </div>
-                    </div>
-                `;
+                        <div><p class="text-wolf-muted uppercase text-[10px] tracking-widest">Peak</p><p class="text-2xl text-wolf-accent font-heading">${activeRoutine.details.maxReps}</p></div>
+                        <div><p class="text-wolf-muted uppercase text-[10px] tracking-widest">Load</p><p class="text-2xl text-white font-heading">${activeRoutine.details.weight}</p></div>
+                    </div>`;
                 extraDiv.classList.remove('hidden');
-            } else {
-                extraDiv.classList.add('hidden');
-            }
-            
+            } else { extraDiv.classList.add('hidden'); }
             switchScreen('completion');
         }
 
-        // --- UTILS ---
+        // --- UTILS & EDITOR ---
         function formatTime(s) {
             const min = Math.floor(s / 60).toString().padStart(2, '0');
             const sec = (s % 60).toString().padStart(2, '0');
@@ -512,30 +575,18 @@
             const reps = [];
             for (let i = 1; i <= maxReps; i++) reps.push(i);
             for (let i = maxReps - 1; i >= 1; i--) reps.push(i);
-
             reps.forEach((repCount, idx) => {
-                routine.push({
-                    type: 'rep_work',
-                    name: `${repCount} Reps`,
-                    round: `${idx + 1}/${reps.length}`,
-                    exercises: config.exercises
-                });
-                if (idx < reps.length - 1) {
-                    routine.push({ type: 'rest', name: 'Rest', duration: config.restTime || 30, round: 'Recover' });
-                }
+                routine.push({ type: 'rep_work', name: `${repCount} Reps`, round: `${idx + 1}/${reps.length}`, exercises: config.exercises });
+                if (idx < reps.length - 1) routine.push({ type: 'rest', name: 'Rest', duration: config.restTime || 30, round: 'Recover' });
             });
             return routine;
         }
 
-        // --- EDITOR LOGIC ---
         function openEditor(key) {
             editingRoutineKey = key;
             closeModal('editor-select-modal');
-            if(key === 'apex') {
-                editingCopy = JSON.parse(JSON.stringify(routines.apex_config || defaultRoutines.apex_config));
-            } else {
-                editingCopy = JSON.parse(JSON.stringify(routines[key] || defaultRoutines[key]));
-            }
+            if(key === 'apex') editingCopy = JSON.parse(JSON.stringify(routines.apex_config || defaultRoutines.apex_config));
+            else editingCopy = JSON.parse(JSON.stringify(routines[key]));
             renderEditor();
             switchScreen('editor');
         }
@@ -549,50 +600,22 @@
                 title.textContent = "EDIT APEX";
                 const restDiv = document.createElement('div');
                 restDiv.className = "bg-wolf-surface p-4 mb-4 rounded-lg border border-wolf-border";
-                restDiv.innerHTML = `
-                    <label class="text-xs text-wolf-muted uppercase font-bold">Ladder Rest Time (Seconds)</label>
-                    <input type="number" onchange="updateApexRest(this.value)" value="${editingCopy.restTime}" class="w-full bg-wolf-bg text-white p-2 mt-2 rounded border border-wolf-border focus:border-wolf-accent outline-none">
-                `;
+                restDiv.innerHTML = `<label class="text-xs text-wolf-muted uppercase font-bold">Ladder Rest Time (Seconds)</label><input type="number" onchange="updateApexRest(this.value)" value="${editingCopy.restTime}" class="w-full bg-wolf-bg text-white p-2 mt-2 rounded border border-wolf-border focus:border-wolf-accent outline-none">`;
                 container.appendChild(restDiv);
                 editingCopy.exercises.forEach((ex, idx) => {
                     const row = document.createElement('div');
                     row.className = "flex gap-2 mb-2 items-center";
-                    row.innerHTML = `
-                        <span class="text-wolf-muted text-xs w-4">${idx+1}.</span>
-                        <input type="text" value="${ex}" onchange="updateApexEx(${idx}, this.value)" class="flex-grow bg-wolf-surface text-white p-3 rounded border border-wolf-border text-sm focus:border-wolf-accent outline-none">
-                        <button onclick="deleteApexEx(${idx})" class="text-red-500 hover:text-red-400 p-2">✕</button>
-                    `;
+                    row.innerHTML = `<span class="text-wolf-muted text-xs w-4">${idx+1}.</span><input type="text" value="${ex}" onchange="updateApexEx(${idx}, this.value)" class="flex-grow bg-wolf-surface text-white p-3 rounded border border-wolf-border text-sm focus:border-wolf-accent outline-none"><button onclick="deleteApexEx(${idx})" class="text-red-500 hover:text-red-400 p-2">✕</button>`;
                     container.appendChild(row);
                 });
             } else {
-                title.textContent = editingRoutineKey.replace('_', ' ').toUpperCase();
+                title.textContent = editingRoutineKey.toUpperCase();
                 editingCopy.forEach((step, idx) => {
                     const row = document.createElement('div');
                     row.className = "bg-wolf-surface p-3 rounded-lg border border-wolf-border mb-3";
-                    let inputs = `
-                        <div class="flex gap-2 mb-2">
-                            <input type="text" value="${step.name}" onchange="updateStep(${idx}, 'name', this.value)" class="flex-grow bg-wolf-bg text-white font-medium p-2 rounded text-sm border border-wolf-border focus:border-wolf-accent outline-none">
-                            <select onchange="updateStep(${idx}, 'type', this.value)" class="bg-wolf-bg text-wolf-muted p-2 text-xs uppercase rounded border border-wolf-border outline-none">
-                                <option value="work" ${step.type==='work'?'selected':''}>Work</option>
-                                <option value="rest" ${step.type==='rest'?'selected':''}>Rest</option>
-                                <option value="rep_work" ${step.type==='rep_work'?'selected':''}>Reps</option>
-                                <option value="cooldown" ${step.type==='cooldown'?'selected':''}>Cool</option>
-                            </select>
-                        </div>
-                    `;
-                    if(step.type === 'rep_work') {
-                         inputs += `
-                            <div class="flex gap-2 items-center">
-                                <span class="text-xs text-wolf-muted">Detail</span>
-                                <input type="text" value="${step.exercises ? step.exercises[0] : ''}" onchange="updateStep(${idx}, 'rep_text', this.value)" class="flex-grow bg-wolf-bg text-white p-2 text-xs rounded border border-wolf-border outline-none">
-                            </div>`;
-                    } else {
-                         inputs += `
-                            <div class="flex gap-2 items-center">
-                                <span class="text-xs text-wolf-muted">Secs</span>
-                                <input type="number" value="${step.duration || 0}" onchange="updateStep(${idx}, 'duration', this.value)" class="w-20 bg-wolf-bg text-white p-2 text-sm text-center rounded border border-wolf-border outline-none">
-                            </div>`;
-                    }
+                    let inputs = `<div class="flex gap-2 mb-2"><input type="text" value="${step.name}" onchange="updateStep(${idx}, 'name', this.value)" class="flex-grow bg-wolf-bg text-white font-medium p-2 rounded text-sm border border-wolf-border focus:border-wolf-accent outline-none"><select onchange="updateStep(${idx}, 'type', this.value)" class="bg-wolf-bg text-wolf-muted p-2 text-xs uppercase rounded border border-wolf-border outline-none"><option value="work" ${step.type==='work'?'selected':''}>Work</option><option value="rest" ${step.type==='rest'?'selected':''}>Rest</option><option value="rep_work" ${step.type==='rep_work'?'selected':''}>Reps</option><option value="cooldown" ${step.type==='cooldown'?'selected':''}>Cool</option></select></div>`;
+                    if(step.type === 'rep_work') inputs += `<div class="flex gap-2 items-center"><span class="text-xs text-wolf-muted">Detail</span><input type="text" value="${step.exercises ? step.exercises[0] : ''}" onchange="updateStep(${idx}, 'rep_text', this.value)" class="flex-grow bg-wolf-bg text-white p-2 text-xs rounded border border-wolf-border outline-none"></div>`;
+                    else inputs += `<div class="flex gap-2 items-center"><span class="text-xs text-wolf-muted">Secs</span><input type="number" value="${step.duration || 0}" onchange="updateStep(${idx}, 'duration', this.value)" class="w-20 bg-wolf-bg text-white p-2 text-sm text-center rounded border border-wolf-border outline-none"></div>`;
                     inputs += `<div class="mt-2 text-right"><button onclick="deleteStep(${idx})" class="text-[10px] text-red-500 hover:text-white uppercase font-bold tracking-wider">Remove</button></div>`;
                     row.innerHTML = inputs;
                     container.appendChild(row);
@@ -618,18 +641,11 @@
             else if(field === 'rep_text') editingCopy[idx].exercises = [val];
         };
         window.deleteStep = (idx) => { editingCopy.splice(idx, 1); renderEditor(); };
-        
         async function saveRoutineChanges() {
             if(editingRoutineKey === 'apex') routines.apex_config = editingCopy;
             else routines[editingRoutineKey] = editingCopy;
-            
-            localStorage.setItem(STORAGE_KEY_ROUTINES, JSON.stringify(routines));
-            const url = localStorage.getItem(SYNC_URL_KEY);
-            if(url) {
-                try {
-                    await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'save_routine', data: routines }) });
-                } catch(e) {}
-            }
+            await saveRoutinesToStorage();
+            renderMenuWorkouts();
             switchScreen('menu');
         }
         async function syncRoutines(url) {
@@ -639,21 +655,16 @@
                 if(data.routines && Object.keys(data.routines).length > 0) {
                     routines = data.routines;
                     localStorage.setItem(STORAGE_KEY_ROUTINES, JSON.stringify(routines));
+                    renderMenuWorkouts();
                 }
             } catch(e) {}
         }
-
-        // --- STORAGE ---
         async function saveHistoryLog(entry) {
             const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
             h.push(entry);
             localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
             const url = localStorage.getItem(SYNC_URL_KEY);
-            if(url) {
-                try {
-                    await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(entry) });
-                } catch(e) {}
-            }
+            if(url) { try { await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(entry) }); } catch(e) {} }
         }
         async function showHistory() {
             switchScreen('history');
@@ -661,104 +672,36 @@
             const loading = document.getElementById('history-loading');
             list.innerHTML = '';
             loading.classList.remove('hidden');
-            
             const url = localStorage.getItem(SYNC_URL_KEY);
             let history = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
-            if(url) {
-                try {
-                    const res = await fetch(url);
-                    const data = await res.json();
-                    if(data.history) history = data.history.reverse();
-                } catch(e) {}
-            } else {
-                history.sort((a,b) => new Date(b.date) - new Date(a.date));
-            }
+            if(url) { try { const res = await fetch(url); const data = await res.json(); if(data.history) history = data.history.reverse(); } catch(e) {} } else { history.sort((a,b) => new Date(b.date) - new Date(a.date)); }
             loading.classList.add('hidden');
-            if(history.length === 0) {
-                document.getElementById('no-history-msg').classList.remove('hidden');
-                return;
-            }
+            if(history.length === 0) { document.getElementById('no-history-msg').classList.remove('hidden'); return; }
             document.getElementById('no-history-msg').classList.add('hidden');
             history.forEach(log => {
                 const date = new Date(log.date);
                 const el = document.createElement('div');
                 el.className = 'bg-wolf-surface border-l-4 border-wolf-accent p-4 flex justify-between items-center rounded-r shadow-sm';
-                el.innerHTML = `
-                    <div>
-                        <p class="text-white font-bold text-lg uppercase font-heading tracking-wide">${log.type.replace('_', ' ')}</p>
-                        <p class="text-wolf-muted text-xs uppercase">${date.toLocaleDateString()}</p>
-                        ${(log.details && log.details.maxReps) ? `<span class="inline-block mt-1 bg-wolf-bg px-2 py-0.5 rounded text-[10px] text-wolf-accent border border-wolf-border">MAX: ${log.details.maxReps} | ${log.details.weight}</span>` : ''}
-                    </div>
-                    <div class="font-heading text-2xl text-wolf-text">${log.duration}</div>
-                `;
+                el.innerHTML = `<div><p class="text-white font-bold text-lg uppercase font-heading tracking-wide">${log.type.replace('_', ' ')}</p><p class="text-wolf-muted text-xs uppercase">${date.toLocaleDateString()}</p>${(log.details && log.details.maxReps) ? `<span class="inline-block mt-1 bg-wolf-bg px-2 py-0.5 rounded text-[10px] text-wolf-accent border border-wolf-border">MAX: ${log.details.maxReps} | ${log.details.weight}</span>` : ''}</div><div class="font-heading text-2xl text-wolf-text">${log.duration}</div>`;
                 list.appendChild(el);
             });
         }
-        
-        // --- SCREEN & UTILS ---
-        function switchScreen(name) {
-            Object.values(screens).forEach(s => s.classList.remove('active'));
-            screens[name].classList.add('active');
-        }
-        window.openModal = (id) => {
-            if(id === 'sync-modal') els.syncInput.value = localStorage.getItem(SYNC_URL_KEY) || '';
-            document.getElementById(id).classList.remove('hidden');
-        };
+        function switchScreen(name) { Object.values(screens).forEach(s => s.classList.remove('active')); screens[name].classList.add('active'); }
+        window.openModal = (id) => { if(id === 'sync-modal') els.syncInput.value = localStorage.getItem(SYNC_URL_KEY) || ''; document.getElementById(id).classList.remove('hidden'); };
         window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
         window.openApexConfig = () => openModal('apex-config-modal');
-        window.adjustRep = (delta) => {
-            const input = document.getElementById('apex-max-reps');
-            let val = parseInt(input.value) || 1;
-            val += delta;
-            if(val < 1) val = 1;
-            input.value = val;
-        };
-        window.goToMenu = () => {
-            clearInterval(timerInt);
-            clearInterval(totalInt);
-            switchScreen('menu');
-        };
-        window.saveSyncUrl = () => {
-            const url = els.syncInput.value.trim();
-            if(url) {
-                localStorage.setItem(SYNC_URL_KEY, url);
-                els.syncStatus.textContent = "CLOUD ACTIVE";
-                els.syncStatus.classList.add('text-wolf-accent');
-                syncRoutines(url);
-            } else {
-                localStorage.removeItem(SYNC_URL_KEY);
-                els.syncStatus.textContent = "Local Storage Active";
-                els.syncStatus.classList.remove('text-wolf-accent');
-            }
-            closeModal('sync-modal');
-        };
+        window.adjustRep = (delta) => { const input = document.getElementById('apex-max-reps'); let val = parseInt(input.value) || 1; val += delta; if(val < 1) val = 1; input.value = val; };
+        window.goToMenu = () => { clearInterval(timerInt); clearInterval(totalInt); switchScreen('menu'); };
+        window.saveSyncUrl = () => { const url = els.syncInput.value.trim(); if(url) { localStorage.setItem(SYNC_URL_KEY, url); els.syncStatus.textContent = "CLOUD ACTIVE"; els.syncStatus.classList.add('text-wolf-accent'); syncRoutines(url); } else { localStorage.removeItem(SYNC_URL_KEY); els.syncStatus.textContent = "Local Storage Active"; els.syncStatus.classList.remove('text-wolf-accent'); } closeModal('sync-modal'); };
         function goToQuote() {
-            const quotes = [
-                {q: "The wolf on the hill is not as hungry as the wolf climbing the hill.", a: "Arnold Schwarzenegger"},
-                {q: "I don't stop when I'm tired. I stop when I'm done.", a: "David Goggins"},
-                {q: "Pain is weakness leaving the body.", a: "USMC"},
-                {q: "Civilize the mind, but make savage the body.", a: "Mao"}
-            ];
+            const quotes = [{q: "The wolf on the hill is not as hungry as the wolf climbing the hill.", a: "Arnold Schwarzenegger"}, {q: "I don't stop when I'm tired. I stop when I'm done.", a: "David Goggins"}, {q: "Pain is weakness leaving the body.", a: "USMC"}, {q: "Civilize the mind, but make savage the body.", a: "Mao"}];
             const rnd = quotes[Math.floor(Math.random() * quotes.length)];
             document.getElementById('quote-text').textContent = `"${rnd.q}"`;
             document.getElementById('quote-author').textContent = rnd.a;
             switchScreen('quote');
         }
         function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
-        function beep(type) {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            const freqs = { 'Low': 150, 'Mid': 400, 'High': 800 };
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.frequency.value = freqs[type];
-            osc.type = 'triangle'; 
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.3);
-        }
+        function beep(type) { if (!audioCtx) return; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); const freqs = { 'Low': 150, 'Mid': 400, 'High': 800 }; osc.connect(gain); gain.connect(audioCtx.destination); osc.frequency.value = freqs[type]; osc.type = 'triangle'; gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3); }
     </script>
 </body>
 </html>
