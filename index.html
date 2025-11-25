@@ -3,205 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE WOLF ALPHA</title>
+    <title>WOLF ALPHA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     
-    <meta name="theme-color" content="#0f0f0f">
+    <meta name="theme-color" content="#1c1917">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="apple-touch-icon" href="https://placehold.co/180x180/8a0000/ffffff?text=W" sizes="180x180">
+    <link rel="apple-touch-icon" href="https://placehold.co/180x180/292524/d6d3d1?text=W" sizes="180x180">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        wolf: {
+                            bg: '#0c0a09',      /* warm black */
+                            surface: '#1c1917', /* dark stone */
+                            border: '#44403c',  /* stone outline */
+                            text: '#e7e5e4',    /* warm light grey */
+                            accent: '#b45309',  /* earthy amber/rust */
+                            accentHover: '#92400e',
+                            muted: '#78716c',
+                        }
+                    },
+                    fontFamily: {
+                        heading: ['Oswald', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
 
     <style>
-        :root { --wolf-red: #8a0000; --wolf-gray: #1f2937; }
         body {
-            font-family: 'Roboto Condensed', sans-serif;
-            background-color: #050505;
-            color: #e5e7eb;
-            background-image: radial-gradient(circle at center, #1a0505 0%, #000000 100%);
+            background-color: #0c0a09; /* wolf-bg */
+            color: #e7e5e4; /* wolf-text */
+            font-family: 'Inter', sans-serif;
             overscroll-behavior: none;
         }
-        .font-alpha { font-family: 'Black Ops One', cursive; }
+        h1, h2, h3, .font-heading { font-family: 'Oswald', sans-serif; }
+        
         .screen { display: none; }
         .active { display: flex; }
         
-        .btn-alpha {
-            background: linear-gradient(180deg, #b91c1c 0%, #7f1d1d 100%);
-            border: 1px solid #ef4444;
+        /* Custom UI Elements */
+        .btn-primary {
+            background-color: #b45309;
+            color: white;
+            font-family: 'Oswald', sans-serif;
             text-transform: uppercase;
-            clip-path: polygon(10% 0, 100% 0, 100% 90%, 90% 100%, 0 100%, 0 10%);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
-            transition: transform 0.1s;
+            letter-spacing: 0.1em;
+            transition: all 0.2s;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
         }
-        .btn-alpha:active { transform: scale(0.98); }
+        .btn-primary:active { transform: translateY(1px); }
+        .btn-primary:hover { background-color: #92400e; }
+
         .btn-secondary {
-            background: #1f2937;
-            border: 1px solid #374151;
-            clip-path: polygon(5% 0, 100% 0, 100% 90%, 95% 100%, 0 100%, 0 10%);
+            background-color: #292524; /* wolf-surface */
+            border: 1px solid #44403c;
+            color: #d6d3d1;
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
         }
-        /* Toggle */
-        .toggle-checkbox:checked { right: 0; border-color: #ef4444; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #ef4444; }
+        .btn-secondary:active { transform: translateY(1px); }
+        .btn-secondary:hover { border-color: #78716c; color: white; }
+
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #000; }
-        ::-webkit-scrollbar-thumb { background: var(--wolf-red); }
+        ::-webkit-scrollbar-track { background: #0c0a09; }
+        ::-webkit-scrollbar-thumb { background: #44403c; border-radius: 3px; }
+        
+        /* Toggle Switch */
+        .toggle-checkbox:checked { right: 0; border-color: #b45309; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #b45309; }
     </style>
 </head>
-<body class="h-screen overflow-hidden text-white selection:bg-red-900 selection:text-white">
+<body class="h-screen overflow-hidden selection:bg-wolf-accent selection:text-white">
 
-    <div id="sync-modal" class="hidden fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-gray-900 border-2 border-red-800 p-6 w-full max-w-md shadow-[0_0_30px_rgba(138,0,0,0.3)]">
-            <h2 class="font-alpha text-3xl text-red-600 mb-4 tracking-widest">CLOUD SYNC</h2>
-            <p class="text-gray-400 text-sm mb-2">Paste your Google Web App URL here:</p>
-            <input type="text" id="sync-url-input" placeholder="https://script.google.com/..." class="w-full bg-black border border-gray-700 text-white p-3 mb-4 text-xs font-mono">
-            <div class="flex gap-4">
-                <button onclick="closeModal('sync-modal')" class="flex-1 py-3 bg-gray-800 uppercase font-bold">Cancel</button>
-                <button onclick="saveSyncUrl()" class="flex-1 py-3 bg-red-700 uppercase font-bold text-white">CONNECT</button>
+    <div id="sync-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl shadow-2xl">
+            <h2 class="font-heading text-2xl text-wolf-accent mb-2 tracking-wide">CLOUD SYNC</h2>
+            <p class="text-wolf-muted text-sm mb-4">Enter Google Web App URL to enable cross-device history.</p>
+            <input type="text" id="sync-url-input" placeholder="https://script.google.com/..." class="w-full bg-wolf-bg border border-wolf-border text-wolf-text p-3 mb-6 rounded-lg text-sm font-mono focus:border-wolf-accent outline-none">
+            <div class="flex gap-3">
+                <button onclick="closeModal('sync-modal')" class="flex-1 py-3 btn-secondary">Cancel</button>
+                <button onclick="saveSyncUrl()" class="flex-1 py-3 btn-primary">Connect</button>
             </div>
         </div>
     </div>
 
-    <div id="editor-select-modal" class="hidden fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-gray-900 border-2 border-red-800 p-6 w-full max-w-md text-center">
-            <h2 class="font-alpha text-3xl text-red-600 mb-8 tracking-widest">MODIFY PROTOCOL</h2>
-            <div class="space-y-4">
-                <button onclick="openEditor('morning_movement')" class="w-full py-4 bg-gray-800 hover:bg-red-900/50 border border-gray-600 uppercase font-bold tracking-widest">WAKE UP</button>
-                <button onclick="openEditor('morning')" class="w-full py-4 bg-gray-800 hover:bg-red-900/50 border border-gray-600 uppercase font-bold tracking-widest">MORNING GRIND</button>
-                <button onclick="openEditor('apex')" class="w-full py-4 bg-gray-800 hover:bg-red-900/50 border border-gray-600 uppercase font-bold tracking-widest">APEX</button>
+    <div id="editor-select-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl text-center">
+            <h2 class="font-heading text-2xl text-wolf-accent mb-6 tracking-wide">EDIT PROGRAM</h2>
+            <div class="space-y-3">
+                <button onclick="openEditor('morning_movement')" class="w-full py-4 btn-secondary hover:border-wolf-accent">Wake Up</button>
+                <button onclick="openEditor('morning')" class="w-full py-4 btn-secondary hover:border-wolf-accent">Morning Grind</button>
+                <button onclick="openEditor('apex')" class="w-full py-4 btn-secondary hover:border-wolf-accent">Apex</button>
             </div>
-            <button onclick="closeModal('editor-select-modal')" class="mt-8 text-gray-500 hover:text-white uppercase text-sm">Cancel</button>
+            <button onclick="closeModal('editor-select-modal')" class="mt-6 text-wolf-muted hover:text-white uppercase text-xs tracking-widest">Cancel</button>
         </div>
     </div>
 
-    <div id="editor-screen" class="screen h-full w-full flex-col bg-black p-4">
-        <div class="flex justify-between items-center mb-6 border-b border-red-900 pb-2">
-            <h2 id="editor-title" class="font-alpha text-3xl text-red-600">EDIT</h2>
-            <div>
-                <button onclick="saveRoutineChanges()" class="bg-red-700 text-white px-4 py-2 font-bold uppercase text-sm mr-2">SAVE</button>
-                <button onclick="switchScreen('menu')" class="bg-gray-800 text-gray-400 px-4 py-2 font-bold uppercase text-sm">EXIT</button>
+    <div id="editor-screen" class="screen h-full w-full flex-col bg-wolf-bg p-4">
+        <div class="flex justify-between items-center mb-6 pb-4 border-b border-wolf-border">
+            <h2 id="editor-title" class="font-heading text-3xl text-wolf-text">EDIT</h2>
+            <div class="flex gap-2">
+                <button onclick="saveRoutineChanges()" class="btn-primary px-4 py-2 text-sm">Save</button>
+                <button onclick="switchScreen('menu')" class="btn-secondary px-4 py-2 text-sm">Exit</button>
             </div>
         </div>
-        <div id="editor-content" class="flex-grow overflow-y-auto space-y-2 pb-20"></div>
-        <div class="pt-4 border-t border-gray-800">
-            <button onclick="addStepToEditor()" class="w-full py-3 bg-gray-900 border border-gray-700 text-green-500 font-bold uppercase tracking-widest hover:bg-gray-800">+ ADD EXERCISE</button>
+        <div id="editor-content" class="flex-grow overflow-y-auto space-y-3 pb-20"></div>
+        <div class="pt-4 border-t border-wolf-border">
+            <button onclick="addStepToEditor()" class="w-full py-3 border border-dashed border-wolf-muted text-wolf-muted hover:text-white hover:border-white rounded-lg uppercase text-sm tracking-widest transition">+ Add Exercise</button>
         </div>
     </div>
 
-    <div id="menu-screen" class="screen active h-full w-full flex-col items-center justify-center p-4 relative">
-        <div class="absolute inset-0 opacity-10 bg-[repeating-linear-gradient(45deg,#000,#000_10px,#111_10px,#111_20px)] pointer-events-none"></div>
-        
-        <button onclick="openModal('sync-modal')" class="absolute top-4 right-4 text-gray-600 hover:text-red-500 z-50">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+    <div id="menu-screen" class="screen active h-full w-full flex-col items-center justify-center p-6 relative">
+        <button onclick="openModal('sync-modal')" class="absolute top-6 right-6 text-wolf-muted hover:text-wolf-accent transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
         </button>
 
-        <div class="z-10 text-center w-full max-w-md flex flex-col items-center">
-            <h1 class="font-alpha text-7xl md:text-9xl text-red-600 tracking-tighter mb-2 drop-shadow-[0_0_15px_rgba(220,38,38,0.6)]">ALPHA</h1>
-            <p class="text-gray-500 text-lg uppercase tracking-[0.5em] mb-8 border-b border-red-900 pb-2">Dominate. Conquer.</p>
+        <div class="z-10 text-center w-full max-w-sm flex flex-col items-center">
+            <h1 class="font-heading text-6xl text-wolf-text tracking-tight mb-2">WOLF<span class="text-wolf-accent">ALPHA</span></h1>
+            <p class="text-wolf-muted text-sm uppercase tracking-[0.3em] mb-10">Conquer Your Day</p>
 
-            <div class="flex items-center justify-center mb-6 bg-gray-900/60 p-4 w-full border border-gray-800">
-                <span class="mr-3 text-sm font-bold text-gray-500 uppercase tracking-widest">Auto</span>
-                <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" id="manual-mode-toggle" class="sr-only peer">
-                    <div class="w-14 h-7 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-400 after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-red-900 peer-checked:after:bg-white"></div>
+            <div class="flex items-center justify-between mb-8 bg-wolf-surface p-1 rounded-lg w-full border border-wolf-border">
+                 <label class="flex-1 text-center cursor-pointer">
+                    <input type="radio" name="mode-toggle" value="auto" class="peer sr-only" checked onchange="toggleMode(false)">
+                    <span class="block py-2 rounded-md text-xs font-bold uppercase text-wolf-muted peer-checked:bg-wolf-bg peer-checked:text-white transition">Auto Timer</span>
                 </label>
-                <span class="ml-3 text-sm font-bold text-red-500 uppercase tracking-widest">Manual</span>
+                <label class="flex-1 text-center cursor-pointer">
+                    <input type="radio" name="mode-toggle" value="manual" class="peer sr-only" onchange="toggleMode(true)">
+                    <span class="block py-2 rounded-md text-xs font-bold uppercase text-wolf-muted peer-checked:bg-wolf-accent peer-checked:text-white transition">Manual</span>
+                </label>
             </div>
 
-            <div class="space-y-4 flex flex-col w-full">
-                <button onclick="selectWorkout('morning_movement')" class="btn-secondary text-gray-300 font-bold py-4 px-6 text-xl tracking-widest hover:bg-gray-800 hover:text-white">WAKE UP</button>
-                <button onclick="selectWorkout('morning')" class="btn-alpha text-white font-bold py-5 px-6 text-2xl tracking-widest shadow-[0_0_20px_rgba(220,38,38,0.2)]">MORNING GRIND</button>
-                <button onclick="openApexConfig()" class="btn-alpha text-white font-bold py-5 px-6 text-2xl tracking-widest border-red-500">APEX</button>
-                <div class="grid grid-cols-2 gap-4 mt-4">
-                    <button onclick="showHistory()" class="btn-secondary text-gray-400 font-bold py-3 px-4 text-sm tracking-widest hover:text-white">WAR LOG</button>
-                    <button onclick="openModal('editor-select-modal')" class="bg-gray-900 border border-gray-700 text-red-500 font-bold py-3 px-4 text-sm tracking-widest hover:bg-red-900/20 hover:text-red-400">MODIFY PROGRAM</button>
+            <div class="space-y-3 flex flex-col w-full">
+                <button onclick="selectWorkout('morning_movement')" class="btn-secondary py-4 text-lg">Wake Up</button>
+                <button onclick="selectWorkout('morning')" class="btn-primary py-4 text-xl shadow-lg shadow-orange-900/20">Morning Grind</button>
+                <button onclick="openApexConfig()" class="btn-secondary py-4 text-lg border-wolf-accent text-wolf-accent hover:bg-wolf-accent hover:text-white">Apex</button>
+                
+                <div class="grid grid-cols-2 gap-3 mt-2">
+                    <button onclick="showHistory()" class="btn-secondary py-3 text-xs tracking-widest text-wolf-muted">History</button>
+                    <button onclick="openModal('editor-select-modal')" class="btn-secondary py-3 text-xs tracking-widest text-wolf-muted">Edit Program</button>
                 </div>
             </div>
-            <div id="sync-status" class="mt-4 text-xs text-gray-600 uppercase tracking-widest">Local Mode</div>
+            <div id="sync-status" class="mt-6 text-[10px] text-wolf-muted uppercase tracking-widest opacity-50">Local Storage Active</div>
         </div>
     </div>
 
-    <div id="apex-config-modal" class="hidden fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-gray-900 border-2 border-red-800 p-8 w-full max-w-md text-center shadow-[0_0_50px_rgba(138,0,0,0.4)]">
-            <h2 class="font-alpha text-5xl text-red-600 mb-8 tracking-widest">LADDER</h2>
+    <div id="apex-config-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-wolf-surface border border-wolf-border p-8 w-full max-w-sm rounded-xl text-center shadow-2xl">
+            <h2 class="font-heading text-4xl text-wolf-accent mb-6">APEX CONFIG</h2>
+            
             <div class="mb-6 text-left">
-                <label class="block text-gray-500 text-xs font-bold mb-2 uppercase">Max Reps</label>
-                <div class="flex items-center bg-gray-800 border border-gray-700">
-                    <button onclick="adjustRep(-1)" class="p-4 text-red-500 text-2xl">-</button>
-                    <input type="number" id="apex-max-reps" value="8" class="flex-1 bg-transparent text-white text-3xl p-2 text-center font-alpha focus:outline-none">
-                    <button onclick="adjustRep(1)" class="p-4 text-green-500 text-2xl">+</button>
+                <label class="block text-wolf-muted text-xs font-bold mb-2 uppercase tracking-wide">Ladder Peak (Reps)</label>
+                <div class="flex items-center bg-wolf-bg rounded-lg border border-wolf-border">
+                    <button onclick="adjustRep(-1)" class="p-4 text-wolf-muted hover:text-white transition text-xl">-</button>
+                    <input type="number" id="apex-max-reps" value="8" class="flex-1 bg-transparent text-white text-3xl p-2 text-center font-heading focus:outline-none">
+                    <button onclick="adjustRep(1)" class="p-4 text-wolf-muted hover:text-white transition text-xl">+</button>
                 </div>
             </div>
-            <div class="mb-10 text-left">
-                <label class="block text-gray-500 text-xs font-bold mb-2 uppercase">Weight</label>
-                <input type="text" id="apex-weight" placeholder="e.g. 35lbs" class="w-full bg-gray-800 border border-gray-700 text-white text-2xl p-4 text-center font-alpha">
+            <div class="mb-8 text-left">
+                <label class="block text-wolf-muted text-xs font-bold mb-2 uppercase tracking-wide">Weight Load</label>
+                <input type="text" id="apex-weight" placeholder="e.g. 35lbs" class="w-full bg-wolf-bg border border-wolf-border text-white text-xl p-3 text-center font-heading rounded-lg outline-none focus:border-wolf-accent">
             </div>
-            <div class="flex gap-4">
-                <button onclick="closeModal('apex-config-modal')" class="flex-1 py-4 bg-gray-800 font-bold uppercase">Retreat</button>
-                <button onclick="confirmApexStart()" class="flex-1 py-4 bg-red-700 text-white font-bold uppercase shadow-lg">ATTACK</button>
+            <div class="flex gap-3">
+                <button onclick="closeModal('apex-config-modal')" class="flex-1 py-3 btn-secondary">Cancel</button>
+                <button onclick="confirmApexStart()" class="flex-1 py-3 btn-primary">Start</button>
             </div>
         </div>
     </div>
 
-    <div id="quote-screen" class="screen min-h-screen w-full flex-col items-center justify-center p-6 text-center bg-black">
-        <div class="z-10 max-w-3xl">
-            <div class="w-24 h-1 bg-red-600 mx-auto mb-10 shadow-[0_0_10px_#dc2626]"></div>
-            <blockquote id="quote-text" class="font-alpha text-3xl md:text-5xl text-gray-200 leading-tight"></blockquote>
-            <cite id="quote-author" class="block text-red-600 font-bold text-lg mt-8 uppercase tracking-widest"></cite>
+    <div id="quote-screen" class="screen min-h-screen w-full flex-col items-center justify-center p-8 text-center bg-wolf-bg">
+        <div class="z-10 max-w-2xl">
+            <div class="w-16 h-1 bg-wolf-accent mx-auto mb-8 rounded-full"></div>
+            <blockquote id="quote-text" class="font-heading text-3xl md:text-5xl text-wolf-text leading-tight opacity-90"></blockquote>
+            <cite id="quote-author" class="block text-wolf-muted font-bold text-sm mt-6 uppercase tracking-widest"></cite>
         </div>
-        <button id="start-btn" class="z-10 mt-20 btn-alpha text-white font-bold py-5 px-16 text-3xl tracking-widest animate-pulse">BEGIN</button>
+        <button id="start-btn" class="z-10 mt-16 btn-primary py-4 px-12 text-2xl shadow-xl shadow-orange-900/10">BEGIN</button>
     </div>
 
-    <div id="workout-screen" class="screen h-full w-full flex-col relative bg-black">
-        <div class="absolute top-0 left-0 w-full p-4 flex justify-between items-start z-20">
-            <div class="bg-red-900/20 border-l-4 border-red-600 px-4 py-2">
-                <span class="text-red-500 font-mono text-xs block tracking-widest">MISSION TIME</span>
-                <span id="total-time-display" class="font-mono text-2xl font-bold text-white">00:00</span>
+    <div id="workout-screen" class="screen h-full w-full flex-col relative bg-wolf-bg">
+        <div class="absolute top-0 left-0 w-full p-6 flex justify-between items-start z-20">
+            <div>
+                <span class="text-wolf-muted text-[10px] uppercase tracking-widest block">Elapsed</span>
+                <span id="total-time-display" class="font-heading text-2xl text-wolf-text">00:00</span>
             </div>
-            <button onclick="goToMenu()" class="bg-black/50 px-4 py-2 text-gray-500 hover:text-red-500 text-xs uppercase font-bold border border-gray-800">Abort</button>
+            <button onclick="goToMenu()" class="text-wolf-muted hover:text-white text-xs font-bold uppercase tracking-widest px-3 py-1 border border-transparent hover:border-wolf-muted rounded transition">Exit</button>
         </div>
-        <div class="flex-grow flex flex-col items-center justify-center p-4 z-10 w-full max-w-5xl mx-auto">
-            <div class="w-full bg-gray-900 h-1 mb-8 fixed top-0 left-0 z-30">
-                <div id="progress-bar" class="bg-red-600 h-1 transition-all duration-300 shadow-[0_0_15px_#dc2626]" style="width: 0%"></div>
+
+        <div class="flex-grow flex flex-col items-center justify-center p-4 z-10 w-full max-w-4xl mx-auto mt-10">
+            <div class="w-full bg-wolf-surface h-1.5 mb-12 rounded-full overflow-hidden">
+                <div id="progress-bar" class="bg-wolf-accent h-full transition-all duration-300 rounded-full" style="width: 0%"></div>
             </div>
-            <p id="status-text" class="font-alpha text-4xl md:text-6xl text-red-600 uppercase tracking-widest mb-4 animate-pulse mt-12">GET READY</p>
-            <p id="current-exercise" class="text-5xl md:text-8xl font-black text-white mb-8 text-center uppercase leading-none font-sans tracking-tight"></p>
+
+            <p id="status-text" class="font-heading text-3xl text-wolf-accent uppercase tracking-widest mb-2 animate-pulse">Prepare</p>
+            <p id="current-exercise" class="text-5xl md:text-7xl font-bold text-white mb-8 text-center leading-none tracking-tight"></p>
             
             <div id="timed-content" class="w-full text-center">
-                <div id="timer-display" class="font-alpha text-[10rem] md:text-[16rem] text-white leading-none tracking-tighter select-none">10</div>
-                <button id="manual-next-btn" class="hidden mt-8 btn-alpha w-full max-w-xs mx-auto text-white font-bold py-4 px-8 text-2xl uppercase tracking-widest">NEXT >></button>
+                <div id="timer-display" class="font-heading text-[10rem] md:text-[14rem] text-wolf-text leading-none select-none tabular-nums">10</div>
+                <button id="manual-next-btn" class="hidden mt-8 btn-primary px-10 py-4 text-xl mx-auto">Next</button>
             </div>
-            <div id="rep-content" class="hidden w-full text-center max-w-3xl">
-                <div id="apex-exercise-list" class="text-left text-xl md:text-3xl font-bold mb-10 space-y-4 bg-gray-900/50 border-l-8 border-red-800 p-8 mx-auto shadow-2xl"></div>
-                <button id="round-complete-btn" class="btn-alpha w-full md:w-auto text-white font-bold py-6 px-20 text-3xl tracking-widest">DONE</button>
+
+            <div id="rep-content" class="hidden w-full text-center max-w-xl">
+                <div id="apex-exercise-list" class="text-left text-lg font-medium mb-10 space-y-3 bg-wolf-surface p-6 rounded-xl border border-wolf-border"></div>
+                <button id="round-complete-btn" class="btn-primary w-full md:w-auto px-16 py-5 text-2xl">Complete</button>
             </div>
         </div>
-        <div class="bg-black border-t-2 border-red-900 p-6 z-20 pb-10">
-            <span class="text-gray-500 text-xs uppercase tracking-widest block mb-2">Incoming</span>
-            <span id="next-exercise" class="text-white text-2xl md:text-4xl font-bold uppercase truncate font-alpha text-gray-300"></span>
+        
+        <div class="p-6 z-20 pb-10 text-center">
+            <span class="text-wolf-muted text-[10px] uppercase tracking-widest block mb-1">Up Next</span>
+            <span id="next-exercise" class="text-wolf-text text-xl font-heading uppercase"></span>
         </div>
     </div>
 
-    <div id="completion-screen" class="screen min-h-screen w-full flex-col items-center justify-center p-6 text-center bg-black">
-        <h2 class="font-alpha text-6xl md:text-9xl text-red-600 mb-2 tracking-widest">VICTORY</h2>
-        <div class="bg-gray-900 border border-gray-800 p-10 w-full max-w-xl mb-10 relative overflow-hidden group">
-            <div class="absolute top-0 left-0 w-2 h-full bg-red-600"></div>
-            <p class="text-gray-500 text-xs uppercase tracking-widest mb-1">Total Time</p>
-            <p id="final-time-display" class="text-7xl text-white font-bold font-mono my-2"></p>
-            <div id="final-stats-extra" class="mt-8 pt-6 border-t border-gray-800 text-left hidden"></div>
+    <div id="completion-screen" class="screen min-h-screen w-full flex-col items-center justify-center p-6 text-center bg-wolf-bg">
+        <h2 class="font-heading text-5xl md:text-8xl text-wolf-accent mb-2">COMPLETE</h2>
+        <p class="text-wolf-muted uppercase tracking-widest mb-12 text-sm">Well Done</p>
+        
+        <div class="bg-wolf-surface border border-wolf-border p-8 w-full max-w-sm mb-10 rounded-xl">
+            <p class="text-wolf-muted text-[10px] uppercase tracking-widest mb-1">Total Time</p>
+            <p id="final-time-display" class="text-6xl text-white font-heading my-2"></p>
+            <div id="final-stats-extra" class="mt-6 pt-6 border-t border-wolf-border text-left hidden"></div>
         </div>
-        <button onclick="goToMenu()" class="btn-secondary text-white font-bold py-4 px-12 text-xl tracking-widest hover:text-red-500">RETURN TO BASE</button>
+        
+        <button onclick="goToMenu()" class="btn-secondary px-12 py-4 text-lg">Back to Menu</button>
     </div>
 
-    <div id="history-screen" class="screen min-h-screen w-full flex-col p-6 bg-black">
-        <div class="max-w-4xl mx-auto w-full flex flex-col h-full">
-            <div class="flex items-center justify-between mb-8 pb-4 border-b border-gray-800">
-                <h2 class="font-alpha text-5xl text-red-600 tracking-wide">WAR LOG</h2>
-                <button onclick="goToMenu()" class="text-gray-400 hover:text-white font-bold uppercase text-sm border border-gray-700 px-4 py-2">Back</button>
+    <div id="history-screen" class="screen min-h-screen w-full flex-col p-6 bg-wolf-bg">
+        <div class="max-w-2xl mx-auto w-full flex flex-col h-full">
+            <div class="flex items-center justify-between mb-8 pb-4 border-b border-wolf-border">
+                <h2 class="font-heading text-3xl text-wolf-text">HISTORY</h2>
+                <button onclick="goToMenu()" class="text-wolf-muted hover:text-white text-xs uppercase font-bold tracking-widest">Back</button>
             </div>
-            <div id="history-loading" class="hidden text-center text-red-500 animate-pulse mt-10 tracking-widest uppercase">Syncing Intel...</div>
-            <div id="history-list" class="flex-grow overflow-y-auto space-y-4 pb-20"></div>
-            <div id="no-history-msg" class="hidden text-center text-gray-600 mt-20">NO DATA FOUND</div>
+            
+            <div id="history-loading" class="hidden text-center text-wolf-accent animate-pulse mt-10 text-sm tracking-widest uppercase">Syncing...</div>
+            <div id="history-list" class="flex-grow overflow-y-auto space-y-3 pb-20"></div>
+            <div id="no-history-msg" class="hidden text-center text-wolf-muted mt-20 text-sm">No workouts recorded yet.</div>
         </div>
     </div>
 
@@ -243,10 +290,8 @@
             }
         };
 
-        // Load Custom or Default
         let routines = JSON.parse(localStorage.getItem(STORAGE_KEY_ROUTINES)) || JSON.parse(JSON.stringify(defaultRoutines));
 
-        // --- STATE ---
         const screens = {
             menu: document.getElementById('menu-screen'),
             quote: document.getElementById('quote-screen'),
@@ -267,7 +312,6 @@
             apexList: document.getElementById('apex-exercise-list'),
             totalTime: document.getElementById('total-time-display'),
             finalTime: document.getElementById('final-time-display'),
-            manualToggle: document.getElementById('manual-mode-toggle'),
             syncInput: document.getElementById('sync-url-input'),
             syncStatus: document.getElementById('sync-status')
         };
@@ -289,197 +333,19 @@
         window.addEventListener('DOMContentLoaded', () => {
             const savedUrl = localStorage.getItem(SYNC_URL_KEY);
             if(savedUrl) {
-                els.syncStatus.textContent = "CLOUD LINKED";
-                els.syncStatus.classList.add('text-green-600');
-                syncRoutines(savedUrl); // Fetch latest routines on load
+                els.syncStatus.textContent = "CLOUD ACTIVE";
+                els.syncStatus.classList.add('text-wolf-accent');
+                syncRoutines(savedUrl); 
             }
-            
             document.getElementById('start-btn').addEventListener('click', startWorkoutSession);
         });
 
-        // --- EDITING LOGIC ---
-        function openEditor(key) {
-            editingRoutineKey = key;
-            closeModal('editor-select-modal');
-            
-            // Deep copy to prevent live editing before save
-            if(key === 'apex') {
-                editingCopy = JSON.parse(JSON.stringify(routines.apex_config || defaultRoutines.apex_config));
-            } else {
-                editingCopy = JSON.parse(JSON.stringify(routines[key] || defaultRoutines[key]));
-            }
-            
-            renderEditor();
-            switchScreen('editor');
-        }
+        // --- LOGIC ---
+        window.toggleMode = (val) => { isManual = val; };
 
-        function renderEditor() {
-            const container = document.getElementById('editor-content');
-            const title = document.getElementById('editor-title');
-            container.innerHTML = '';
-            
-            if(editingRoutineKey === 'apex') {
-                title.textContent = "EDIT APEX";
-                
-                // Rest Time Input
-                const restDiv = document.createElement('div');
-                restDiv.className = "bg-gray-900 p-4 mb-4 border border-gray-700";
-                restDiv.innerHTML = `
-                    <label class="text-xs text-gray-500 uppercase font-bold">Ladder Rest Time (Seconds)</label>
-                    <input type="number" onchange="updateApexRest(this.value)" value="${editingCopy.restTime}" class="w-full bg-black text-white p-2 mt-1 font-mono text-xl border border-red-900">
-                `;
-                container.appendChild(restDiv);
-
-                // Exercise List
-                editingCopy.exercises.forEach((ex, idx) => {
-                    const row = document.createElement('div');
-                    row.className = "flex gap-2 mb-2 items-center";
-                    row.innerHTML = `
-                        <span class="text-gray-500 font-mono w-6">${idx+1}.</span>
-                        <input type="text" value="${ex}" onchange="updateApexEx(${idx}, this.value)" class="flex-grow bg-gray-800 text-white p-3 border border-gray-700 focus:border-red-500">
-                        <button onclick="deleteApexEx(${idx})" class="bg-red-900/50 text-red-500 p-3 hover:bg-red-700 hover:text-white">X</button>
-                    `;
-                    container.appendChild(row);
-                });
-
-            } else {
-                // Morning / Wake Up
-                title.textContent = editingRoutineKey.replace('_', ' ').toUpperCase();
-                editingCopy.forEach((step, idx) => {
-                    const row = document.createElement('div');
-                    row.className = "bg-gray-900 p-3 border-l-4 border-gray-700 mb-3 hover:border-red-600 transition group";
-                    
-                    let inputs = `
-                        <div class="flex gap-2 mb-2">
-                            <input type="text" value="${step.name}" onchange="updateStep(${idx}, 'name', this.value)" class="flex-grow bg-black text-white font-bold p-2 text-lg border border-gray-800 focus:border-red-600">
-                            <select onchange="updateStep(${idx}, 'type', this.value)" class="bg-black text-gray-400 p-2 text-xs uppercase border border-gray-800">
-                                <option value="work" ${step.type==='work'?'selected':''}>Work</option>
-                                <option value="rest" ${step.type==='rest'?'selected':''}>Rest</option>
-                                <option value="rep_work" ${step.type==='rep_work'?'selected':''}>Reps</option>
-                                <option value="cooldown" ${step.type==='cooldown'?'selected':''}>Cool</option>
-                            </select>
-                        </div>
-                    `;
-                    
-                    if(step.type === 'rep_work') {
-                         inputs += `
-                            <div class="flex gap-2 items-center">
-                                <span class="text-xs text-gray-500 uppercase">Details</span>
-                                <input type="text" value="${step.exercises ? step.exercises[0] : ''}" onchange="updateStep(${idx}, 'rep_text', this.value)" class="flex-grow bg-gray-800 text-white p-2 text-sm font-mono" placeholder="e.g. 10 Reps">
-                            </div>
-                        `;
-                    } else {
-                         inputs += `
-                            <div class="flex gap-2 items-center">
-                                <span class="text-xs text-gray-500 uppercase">Seconds</span>
-                                <input type="number" value="${step.duration || 0}" onchange="updateStep(${idx}, 'duration', this.value)" class="w-20 bg-gray-800 text-white p-2 text-xl font-mono text-center">
-                            </div>
-                        `;
-                    }
-                    
-                    inputs += `<div class="mt-2 text-right"><button onclick="deleteStep(${idx})" class="text-xs text-red-500 hover:text-white uppercase font-bold">DELETE STEP</button></div>`;
-                    
-                    row.innerHTML = inputs;
-                    container.appendChild(row);
-                });
-            }
-        }
-
-        // Editor Helpers
-        window.updateApexRest = (val) => { editingCopy.restTime = parseInt(val); };
-        window.updateApexEx = (idx, val) => { editingCopy.exercises[idx] = val; };
-        window.deleteApexEx = (idx) => { editingCopy.exercises.splice(idx, 1); renderEditor(); };
-        window.addStepToEditor = () => {
-            if(editingRoutineKey === 'apex') {
-                editingCopy.exercises.push("New Movement");
-            } else {
-                editingCopy.push({ type: 'work', name: 'New Exercise', duration: 30 });
-            }
-            renderEditor();
-        };
-        window.updateStep = (idx, field, val) => {
-            if(field === 'duration') editingCopy[idx].duration = parseInt(val);
-            else if(field === 'name') editingCopy[idx].name = val;
-            else if(field === 'type') {
-                editingCopy[idx].type = val;
-                // Add defaults if switching type
-                if(val === 'rep_work' && !editingCopy[idx].exercises) editingCopy[idx].exercises = ['10 Reps'];
-                renderEditor();
-            }
-            else if(field === 'rep_text') editingCopy[idx].exercises = [val];
-        };
-        window.deleteStep = (idx) => { editingCopy.splice(idx, 1); renderEditor(); };
-
-        async function saveRoutineChanges() {
-            if(editingRoutineKey === 'apex') {
-                routines.apex_config = editingCopy;
-            } else {
-                routines[editingRoutineKey] = editingCopy;
-            }
-            
-            // Save Local
-            localStorage.setItem(STORAGE_KEY_ROUTINES, JSON.stringify(routines));
-            
-            // Sync Cloud
-            const url = localStorage.getItem(SYNC_URL_KEY);
-            if(url) {
-                try {
-                    await fetch(url, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ action: 'save_routine', data: routines })
-                    });
-                } catch(e) { console.error("Sync save failed"); }
-            }
-            
-            switchScreen('menu');
-        }
-
-        async function syncRoutines(url) {
-            try {
-                const res = await fetch(url);
-                const data = await res.json();
-                if(data.routines && Object.keys(data.routines).length > 0) {
-                    routines = data.routines;
-                    localStorage.setItem(STORAGE_KEY_ROUTINES, JSON.stringify(routines));
-                }
-            } catch(e) {}
-        }
-
-        // --- WORKOUT GENERATORS ---
-        function generateApexRoutine(config, maxReps) {
-            const routine = [];
-            const reps = [];
-            for (let i = 1; i <= maxReps; i++) reps.push(i);
-            for (let i = maxReps - 1; i >= 1; i--) reps.push(i);
-
-            reps.forEach((repCount, idx) => {
-                routine.push({
-                    type: 'rep_work',
-                    name: `${repCount} REP${repCount > 1 ? 'S' : ''}`,
-                    round: `${idx + 1}/${reps.length}`,
-                    exercises: config.exercises // Use the dynamic list
-                });
-                if (idx < reps.length - 1) {
-                    routine.push({
-                        type: 'rest',
-                        name: 'REST',
-                        duration: config.restTime || 30, // Use dynamic rest
-                        round: 'RECOVER'
-                    });
-                }
-            });
-            return routine;
-        }
-
-        // --- MAIN APP LOGIC ---
         function selectWorkout(type) {
-            isManual = els.manualToggle.checked;
             currentWorkoutType = type;
-            if(type === 'apex') return; // Config handled via modal
-            
-            // Use custom routine if available
+            if(type === 'apex') return;
             activeRoutine = routines[type] || defaultRoutines[type];
             goToQuote();
         }
@@ -489,13 +355,8 @@
             const weight = document.getElementById('apex-weight').value || "Bodyweight";
             
             currentWorkoutType = 'apex';
-            // Use configured Apex exercises
             const config = routines.apex_config || defaultRoutines.apex_config;
-            
             activeRoutine = generateApexRoutine(config, max);
-            isManual = els.manualToggle.checked;
-            
-            // Store details for history log
             activeRoutine.details = { maxReps: max, weight: weight };
             
             closeModal('apex-config-modal');
@@ -511,17 +372,11 @@
             startCountdown();
         }
 
-        function startGlobalTimer() {
-            clearInterval(totalInt);
-            totalInt = setInterval(() => {
-                const s = Math.floor((Date.now() - startTime) / 1000);
-                const min = Math.floor(s / 60).toString().padStart(2, '0');
-                const sec = (s % 60).toString().padStart(2, '0');
-                els.totalTime.textContent = `${min}:${sec}`;
-            }, 1000);
-        }
-
         function startCountdown() {
+            // FIX: Clear previous exercise text immediately
+            els.currEx.textContent = ""; 
+            els.nextEx.textContent = ""; 
+            
             runStep({ type: 'countdown', duration: 10, name: '' });
         }
 
@@ -531,18 +386,18 @@
             const pct = (stepIndex / activeRoutine.length) * 100;
             els.bar.style.width = `${pct}%`;
             
-            els.status.textContent = step.type === 'countdown' ? 'PREPARE' : step.type.toUpperCase();
+            els.status.textContent = step.type === 'countdown' ? 'GET READY' : step.type.toUpperCase();
             
             if (step.type !== 'countdown') {
                 els.currEx.textContent = step.name + (step.round ? ` (${step.round})` : '');
                 const next = activeRoutine[stepIndex + 1];
-                els.nextEx.textContent = next ? next.name : 'MISSION COMPLETE';
+                els.nextEx.textContent = next ? next.name : 'COMPLETE';
             }
 
             if (step.type === 'rep_work') {
                 els.timed.classList.add('hidden');
                 els.rep.classList.remove('hidden');
-                els.apexList.innerHTML = step.exercises.map(e => `<div class="flex items-center"><span class="w-2 h-2 bg-red-600 mr-4 rounded-full"></span><span class="text-white">${e}</span></div>`).join('');
+                els.apexList.innerHTML = step.exercises.map(e => `<div class="flex items-center"><span class="w-1.5 h-1.5 bg-wolf-accent mr-3 rounded-full"></span><span class="text-white">${e}</span></div>`).join('');
             } else {
                 els.timed.classList.remove('hidden');
                 els.rep.classList.add('hidden');
@@ -550,7 +405,7 @@
                 
                 let timeLeft = step.duration;
                 els.timer.textContent = timeLeft;
-                els.timer.className = "font-alpha text-[10rem] md:text-[16rem] text-white leading-none tracking-tighter select-none";
+                els.timer.classList.remove('text-wolf-accent');
                 
                 timerInt = setInterval(() => {
                     timeLeft--;
@@ -558,8 +413,7 @@
                     
                     if (timeLeft <= 3 && timeLeft > 0) {
                         beep('Low');
-                        els.timer.classList.add('text-red-600');
-                        els.timer.classList.remove('text-white');
+                        els.timer.classList.add('text-wolf-accent');
                     }
                     
                     if (timeLeft <= 0) {
@@ -580,9 +434,7 @@
         }
 
         function nextStep() {
-            // Move index
-            if(els.status.textContent !== 'PREPARE') stepIndex++;
-            
+            if(els.status.textContent !== 'GET READY') stepIndex++;
             if (stepIndex >= activeRoutine.length) {
                 finishWorkout();
                 return;
@@ -590,23 +442,16 @@
             runStep(activeRoutine[stepIndex]);
         }
 
-        // Input Handlers
         els.manualBtn.addEventListener('click', () => { beep('Mid'); nextStep(); });
-        document.getElementById('round-complete-btn').addEventListener('click', () => {
-            beep('Mid');
-            nextStep();
-        });
+        document.getElementById('round-complete-btn').addEventListener('click', () => { beep('Mid'); nextStep(); });
 
         function finishWorkout() {
             clearInterval(totalInt);
             beep('High');
-            const totalSeconds = Math.floor((Date.now() - startTime) / 1000);
-            const min = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
-            const sec = (totalSeconds % 60).toString().padStart(2, '0');
-            const timeStr = `${min}:${sec}`;
+            const s = Math.floor((Date.now() - startTime) / 1000);
+            const timeStr = formatTime(s);
             els.finalTime.textContent = timeStr;
             
-            // Save Log
             const entry = {
                 date: new Date().toISOString(),
                 type: currentWorkoutType,
@@ -615,59 +460,189 @@
             };
             saveHistoryLog(entry);
             
+            const extraDiv = document.getElementById('final-stats-extra');
+            if (currentWorkoutType === 'apex') {
+                extraDiv.innerHTML = `
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-wolf-muted uppercase text-[10px] tracking-widest">Peak</p>
+                            <p class="text-2xl text-wolf-accent font-heading">${activeRoutine.details.maxReps}</p>
+                        </div>
+                        <div>
+                            <p class="text-wolf-muted uppercase text-[10px] tracking-widest">Load</p>
+                            <p class="text-2xl text-white font-heading">${activeRoutine.details.weight}</p>
+                        </div>
+                    </div>
+                `;
+                extraDiv.classList.remove('hidden');
+            } else {
+                extraDiv.classList.add('hidden');
+            }
+            
             switchScreen('completion');
         }
 
-        // --- STORAGE & SYNC ---
+        // --- UTILS ---
+        function formatTime(s) {
+            const min = Math.floor(s / 60).toString().padStart(2, '0');
+            const sec = (s % 60).toString().padStart(2, '0');
+            return `${min}:${sec}`;
+        }
+        function startGlobalTimer() {
+            clearInterval(totalInt);
+            totalInt = setInterval(() => {
+                const s = Math.floor((Date.now() - startTime) / 1000);
+                els.totalTime.textContent = formatTime(s);
+            }, 1000);
+        }
+        function generateApexRoutine(config, maxReps) {
+            const routine = [];
+            const reps = [];
+            for (let i = 1; i <= maxReps; i++) reps.push(i);
+            for (let i = maxReps - 1; i >= 1; i--) reps.push(i);
+
+            reps.forEach((repCount, idx) => {
+                routine.push({
+                    type: 'rep_work',
+                    name: `${repCount} Reps`,
+                    round: `${idx + 1}/${reps.length}`,
+                    exercises: config.exercises
+                });
+                if (idx < reps.length - 1) {
+                    routine.push({ type: 'rest', name: 'Rest', duration: config.restTime || 30, round: 'Recover' });
+                }
+            });
+            return routine;
+        }
+
+        // --- EDITOR LOGIC ---
+        function openEditor(key) {
+            editingRoutineKey = key;
+            closeModal('editor-select-modal');
+            if(key === 'apex') {
+                editingCopy = JSON.parse(JSON.stringify(routines.apex_config || defaultRoutines.apex_config));
+            } else {
+                editingCopy = JSON.parse(JSON.stringify(routines[key] || defaultRoutines[key]));
+            }
+            renderEditor();
+            switchScreen('editor');
+        }
+
+        function renderEditor() {
+            const container = document.getElementById('editor-content');
+            const title = document.getElementById('editor-title');
+            container.innerHTML = '';
+            
+            if(editingRoutineKey === 'apex') {
+                title.textContent = "EDIT APEX";
+                const restDiv = document.createElement('div');
+                restDiv.className = "bg-wolf-surface p-4 mb-4 rounded-lg border border-wolf-border";
+                restDiv.innerHTML = `
+                    <label class="text-xs text-wolf-muted uppercase font-bold">Ladder Rest Time (Seconds)</label>
+                    <input type="number" onchange="updateApexRest(this.value)" value="${editingCopy.restTime}" class="w-full bg-wolf-bg text-white p-2 mt-2 rounded border border-wolf-border focus:border-wolf-accent outline-none">
+                `;
+                container.appendChild(restDiv);
+                editingCopy.exercises.forEach((ex, idx) => {
+                    const row = document.createElement('div');
+                    row.className = "flex gap-2 mb-2 items-center";
+                    row.innerHTML = `
+                        <span class="text-wolf-muted text-xs w-4">${idx+1}.</span>
+                        <input type="text" value="${ex}" onchange="updateApexEx(${idx}, this.value)" class="flex-grow bg-wolf-surface text-white p-3 rounded border border-wolf-border text-sm focus:border-wolf-accent outline-none">
+                        <button onclick="deleteApexEx(${idx})" class="text-red-500 hover:text-red-400 p-2">✕</button>
+                    `;
+                    container.appendChild(row);
+                });
+            } else {
+                title.textContent = editingRoutineKey.replace('_', ' ').toUpperCase();
+                editingCopy.forEach((step, idx) => {
+                    const row = document.createElement('div');
+                    row.className = "bg-wolf-surface p-3 rounded-lg border border-wolf-border mb-3";
+                    let inputs = `
+                        <div class="flex gap-2 mb-2">
+                            <input type="text" value="${step.name}" onchange="updateStep(${idx}, 'name', this.value)" class="flex-grow bg-wolf-bg text-white font-medium p-2 rounded text-sm border border-wolf-border focus:border-wolf-accent outline-none">
+                            <select onchange="updateStep(${idx}, 'type', this.value)" class="bg-wolf-bg text-wolf-muted p-2 text-xs uppercase rounded border border-wolf-border outline-none">
+                                <option value="work" ${step.type==='work'?'selected':''}>Work</option>
+                                <option value="rest" ${step.type==='rest'?'selected':''}>Rest</option>
+                                <option value="rep_work" ${step.type==='rep_work'?'selected':''}>Reps</option>
+                                <option value="cooldown" ${step.type==='cooldown'?'selected':''}>Cool</option>
+                            </select>
+                        </div>
+                    `;
+                    if(step.type === 'rep_work') {
+                         inputs += `
+                            <div class="flex gap-2 items-center">
+                                <span class="text-xs text-wolf-muted">Detail</span>
+                                <input type="text" value="${step.exercises ? step.exercises[0] : ''}" onchange="updateStep(${idx}, 'rep_text', this.value)" class="flex-grow bg-wolf-bg text-white p-2 text-xs rounded border border-wolf-border outline-none">
+                            </div>`;
+                    } else {
+                         inputs += `
+                            <div class="flex gap-2 items-center">
+                                <span class="text-xs text-wolf-muted">Secs</span>
+                                <input type="number" value="${step.duration || 0}" onchange="updateStep(${idx}, 'duration', this.value)" class="w-20 bg-wolf-bg text-white p-2 text-sm text-center rounded border border-wolf-border outline-none">
+                            </div>`;
+                    }
+                    inputs += `<div class="mt-2 text-right"><button onclick="deleteStep(${idx})" class="text-[10px] text-red-500 hover:text-white uppercase font-bold tracking-wider">Remove</button></div>`;
+                    row.innerHTML = inputs;
+                    container.appendChild(row);
+                });
+            }
+        }
+        window.updateApexRest = (val) => { editingCopy.restTime = parseInt(val); };
+        window.updateApexEx = (idx, val) => { editingCopy.exercises[idx] = val; };
+        window.deleteApexEx = (idx) => { editingCopy.exercises.splice(idx, 1); renderEditor(); };
+        window.addStepToEditor = () => {
+            if(editingRoutineKey === 'apex') editingCopy.exercises.push("New Movement");
+            else editingCopy.push({ type: 'work', name: 'New Exercise', duration: 30 });
+            renderEditor();
+        };
+        window.updateStep = (idx, field, val) => {
+            if(field === 'duration') editingCopy[idx].duration = parseInt(val);
+            else if(field === 'name') editingCopy[idx].name = val;
+            else if(field === 'type') {
+                editingCopy[idx].type = val;
+                if(val === 'rep_work' && !editingCopy[idx].exercises) editingCopy[idx].exercises = ['10 Reps'];
+                renderEditor();
+            }
+            else if(field === 'rep_text') editingCopy[idx].exercises = [val];
+        };
+        window.deleteStep = (idx) => { editingCopy.splice(idx, 1); renderEditor(); };
+        
+        async function saveRoutineChanges() {
+            if(editingRoutineKey === 'apex') routines.apex_config = editingCopy;
+            else routines[editingRoutineKey] = editingCopy;
+            
+            localStorage.setItem(STORAGE_KEY_ROUTINES, JSON.stringify(routines));
+            const url = localStorage.getItem(SYNC_URL_KEY);
+            if(url) {
+                try {
+                    await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'save_routine', data: routines }) });
+                } catch(e) {}
+            }
+            switchScreen('menu');
+        }
+        async function syncRoutines(url) {
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                if(data.routines && Object.keys(data.routines).length > 0) {
+                    routines = data.routines;
+                    localStorage.setItem(STORAGE_KEY_ROUTINES, JSON.stringify(routines));
+                }
+            } catch(e) {}
+        }
+
+        // --- STORAGE ---
         async function saveHistoryLog(entry) {
             const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
             h.push(entry);
             localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
-            
             const url = localStorage.getItem(SYNC_URL_KEY);
             if(url) {
                 try {
-                    await fetch(url, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify(entry) // Default action is log
-                    });
+                    await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(entry) });
                 } catch(e) {}
             }
         }
-        
-        // --- SCREEN MANAGERS ---
-        function switchScreen(name) {
-            Object.values(screens).forEach(s => s.classList.remove('active'));
-            screens[name].classList.add('active');
-        }
-        window.openModal = (id) => {
-            if(id === 'sync-modal') els.syncInput.value = localStorage.getItem(SYNC_URL_KEY) || '';
-            document.getElementById(id).classList.remove('hidden');
-        };
-        window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
-        window.openApexConfig = () => openModal('apex-config-modal');
-        window.goToMenu = () => {
-            clearInterval(timerInt);
-            clearInterval(totalInt);
-            switchScreen('menu');
-        };
-        window.saveSyncUrl = () => {
-            const url = els.syncInput.value.trim();
-            if(url) {
-                localStorage.setItem(SYNC_URL_KEY, url);
-                els.syncStatus.textContent = "CLOUD LINKED";
-                els.syncStatus.classList.add('text-green-600');
-                syncRoutines(url);
-            } else {
-                localStorage.removeItem(SYNC_URL_KEY);
-                els.syncStatus.textContent = "LOCAL MODE";
-                els.syncStatus.classList.remove('text-green-600');
-            }
-            closeModal('sync-modal');
-        };
-        
         async function showHistory() {
             switchScreen('history');
             const list = document.getElementById('history-list');
@@ -677,7 +652,6 @@
             
             const url = localStorage.getItem(SYNC_URL_KEY);
             let history = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
-            
             if(url) {
                 try {
                     const res = await fetch(url);
@@ -688,32 +662,64 @@
                 history.sort((a,b) => new Date(b.date) - new Date(a.date));
             }
             loading.classList.add('hidden');
-            
             if(history.length === 0) {
                 document.getElementById('no-history-msg').classList.remove('hidden');
                 return;
             }
-             document.getElementById('no-history-msg').classList.add('hidden');
-
+            document.getElementById('no-history-msg').classList.add('hidden');
             history.forEach(log => {
                 const date = new Date(log.date);
-                const niceDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                const niceTime = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
                 const el = document.createElement('div');
-                el.className = 'bg-gray-900 border-l-4 border-red-800 p-4 flex justify-between items-center shadow-lg';
+                el.className = 'bg-wolf-surface border-l-4 border-wolf-accent p-4 flex justify-between items-center rounded-r shadow-sm';
                 el.innerHTML = `
                     <div>
-                        <p class="text-white font-bold text-lg uppercase">${log.type.replace('_', ' ')}</p>
-                        <p class="text-gray-500 text-xs uppercase">${niceDate} @ ${niceTime}</p>
-                        ${(log.details && log.details.maxReps) ? `<p class="text-red-500 text-xs mt-1 font-bold">MAX: ${log.details.maxReps} | ${log.details.weight}</p>` : ''}
+                        <p class="text-white font-bold text-lg uppercase font-heading tracking-wide">${log.type.replace('_', ' ')}</p>
+                        <p class="text-wolf-muted text-xs uppercase">${date.toLocaleDateString()}</p>
+                        ${(log.details && log.details.maxReps) ? `<span class="inline-block mt-1 bg-wolf-bg px-2 py-0.5 rounded text-[10px] text-wolf-accent border border-wolf-border">MAX: ${log.details.maxReps} | ${log.details.weight}</span>` : ''}
                     </div>
-                    <div class="font-mono text-2xl text-white font-bold">${log.duration}</div>
+                    <div class="font-heading text-2xl text-wolf-text">${log.duration}</div>
                 `;
                 list.appendChild(el);
             });
         }
         
-        // --- QUOTES & AUDIO ---
+        // --- SCREEN & UTILS ---
+        function switchScreen(name) {
+            Object.values(screens).forEach(s => s.classList.remove('active'));
+            screens[name].classList.add('active');
+        }
+        window.openModal = (id) => {
+            if(id === 'sync-modal') els.syncInput.value = localStorage.getItem(SYNC_URL_KEY) || '';
+            document.getElementById(id).classList.remove('hidden');
+        };
+        window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
+        window.openApexConfig = () => openModal('apex-config-modal');
+        window.adjustRep = (delta) => {
+            const input = document.getElementById('apex-max-reps');
+            let val = parseInt(input.value) || 1;
+            val += delta;
+            if(val < 1) val = 1;
+            input.value = val;
+        };
+        window.goToMenu = () => {
+            clearInterval(timerInt);
+            clearInterval(totalInt);
+            switchScreen('menu');
+        };
+        window.saveSyncUrl = () => {
+            const url = els.syncInput.value.trim();
+            if(url) {
+                localStorage.setItem(SYNC_URL_KEY, url);
+                els.syncStatus.textContent = "CLOUD ACTIVE";
+                els.syncStatus.classList.add('text-wolf-accent');
+                syncRoutines(url);
+            } else {
+                localStorage.removeItem(SYNC_URL_KEY);
+                els.syncStatus.textContent = "Local Storage Active";
+                els.syncStatus.classList.remove('text-wolf-accent');
+            }
+            closeModal('sync-modal');
+        };
         function goToQuote() {
             const quotes = [
                 {q: "The wolf on the hill is not as hungry as the wolf climbing the hill.", a: "Arnold Schwarzenegger"},
@@ -735,11 +741,11 @@
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.frequency.value = freqs[type];
-            osc.type = 'square';
-            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+            osc.type = 'triangle'; 
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
             osc.start();
-            osc.stop(audioCtx.currentTime + 0.15);
+            osc.stop(audioCtx.currentTime + 0.3);
         }
     </script>
 </body>
