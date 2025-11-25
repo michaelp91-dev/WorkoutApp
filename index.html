@@ -392,12 +392,15 @@
                 if(key === 'apex_config') return;
                 
                 const item = document.createElement('div');
-                item.className = "flex justify-between items-center bg-wolf-bg p-3 rounded border border-wolf-border";
+                item.className = "flex flex-col bg-wolf-bg p-3 rounded border border-wolf-border gap-2";
                 item.innerHTML = `
-                    <span class="text-wolf-text truncate max-w-[60%]">${key}</span>
-                    <div class="flex gap-4">
-                        <button onclick="openEditor('${key}')" class="text-wolf-muted text-sm font-bold uppercase hover:text-white">Edit</button>
-                        <button onclick="deleteWorkout('${key}')" class="text-red-900 text-sm font-bold uppercase hover:text-red-500">Delete</button>
+                    <div class="flex justify-between items-center">
+                        <span class="text-wolf-text truncate font-bold">${key}</span>
+                    </div>
+                    <div class="flex gap-2 justify-end mt-1">
+                        <button onclick="renameWorkout('${key}')" class="text-wolf-muted text-xs font-bold uppercase hover:text-white px-2 py-1 border border-wolf-border rounded">Rename</button>
+                        <button onclick="openEditor('${key}')" class="text-wolf-muted text-xs font-bold uppercase hover:text-white px-2 py-1 border border-wolf-border rounded">Edit</button>
+                        <button onclick="deleteWorkout('${key}')" class="text-red-900 text-xs font-bold uppercase hover:text-red-500 px-2 py-1 border border-red-900/30 rounded">Delete</button>
                     </div>
                 `;
                 els.managerList.appendChild(item);
@@ -409,7 +412,6 @@
             if(!name) return alert("Enter a name first.");
             if(routines[name]) return alert("Name already exists.");
             
-            // Default Template
             routines[name] = [
                 { type: 'work', name: 'First Exercise', duration: 30 },
                 { type: 'rest', name: 'Rest', duration: 30 }
@@ -417,6 +419,20 @@
             
             await saveRoutinesToStorage();
             els.newWorkoutName.value = '';
+            renderManagerList();
+            renderMenuWorkouts();
+        }
+
+        async function renameWorkout(oldKey) {
+            const newName = prompt("Enter new protocol name:", oldKey);
+            if(!newName || newName === oldKey) return;
+            if(routines[newName]) return alert("That name is already taken.");
+            
+            // Clone and Delete
+            routines[newName] = routines[oldKey];
+            delete routines[oldKey];
+            
+            await saveRoutinesToStorage();
             renderManagerList();
             renderMenuWorkouts();
         }
