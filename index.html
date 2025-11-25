@@ -19,11 +19,11 @@
                 extend: {
                     colors: {
                         wolf: {
-                            bg: '#0c0a09',      /* warm black */
-                            surface: '#1c1917', /* dark stone */
-                            border: '#44403c',  /* stone outline */
-                            text: '#e7e5e4',    /* warm light grey */
-                            accent: '#b45309',  /* earthy amber/rust */
+                            bg: '#0c0a09',      
+                            surface: '#1c1917', 
+                            border: '#44403c',  
+                            text: '#e7e5e4',    
+                            accent: '#b45309',  
                             accentHover: '#92400e',
                             muted: '#78716c',
                         }
@@ -39,17 +39,15 @@
 
     <style>
         body {
-            background-color: #0c0a09; /* wolf-bg */
-            color: #e7e5e4; /* wolf-text */
+            background-color: #0c0a09;
+            color: #e7e5e4;
             font-family: 'Inter', sans-serif;
             overscroll-behavior: none;
         }
         h1, h2, h3, .font-heading { font-family: 'Oswald', sans-serif; }
-        
         .screen { display: none; }
         .active { display: flex; }
         
-        /* Custom UI Elements */
         .btn-primary {
             background-color: #b45309;
             color: white;
@@ -64,7 +62,7 @@
         .btn-primary:hover { background-color: #92400e; }
 
         .btn-secondary {
-            background-color: #292524; /* wolf-surface */
+            background-color: #292524;
             border: 1px solid #44403c;
             color: #d6d3d1;
             font-family: 'Oswald', sans-serif;
@@ -76,14 +74,9 @@
         .btn-secondary:active { transform: translateY(1px); }
         .btn-secondary:hover { border-color: #78716c; color: white; }
 
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #0c0a09; }
         ::-webkit-scrollbar-thumb { background: #44403c; border-radius: 3px; }
-        
-        /* Toggle Switch */
-        .toggle-checkbox:checked { right: 0; border-color: #b45309; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #b45309; }
     </style>
 </head>
 <body class="h-screen overflow-hidden selection:bg-wolf-accent selection:text-white">
@@ -133,17 +126,29 @@
 
         <div class="z-10 text-center w-full max-w-sm flex flex-col items-center">
             <h1 class="font-heading text-6xl text-wolf-text tracking-tight mb-2">WOLF<span class="text-wolf-accent">ALPHA</span></h1>
-            <p class="text-wolf-muted text-sm uppercase tracking-[0.3em] mb-10">Conquer Your Day</p>
+            <p class="text-wolf-muted text-sm uppercase tracking-[0.3em] mb-8">Conquer Your Day</p>
 
-            <div class="flex items-center justify-between mb-8 bg-wolf-surface p-1 rounded-lg w-full border border-wolf-border">
-                 <label class="flex-1 text-center cursor-pointer">
-                    <input type="radio" name="mode-toggle" value="auto" class="peer sr-only" checked onchange="toggleMode(false)">
-                    <span class="block py-2 rounded-md text-xs font-bold uppercase text-wolf-muted peer-checked:bg-wolf-bg peer-checked:text-white transition">Auto Timer</span>
-                </label>
-                <label class="flex-1 text-center cursor-pointer">
-                    <input type="radio" name="mode-toggle" value="manual" class="peer sr-only" onchange="toggleMode(true)">
-                    <span class="block py-2 rounded-md text-xs font-bold uppercase text-wolf-muted peer-checked:bg-wolf-accent peer-checked:text-white transition">Manual</span>
-                </label>
+            <div class="w-full space-y-3 mb-8">
+                <div class="flex items-center justify-between bg-wolf-surface p-1 rounded-lg border border-wolf-border">
+                    <label class="flex-1 text-center cursor-pointer">
+                        <input type="radio" name="mode-toggle" value="auto" class="peer sr-only" checked onchange="toggleMode(false)">
+                        <span class="block py-2 rounded-md text-xs font-bold uppercase text-wolf-muted peer-checked:bg-wolf-bg peer-checked:text-white transition">Auto Timer</span>
+                    </label>
+                    <label class="flex-1 text-center cursor-pointer">
+                        <input type="radio" name="mode-toggle" value="manual" class="peer sr-only" onchange="toggleMode(true)">
+                        <span class="block py-2 rounded-md text-xs font-bold uppercase text-wolf-muted peer-checked:bg-wolf-accent peer-checked:text-white transition">Manual</span>
+                    </label>
+                </div>
+                <div class="flex items-center justify-between bg-wolf-surface p-1 rounded-lg border border-wolf-border">
+                    <label class="flex-1 text-center cursor-pointer">
+                        <input type="radio" name="track-toggle" value="on" class="peer sr-only" checked onchange="toggleTracking(true)">
+                        <span class="block py-2 rounded-md text-xs font-bold uppercase text-wolf-muted peer-checked:bg-wolf-bg peer-checked:text-white transition">Record Stats</span>
+                    </label>
+                    <label class="flex-1 text-center cursor-pointer">
+                        <input type="radio" name="track-toggle" value="off" class="peer sr-only" onchange="toggleTracking(false)">
+                        <span class="block py-2 rounded-md text-xs font-bold uppercase text-wolf-muted peer-checked:bg-gray-700 peer-checked:text-white transition">Incognito</span>
+                    </label>
+                </div>
             </div>
 
             <div class="space-y-3 flex flex-col w-full">
@@ -196,7 +201,7 @@
         <div class="absolute top-0 left-0 w-full p-6 flex justify-between items-start z-20">
             <div>
                 <span class="text-wolf-muted text-[10px] uppercase tracking-widest block">Elapsed</span>
-                <span id="total-time-display" class="font-heading text-2xl text-wolf-text">00:00</span>
+                <span id="total-time-display" class="font-heading text-2xl text-wolf-text">--:--</span>
             </div>
             <button onclick="goToMenu()" class="text-wolf-muted hover:text-white text-xs font-bold uppercase tracking-widest px-3 py-1 border border-transparent hover:border-wolf-muted rounded transition">Exit</button>
         </div>
@@ -232,7 +237,7 @@
         
         <div class="bg-wolf-surface border border-wolf-border p-8 w-full max-w-sm mb-10 rounded-xl">
             <p class="text-wolf-muted text-[10px] uppercase tracking-widest mb-1">Total Time</p>
-            <p id="final-time-display" class="text-6xl text-white font-heading my-2"></p>
+            <p id="final-time-display" class="text-6xl text-white font-heading my-2">--:--</p>
             <div id="final-stats-extra" class="mt-6 pt-6 border-t border-wolf-border text-left hidden"></div>
         </div>
         
@@ -253,7 +258,7 @@
     </div>
 
     <script>
-        // --- DATA & CONFIG ---
+        // --- DATA ---
         const STORAGE_KEY_HIST = 'wolf_history';
         const STORAGE_KEY_ROUTINES = 'wolf_routines';
         const SYNC_URL_KEY = 'wolf_sync_url';
@@ -323,13 +328,12 @@
         let totalInt = null;
         let startTime = null;
         let isManual = false;
+        let isTracking = true; // Default On
         let audioCtx;
-        
-        // Editor State
         let editingRoutineKey = null;
         let editingCopy = null;
 
-        // --- APP INIT ---
+        // --- INIT ---
         window.addEventListener('DOMContentLoaded', () => {
             const savedUrl = localStorage.getItem(SYNC_URL_KEY);
             if(savedUrl) {
@@ -340,8 +344,9 @@
             document.getElementById('start-btn').addEventListener('click', startWorkoutSession);
         });
 
-        // --- LOGIC ---
+        // --- CONTROL ---
         window.toggleMode = (val) => { isManual = val; };
+        window.toggleTracking = (val) => { isTracking = val; };
 
         function selectWorkout(type) {
             currentWorkoutType = type;
@@ -353,12 +358,10 @@
         function confirmApexStart() {
             const max = parseInt(document.getElementById('apex-max-reps').value) || 8;
             const weight = document.getElementById('apex-weight').value || "Bodyweight";
-            
             currentWorkoutType = 'apex';
             const config = routines.apex_config || defaultRoutines.apex_config;
             activeRoutine = generateApexRoutine(config, max);
             activeRoutine.details = { maxReps: max, weight: weight };
-            
             closeModal('apex-config-modal');
             goToQuote();
         }
@@ -366,23 +369,32 @@
         function startWorkoutSession() {
             initAudio();
             stepIndex = 0;
-            startTime = Date.now();
+            startTime = null; // Don't start clock yet
+            els.totalTime.textContent = "--:--"; // Reset display
             switchScreen('workout');
-            startGlobalTimer();
             startCountdown();
         }
 
         function startCountdown() {
-            // FIX: Clear previous exercise text immediately
+            // Clear previous exercise text
             els.currEx.textContent = ""; 
             els.nextEx.textContent = ""; 
-            
             runStep({ type: 'countdown', duration: 10, name: '' });
+        }
+
+        function startMissionClock() {
+            if(!isTracking) return; // Don't run clock if not tracking
+            startTime = Date.now();
+            clearInterval(totalInt);
+            totalInt = setInterval(() => {
+                const s = Math.floor((Date.now() - startTime) / 1000);
+                els.totalTime.textContent = formatTime(s);
+            }, 1000);
+            els.totalTime.textContent = "00:00"; // Initial set
         }
 
         function runStep(step) {
             clearInterval(timerInt);
-            
             const pct = (stepIndex / activeRoutine.length) * 100;
             els.bar.style.width = `${pct}%`;
             
@@ -420,7 +432,9 @@
                         clearInterval(timerInt);
                         beep('High');
                         
+                        // Transition Logic
                         if (step.type === 'countdown') {
+                            startMissionClock(); // Start global timer NOW
                             nextStep();
                         } else if (isManual && (step.type === 'work' || step.type === 'rest')) {
                             els.timer.textContent = "0";
@@ -448,19 +462,24 @@
         function finishWorkout() {
             clearInterval(totalInt);
             beep('High');
-            const s = Math.floor((Date.now() - startTime) / 1000);
-            const timeStr = formatTime(s);
+            
+            let timeStr = "--:--";
+            if (isTracking && startTime) {
+                const s = Math.floor((Date.now() - startTime) / 1000);
+                timeStr = formatTime(s);
+                const entry = {
+                    date: new Date().toISOString(),
+                    type: currentWorkoutType,
+                    duration: timeStr,
+                    details: activeRoutine.details || {}
+                };
+                saveHistoryLog(entry);
+            }
+            
             els.finalTime.textContent = timeStr;
-            
-            const entry = {
-                date: new Date().toISOString(),
-                type: currentWorkoutType,
-                duration: timeStr,
-                details: activeRoutine.details || {}
-            };
-            saveHistoryLog(entry);
-            
             const extraDiv = document.getElementById('final-stats-extra');
+            
+            // Only show stats if we have them (Apex)
             if (currentWorkoutType === 'apex') {
                 extraDiv.innerHTML = `
                     <div class="grid grid-cols-2 gap-4">
@@ -487,13 +506,6 @@
             const min = Math.floor(s / 60).toString().padStart(2, '0');
             const sec = (s % 60).toString().padStart(2, '0');
             return `${min}:${sec}`;
-        }
-        function startGlobalTimer() {
-            clearInterval(totalInt);
-            totalInt = setInterval(() => {
-                const s = Math.floor((Date.now() - startTime) / 1000);
-                els.totalTime.textContent = formatTime(s);
-            }, 1000);
         }
         function generateApexRoutine(config, maxReps) {
             const routine = [];
