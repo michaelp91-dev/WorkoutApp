@@ -84,11 +84,12 @@
     <div id="sync-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl shadow-2xl">
             <h2 class="font-heading text-2xl text-wolf-accent mb-2 tracking-wide">CLOUD SYNC</h2>
-            <p class="text-wolf-muted text-sm mb-4">Enter Google Web App URL to enable cross-device history.</p>
-            <input type="text" id="sync-url-input" placeholder="https://script.google.com/..." class="w-full bg-wolf-bg border border-wolf-border text-wolf-text p-3 mb-6 rounded-lg text-sm font-mono focus:border-wolf-accent outline-none">
-            <div class="flex gap-3">
-                <button onclick="closeModal('sync-modal')" class="flex-1 py-3 btn-secondary">Cancel</button>
-                <button onclick="saveSyncUrl()" class="flex-1 py-3 btn-primary">Connect</button>
+            <p class="text-wolf-muted text-sm mb-4">
+                System status: <span id="modal-status" class="text-white font-bold">CHECKING...</span>
+            </p>
+            <p class="text-[10px] text-wolf-muted">To change the URL, edit the HARDCODED_URL variable in the source code.</p>
+            <div class="flex gap-3 mt-4">
+                <button onclick="closeModal('sync-modal')" class="flex-1 py-3 btn-secondary">Close</button>
             </div>
         </div>
     </div>
@@ -166,7 +167,7 @@
                 </div>
             </div>
             
-            <div id="sync-status" class="mt-6 text-[10px] text-wolf-muted uppercase tracking-widest opacity-50">Local Storage Active</div>
+            <div id="sync-status" class="mt-6 text-[10px] text-wolf-muted uppercase tracking-widest opacity-50">Connecting...</div>
         </div>
     </div>
 
@@ -262,11 +263,17 @@
     </div>
 
     <script>
-        // --- CONFIG ---
+        // --------------------------------------------------------------
+        // >>> ACTION REQUIRED: PASTE YOUR GOOGLE SCRIPT URL BELOW <<<
+        // Example: "https://script.google.com/macros/s/AKfycbx.../exec"
+        // --------------------------------------------------------------
+        const HARDCODED_URL = "https://script.google.com/macros/s/AKfycbwXWzOPRt2LWKCtcryrodToEvnLQPGwCLj7FjPIJV4vvWmmLyakT_-fmnlKyXsarIDV/exec"; 
+        // --------------------------------------------------------------
+
         const STORAGE_KEY_HIST = 'wolf_history';
         const STORAGE_KEY_ROUTINES = 'wolf_routines';
-        const SYNC_URL_KEY = 'wolf_sync_url';
-
+        // We ignore local storage for URL if hardcoded exists
+        
         const defaultRoutines = {
             'Wake Up': [
                 { type: 'work', name: 'Bounce & Breathe', duration: 60 },
@@ -321,8 +328,8 @@
             apexList: document.getElementById('apex-exercise-list'),
             totalTime: document.getElementById('total-time-display'),
             finalTime: document.getElementById('final-time-display'),
-            syncInput: document.getElementById('sync-url-input'),
             syncStatus: document.getElementById('sync-status'),
+            modalStatus: document.getElementById('modal-status'),
             workoutList: document.getElementById('workout-list-container'),
             managerList: document.getElementById('manager-list'),
             newWorkoutName: document.getElementById('new-workout-name')
@@ -342,27 +349,38 @@
 
         // --- INIT ---
         window.addEventListener('DOMContentLoaded', () => {
-            const savedUrl = localStorage.getItem(SYNC_URL_KEY);
-            if(savedUrl) {
-                els.syncStatus.textContent = "CLOUD ACTIVE";
-                els.syncStatus.classList.add('text-wolf-accent');
-                syncRoutines(savedUrl); 
-            }
+            initSync();
             renderMenuWorkouts();
             document.getElementById('start-btn').addEventListener('click', startWorkoutSession);
         });
 
+        // --- SYNC LOGIC ---
+        function initSync() {
+            if(HARDCODED_URL && HARDCODED_URL.startsWith('http')) {
+                els.syncStatus.textContent = "CLOUD ACTIVE (HARDCODED)";
+                els.syncStatus.classList.add('text-wolf-accent');
+                els.modalStatus.textContent = "CONNECTED VIA CODE";
+                els.modalStatus.classList.add('text-green-500');
+                syncRoutines();
+            } else {
+                els.syncStatus.textContent = "LOCAL MODE";
+                els.modalStatus.textContent = "NOT CONNECTED";
+                els.modalStatus.classList.add('text-red-500');
+            }
+        }
+
+        function getApiUrl() {
+            return (HARDCODED_URL && HARDCODED_URL.startsWith('http')) ? HARDCODED_URL : null;
+        }
+
         // --- DYNAMIC MENU ---
         function renderMenuWorkouts() {
             els.workoutList.innerHTML = '';
-            // Render custom workouts
             Object.keys(routines).forEach(key => {
-                if(key === 'apex_config') return; // Skip Apex, handled separately
-                
+                if(key === 'apex_config') return;
                 const btn = document.createElement('button');
                 btn.className = "w-full btn-secondary py-4 text-lg";
                 if(key === 'Morning Grind') btn.className = "w-full btn-primary py-4 text-xl shadow-lg shadow-orange-900/20";
-                
                 btn.textContent = key;
                 btn.onclick = () => selectWorkout(key);
                 els.workoutList.appendChild(btn);
@@ -370,73 +388,41 @@
         }
 
         // --- WORKOUT MANAGER ---
-        function openManager() {
-            renderManagerList();
-            openModal('editor-select-modal');
-        }
-
+        function openManager() { renderManagerList(); openModal('editor-select-modal'); }
         function renderManagerList() {
             els.managerList.innerHTML = '';
-            
-            // Apex (Fixed)
             const apexItem = document.createElement('div');
             apexItem.className = "flex justify-between items-center bg-wolf-bg p-3 rounded border border-wolf-border";
-            apexItem.innerHTML = `
-                <span class="text-wolf-text font-bold">APEX PROTOCOL</span>
-                <button onclick="openEditor('apex')" class="text-wolf-accent text-sm font-bold uppercase hover:text-white">Edit</button>
-            `;
+            apexItem.innerHTML = `<span class="text-wolf-text font-bold">APEX PROTOCOL</span><button onclick="openEditor('apex')" class="text-wolf-accent text-sm font-bold uppercase hover:text-white">Edit</button>`;
             els.managerList.appendChild(apexItem);
-
-            // Custom Routines
             Object.keys(routines).forEach(key => {
                 if(key === 'apex_config') return;
-                
                 const item = document.createElement('div');
                 item.className = "flex flex-col bg-wolf-bg p-3 rounded border border-wolf-border gap-2";
-                item.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <span class="text-wolf-text truncate font-bold">${key}</span>
-                    </div>
-                    <div class="flex gap-2 justify-end mt-1">
-                        <button onclick="renameWorkout('${key}')" class="text-wolf-muted text-xs font-bold uppercase hover:text-white px-2 py-1 border border-wolf-border rounded">Rename</button>
-                        <button onclick="openEditor('${key}')" class="text-wolf-muted text-xs font-bold uppercase hover:text-white px-2 py-1 border border-wolf-border rounded">Edit</button>
-                        <button onclick="deleteWorkout('${key}')" class="text-red-900 text-xs font-bold uppercase hover:text-red-500 px-2 py-1 border border-red-900/30 rounded">Delete</button>
-                    </div>
-                `;
+                item.innerHTML = `<div class="flex justify-between items-center"><span class="text-wolf-text truncate font-bold">${key}</span></div><div class="flex gap-2 justify-end mt-1"><button onclick="renameWorkout('${key}')" class="text-wolf-muted text-xs font-bold uppercase hover:text-white px-2 py-1 border border-wolf-border rounded">Rename</button><button onclick="openEditor('${key}')" class="text-wolf-muted text-xs font-bold uppercase hover:text-white px-2 py-1 border border-wolf-border rounded">Edit</button><button onclick="deleteWorkout('${key}')" class="text-red-900 text-xs font-bold uppercase hover:text-red-500 px-2 py-1 border border-red-900/30 rounded">Delete</button></div>`;
                 els.managerList.appendChild(item);
             });
         }
-
         async function createNewWorkout() {
             const name = els.newWorkoutName.value.trim();
             if(!name) return alert("Enter a name first.");
             if(routines[name]) return alert("Name already exists.");
-            
-            routines[name] = [
-                { type: 'work', name: 'First Exercise', duration: 30 },
-                { type: 'rest', name: 'Rest', duration: 30 }
-            ];
-            
+            routines[name] = [{ type: 'work', name: 'First Exercise', duration: 30 }, { type: 'rest', name: 'Rest', duration: 30 }];
             await saveRoutinesToStorage();
             els.newWorkoutName.value = '';
             renderManagerList();
             renderMenuWorkouts();
         }
-
         async function renameWorkout(oldKey) {
             const newName = prompt("Enter new protocol name:", oldKey);
             if(!newName || newName === oldKey) return;
             if(routines[newName]) return alert("That name is already taken.");
-            
-            // Clone and Delete
             routines[newName] = routines[oldKey];
             delete routines[oldKey];
-            
             await saveRoutinesToStorage();
             renderManagerList();
             renderMenuWorkouts();
         }
-
         async function deleteWorkout(key) {
             if(!confirm(`Delete ${key} permanently?`)) return;
             delete routines[key];
@@ -444,27 +430,18 @@
             renderManagerList();
             renderMenuWorkouts();
         }
-
         async function saveRoutinesToStorage() {
             localStorage.setItem(STORAGE_KEY_ROUTINES, JSON.stringify(routines));
-            const url = localStorage.getItem(SYNC_URL_KEY);
+            const url = getApiUrl();
             if(url) {
-                try {
-                    await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'save_routine', data: routines }) });
-                } catch(e) {}
+                try { await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'save_routine', data: routines }) }); } catch(e) {}
             }
         }
 
         // --- RUNTIME ---
         window.toggleMode = (val) => { isManual = val; };
         window.toggleTracking = (val) => { isTracking = val; };
-
-        function selectWorkout(type) {
-            currentWorkoutType = type;
-            activeRoutine = routines[type];
-            goToQuote();
-        }
-
+        function selectWorkout(type) { currentWorkoutType = type; activeRoutine = routines[type]; goToQuote(); }
         function confirmApexStart() {
             const max = parseInt(document.getElementById('apex-max-reps').value) || 8;
             const weight = document.getElementById('apex-weight').value || "Bodyweight";
@@ -475,91 +452,45 @@
             closeModal('apex-config-modal');
             goToQuote();
         }
-
-        function startWorkoutSession() {
-            initAudio();
-            stepIndex = 0;
-            startTime = null; 
-            els.totalTime.textContent = "--:--"; 
-            switchScreen('workout');
-            startCountdown();
-        }
-
-        function startCountdown() {
-            els.currEx.textContent = ""; 
-            els.nextEx.textContent = ""; 
-            runStep({ type: 'countdown', duration: 10, name: '' });
-        }
-
+        function startWorkoutSession() { initAudio(); stepIndex = 0; startTime = null; els.totalTime.textContent = "--:--"; switchScreen('workout'); startCountdown(); }
+        function startCountdown() { els.currEx.textContent = ""; els.nextEx.textContent = ""; runStep({ type: 'countdown', duration: 10, name: '' }); }
         function startMissionClock() {
             if(!isTracking) return;
             startTime = Date.now();
             clearInterval(totalInt);
-            totalInt = setInterval(() => {
-                const s = Math.floor((Date.now() - startTime) / 1000);
-                els.totalTime.textContent = formatTime(s);
-            }, 1000);
+            totalInt = setInterval(() => { const s = Math.floor((Date.now() - startTime) / 1000); els.totalTime.textContent = formatTime(s); }, 1000);
             els.totalTime.textContent = "00:00"; 
         }
-
         function runStep(step) {
             clearInterval(timerInt);
             const pct = (stepIndex / activeRoutine.length) * 100;
             els.bar.style.width = `${pct}%`;
             els.status.textContent = step.type === 'countdown' ? 'GET READY' : step.type.toUpperCase();
-            
             if (step.type !== 'countdown') {
                 els.currEx.textContent = step.name + (step.round ? ` (${step.round})` : '');
                 const next = activeRoutine[stepIndex + 1];
                 els.nextEx.textContent = next ? next.name : 'COMPLETE';
             }
-
             if (step.type === 'rep_work') {
-                els.timed.classList.add('hidden');
-                els.rep.classList.remove('hidden');
-                els.apexList.innerHTML = step.exercises.map(e => `<div class="flex items-center"><span class="w-1.5 h-1.5 bg-wolf-accent mr-3 rounded-full"></span><span class="text-white">${e}</span></div>`).join('');
+                els.timed.classList.add('hidden'); els.rep.classList.remove('hidden'); els.apexList.innerHTML = step.exercises.map(e => `<div class="flex items-center"><span class="w-1.5 h-1.5 bg-wolf-accent mr-3 rounded-full"></span><span class="text-white">${e}</span></div>`).join('');
             } else {
-                els.timed.classList.remove('hidden');
-                els.rep.classList.add('hidden');
-                els.manualBtn.classList.add('hidden'); 
-                
-                let timeLeft = step.duration;
-                els.timer.textContent = timeLeft;
-                els.timer.classList.remove('text-wolf-accent');
-                
+                els.timed.classList.remove('hidden'); els.rep.classList.add('hidden'); els.manualBtn.classList.add('hidden'); 
+                let timeLeft = step.duration; els.timer.textContent = timeLeft; els.timer.classList.remove('text-wolf-accent');
                 timerInt = setInterval(() => {
-                    timeLeft--;
-                    els.timer.textContent = timeLeft;
+                    timeLeft--; els.timer.textContent = timeLeft;
                     if (timeLeft <= 3 && timeLeft > 0) { beep('Low'); els.timer.classList.add('text-wolf-accent'); }
                     if (timeLeft <= 0) {
-                        clearInterval(timerInt);
-                        beep('High');
-                        if (step.type === 'countdown') {
-                            startMissionClock();
-                            nextStep();
-                        } else if (isManual && (step.type === 'work' || step.type === 'rest')) {
-                            els.timer.textContent = "0";
-                            els.manualBtn.classList.remove('hidden');
-                        } else {
-                            nextStep();
-                        }
+                        clearInterval(timerInt); beep('High');
+                        if (step.type === 'countdown') { startMissionClock(); nextStep(); } else if (isManual && (step.type === 'work' || step.type === 'rest')) { els.timer.textContent = "0"; els.manualBtn.classList.remove('hidden'); } else { nextStep(); }
                     }
                 }, 1000);
             }
         }
-
-        function nextStep() {
-            if(els.status.textContent !== 'GET READY') stepIndex++;
-            if (stepIndex >= activeRoutine.length) { finishWorkout(); return; }
-            runStep(activeRoutine[stepIndex]);
-        }
-
+        function nextStep() { if(els.status.textContent !== 'GET READY') stepIndex++; if (stepIndex >= activeRoutine.length) { finishWorkout(); return; } runStep(activeRoutine[stepIndex]); }
         els.manualBtn.addEventListener('click', () => { beep('Mid'); nextStep(); });
         document.getElementById('round-complete-btn').addEventListener('click', () => { beep('Mid'); nextStep(); });
-
         function finishWorkout() {
-            clearInterval(totalInt);
-            beep('High');
+            clearInterval(totalInt); beep('High');
             let timeStr = "--:--";
             if (isTracking && startTime) {
                 const s = Math.floor((Date.now() - startTime) / 1000);
@@ -569,49 +500,18 @@
             }
             els.finalTime.textContent = timeStr;
             const extraDiv = document.getElementById('final-stats-extra');
-            if (currentWorkoutType === 'apex') {
-                extraDiv.innerHTML = `
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><p class="text-wolf-muted uppercase text-[10px] tracking-widest">Peak</p><p class="text-2xl text-wolf-accent font-heading">${activeRoutine.details.maxReps}</p></div>
-                        <div><p class="text-wolf-muted uppercase text-[10px] tracking-widest">Load</p><p class="text-2xl text-white font-heading">${activeRoutine.details.weight}</p></div>
-                    </div>`;
-                extraDiv.classList.remove('hidden');
-            } else { extraDiv.classList.add('hidden'); }
+            if (currentWorkoutType === 'apex') { extraDiv.innerHTML = `<div class="grid grid-cols-2 gap-4"><div><p class="text-wolf-muted uppercase text-[10px] tracking-widest">Peak</p><p class="text-2xl text-wolf-accent font-heading">${activeRoutine.details.maxReps}</p></div><div><p class="text-wolf-muted uppercase text-[10px] tracking-widest">Load</p><p class="text-2xl text-white font-heading">${activeRoutine.details.weight}</p></div></div>`; extraDiv.classList.remove('hidden'); } else { extraDiv.classList.add('hidden'); }
             switchScreen('completion');
         }
 
         // --- UTILS & EDITOR ---
-        function formatTime(s) {
-            const min = Math.floor(s / 60).toString().padStart(2, '0');
-            const sec = (s % 60).toString().padStart(2, '0');
-            return `${min}:${sec}`;
-        }
-        function generateApexRoutine(config, maxReps) {
-            const routine = [];
-            const reps = [];
-            for (let i = 1; i <= maxReps; i++) reps.push(i);
-            for (let i = maxReps - 1; i >= 1; i--) reps.push(i);
-            reps.forEach((repCount, idx) => {
-                routine.push({ type: 'rep_work', name: `${repCount} Reps`, round: `${idx + 1}/${reps.length}`, exercises: config.exercises });
-                if (idx < reps.length - 1) routine.push({ type: 'rest', name: 'Rest', duration: config.restTime || 30, round: 'Recover' });
-            });
-            return routine;
-        }
-
-        function openEditor(key) {
-            editingRoutineKey = key;
-            closeModal('editor-select-modal');
-            if(key === 'apex') editingCopy = JSON.parse(JSON.stringify(routines.apex_config || defaultRoutines.apex_config));
-            else editingCopy = JSON.parse(JSON.stringify(routines[key]));
-            renderEditor();
-            switchScreen('editor');
-        }
-
+        function formatTime(s) { const min = Math.floor(s / 60).toString().padStart(2, '0'); const sec = (s % 60).toString().padStart(2, '0'); return `${min}:${sec}`; }
+        function generateApexRoutine(config, maxReps) { const routine = []; const reps = []; for (let i = 1; i <= maxReps; i++) reps.push(i); for (let i = maxReps - 1; i >= 1; i--) reps.push(i); reps.forEach((repCount, idx) => { routine.push({ type: 'rep_work', name: `${repCount} Reps`, round: `${idx + 1}/${reps.length}`, exercises: config.exercises }); if (idx < reps.length - 1) routine.push({ type: 'rest', name: 'Rest', duration: config.restTime || 30, round: 'Recover' }); }); return routine; }
+        function openEditor(key) { editingRoutineKey = key; closeModal('editor-select-modal'); if(key === 'apex') editingCopy = JSON.parse(JSON.stringify(routines.apex_config || defaultRoutines.apex_config)); else editingCopy = JSON.parse(JSON.stringify(routines[key])); renderEditor(); switchScreen('editor'); }
         function renderEditor() {
             const container = document.getElementById('editor-content');
             const title = document.getElementById('editor-title');
             container.innerHTML = '';
-            
             if(editingRoutineKey === 'apex') {
                 title.textContent = "EDIT APEX";
                 const restDiv = document.createElement('div');
@@ -641,32 +541,20 @@
         window.updateApexRest = (val) => { editingCopy.restTime = parseInt(val); };
         window.updateApexEx = (idx, val) => { editingCopy.exercises[idx] = val; };
         window.deleteApexEx = (idx) => { editingCopy.exercises.splice(idx, 1); renderEditor(); };
-        window.addStepToEditor = () => {
-            if(editingRoutineKey === 'apex') editingCopy.exercises.push("New Movement");
-            else editingCopy.push({ type: 'work', name: 'New Exercise', duration: 30 });
-            renderEditor();
-        };
-        window.updateStep = (idx, field, val) => {
-            if(field === 'duration') editingCopy[idx].duration = parseInt(val);
-            else if(field === 'name') editingCopy[idx].name = val;
-            else if(field === 'type') {
-                editingCopy[idx].type = val;
-                if(val === 'rep_work' && !editingCopy[idx].exercises) editingCopy[idx].exercises = ['10 Reps'];
-                renderEditor();
-            }
-            else if(field === 'rep_text') editingCopy[idx].exercises = [val];
-        };
+        window.addStepToEditor = () => { if(editingRoutineKey === 'apex') editingCopy.exercises.push("New Movement"); else editingCopy.push({ type: 'work', name: 'New Exercise', duration: 30 }); renderEditor(); };
+        window.updateStep = (idx, field, val) => { if(field === 'duration') editingCopy[idx].duration = parseInt(val); else if(field === 'name') editingCopy[idx].name = val; else if(field === 'type') { editingCopy[idx].type = val; if(val === 'rep_work' && !editingCopy[idx].exercises) editingCopy[idx].exercises = ['10 Reps']; renderEditor(); } else if(field === 'rep_text') editingCopy[idx].exercises = [val]; };
         window.deleteStep = (idx) => { editingCopy.splice(idx, 1); renderEditor(); };
         async function saveRoutineChanges() {
-            if(editingRoutineKey === 'apex') routines.apex_config = editingCopy;
-            else routines[editingRoutineKey] = editingCopy;
+            if(editingRoutineKey === 'apex') routines.apex_config = editingCopy; else routines[editingRoutineKey] = editingCopy;
             await saveRoutinesToStorage();
             renderMenuWorkouts();
             switchScreen('menu');
         }
         async function syncRoutines(url) {
+            const targetUrl = url || getApiUrl();
+            if(!targetUrl) return;
             try {
-                const res = await fetch(url);
+                const res = await fetch(targetUrl);
                 const data = await res.json();
                 if(data.routines && Object.keys(data.routines).length > 0) {
                     routines = data.routines;
@@ -679,7 +567,7 @@
             const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
             h.push(entry);
             localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
-            const url = localStorage.getItem(SYNC_URL_KEY);
+            const url = getApiUrl();
             if(url) { try { await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(entry) }); } catch(e) {} }
         }
         async function showHistory() {
@@ -688,7 +576,7 @@
             const loading = document.getElementById('history-loading');
             list.innerHTML = '';
             loading.classList.remove('hidden');
-            const url = localStorage.getItem(SYNC_URL_KEY);
+            const url = getApiUrl();
             let history = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
             if(url) { try { const res = await fetch(url); const data = await res.json(); if(data.history) history = data.history.reverse(); } catch(e) {} } else { history.sort((a,b) => new Date(b.date) - new Date(a.date)); }
             loading.classList.add('hidden');
@@ -703,12 +591,11 @@
             });
         }
         function switchScreen(name) { Object.values(screens).forEach(s => s.classList.remove('active')); screens[name].classList.add('active'); }
-        window.openModal = (id) => { if(id === 'sync-modal') els.syncInput.value = localStorage.getItem(SYNC_URL_KEY) || ''; document.getElementById(id).classList.remove('hidden'); };
+        window.openModal = (id) => { document.getElementById(id).classList.remove('hidden'); };
         window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
         window.openApexConfig = () => openModal('apex-config-modal');
         window.adjustRep = (delta) => { const input = document.getElementById('apex-max-reps'); let val = parseInt(input.value) || 1; val += delta; if(val < 1) val = 1; input.value = val; };
         window.goToMenu = () => { clearInterval(timerInt); clearInterval(totalInt); switchScreen('menu'); };
-        window.saveSyncUrl = () => { const url = els.syncInput.value.trim(); if(url) { localStorage.setItem(SYNC_URL_KEY, url); els.syncStatus.textContent = "CLOUD ACTIVE"; els.syncStatus.classList.add('text-wolf-accent'); syncRoutines(url); } else { localStorage.removeItem(SYNC_URL_KEY); els.syncStatus.textContent = "Local Storage Active"; els.syncStatus.classList.remove('text-wolf-accent'); } closeModal('sync-modal'); };
         function goToQuote() {
             const quotes = [{q: "The wolf on the hill is not as hungry as the wolf climbing the hill.", a: "Arnold Schwarzenegger"}, {q: "I don't stop when I'm tired. I stop when I'm done.", a: "David Goggins"}, {q: "Pain is weakness leaving the body.", a: "USMC"}, {q: "Civilize the mind, but make savage the body.", a: "Mao"}];
             const rnd = quotes[Math.floor(Math.random() * quotes.length)];
