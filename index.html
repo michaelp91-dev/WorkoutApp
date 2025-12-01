@@ -156,15 +156,21 @@
                     <input type="number" id="tb-rounds" value="8" class="tool-input w-24 text-2xl p-1">
                 </div>
             </div>
-
             <div id="tb-display-container" class="hidden">
                 <p id="tb-status" class="text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading">WORK</p>
                 <div id="tb-timer" class="font-heading text-8xl md:text-9xl text-white mb-2 tabular-nums">20</div>
                 <p id="tb-round-counter" class="text-wolf-muted uppercase tracking-widest text-sm">Round 1/8</p>
             </div>
-
             <button onclick="toggleTabata()" id="tb-btn" class="w-full max-w-sm btn-primary py-4 text-xl mt-8">START TABATA</button>
         </div>
+    </div>
+
+    <div id="list-screen" class="screen h-full w-full flex-col bg-wolf-bg p-4">
+        <div class="flex justify-between items-center mb-6 pb-4 border-b border-wolf-border">
+            <h2 class="font-heading text-3xl text-wolf-text">PROTOCOLS</h2>
+            <button onclick="switchScreen('menu')" class="btn-secondary px-4 py-2 text-sm">Back</button>
+        </div>
+        <div id="workout-list-container" class="flex-grow overflow-y-auto space-y-3 pb-20"></div>
     </div>
 
     <div id="editor-select-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
@@ -176,8 +182,7 @@
                 <button onclick="createNewWorkout()" class="btn-primary px-4 py-2 text-xl font-bold">+</button>
             </div>
 
-            <div id="manager-list" class="flex-grow overflow-y-auto space-y-3 pr-1">
-                </div>
+            <div id="manager-list" class="flex-grow overflow-y-auto space-y-3 pr-1"></div>
             
             <button onclick="closeModal('editor-select-modal')" class="mt-6 text-wolf-muted hover:text-white uppercase text-xs tracking-widest text-center">Close Manager</button>
         </div>
@@ -229,8 +234,9 @@
                 </div>
             </div>
 
-            <div id="workout-list-container" class="w-full space-y-3">
-                </div>
+            <div class="w-full space-y-3">
+                 <button onclick="switchScreen('list')" class="w-full btn-primary py-4 text-xl shadow-lg shadow-orange-900/20">SAVED PROTOCOLS</button>
+            </div>
 
             <div class="w-full space-y-3 mt-3 pt-3 border-t border-wolf-border">
                  <button onclick="openApexConfig()" class="w-full btn-secondary py-4 text-lg border-wolf-accent text-wolf-accent hover:bg-wolf-accent hover:text-white">Apex</button>
@@ -291,10 +297,19 @@
             </div>
 
             <p id="status-text" class="font-heading text-3xl text-wolf-accent uppercase tracking-widest mb-2 animate-pulse">Prepare</p>
-            <p id="current-exercise" class="text-5xl md:text-7xl font-bold text-white mb-8 text-center leading-none tracking-tight"></p>
+            <p id="current-exercise" class="text-4xl md:text-7xl font-bold text-white mb-8 text-center leading-none tracking-tight"></p>
             
             <div id="timed-content" class="w-full text-center">
-                <div id="timer-display" class="font-heading text-[10rem] md:text-[14rem] text-wolf-text leading-none select-none tabular-nums">10</div>
+                <div id="timer-display" class="font-heading text-[8rem] md:text-[14rem] text-wolf-text leading-none select-none tabular-nums">10</div>
+                
+                <div id="amrap-counter-container" class="hidden mt-6 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4">
+                    <p class="text-wolf-muted uppercase text-xs tracking-widest mb-2">Round Tracker</p>
+                    <div class="flex items-center gap-6">
+                        <div id="amrap-rounds" class="font-heading text-6xl text-white">0</div>
+                        <button onclick="incrementRound()" class="btn-secondary px-6 py-4 text-xl font-bold border-wolf-accent text-wolf-accent hover:bg-wolf-accent hover:text-white">+ ROUND</button>
+                    </div>
+                </div>
+
                 <button id="manual-next-btn" class="hidden mt-8 btn-primary px-10 py-4 text-xl mx-auto">Next</button>
             </div>
 
@@ -329,7 +344,6 @@
                 <h2 class="font-heading text-3xl text-wolf-text">HISTORY</h2>
                 <button onclick="goToMenu()" class="text-wolf-muted hover:text-white text-xs uppercase font-bold tracking-widest">Back</button>
             </div>
-            
             <div id="history-loading" class="hidden text-center text-wolf-accent animate-pulse mt-10 text-sm tracking-widest uppercase">Syncing...</div>
             <div id="history-list" class="flex-grow overflow-y-auto space-y-3 pb-20"></div>
             <div id="no-history-msg" class="hidden text-center text-wolf-muted mt-20 text-sm">No workouts recorded yet.</div>
@@ -384,7 +398,8 @@
             completion: document.getElementById('completion-screen'),
             history: document.getElementById('history-screen'),
             editor: document.getElementById('editor-screen'),
-            tools: document.getElementById('tools-screen')
+            tools: document.getElementById('tools-screen'),
+            list: document.getElementById('list-screen')
         };
         const els = {
             timer: document.getElementById('timer-display'),
@@ -402,7 +417,9 @@
             modalStatus: document.getElementById('modal-status'),
             workoutList: document.getElementById('workout-list-container'),
             managerList: document.getElementById('manager-list'),
-            newWorkoutName: document.getElementById('new-workout-name')
+            newWorkoutName: document.getElementById('new-workout-name'),
+            amrapContainer: document.getElementById('amrap-counter-container'),
+            amrapRounds: document.getElementById('amrap-rounds')
         };
 
         let currentWorkoutType = null;
@@ -416,6 +433,7 @@
         let audioCtx;
         let editingRoutineKey = null;
         let editingCopy = null;
+        let manualRoundCount = 0;
 
         // Tool Vars
         let toolInt = null;
@@ -528,7 +546,7 @@
             closeModal('apex-config-modal');
             goToQuote();
         }
-        function startWorkoutSession() { initAudio(); stepIndex = 0; startTime = null; els.totalTime.textContent = "--:--"; switchScreen('workout'); startCountdown(); }
+        function startWorkoutSession() { initAudio(); stepIndex = 0; startTime = null; manualRoundCount = 0; els.totalTime.textContent = "--:--"; switchScreen('workout'); startCountdown(); }
         function startCountdown() { els.currEx.textContent = ""; els.nextEx.textContent = ""; runStep({ type: 'countdown', duration: 10, name: '' }); }
         function startMissionClock() {
             if(!isTracking) return;
@@ -537,23 +555,45 @@
             totalInt = setInterval(() => { const s = Math.floor((Date.now() - startTime) / 1000); els.totalTime.textContent = formatTime(s); }, 1000);
             els.totalTime.textContent = "00:00"; 
         }
+        
         function runStep(step) {
             clearInterval(timerInt);
             const pct = (stepIndex / activeRoutine.length) * 100;
             els.bar.style.width = `${pct}%`;
             els.status.textContent = step.type === 'countdown' ? 'GET READY' : step.type.toUpperCase();
+            
             if (step.type !== 'countdown') {
                 els.currEx.textContent = step.name + (step.round ? ` (${step.round})` : '');
                 const next = activeRoutine[stepIndex + 1];
                 els.nextEx.textContent = next ? next.name : 'COMPLETE';
             }
+
+            // Logic to Show/Hide AMRAP Counter
+            const isAmrap = currentWorkoutType.includes("Garage") || currentWorkoutType.includes("AMRAP") || (step.name && step.name.includes("AMRAP"));
+            if(isAmrap && step.type !== 'countdown') {
+                els.amrapContainer.classList.remove('hidden');
+                els.amrapRounds.textContent = manualRoundCount;
+            } else {
+                els.amrapContainer.classList.add('hidden');
+            }
+
             if (step.type === 'rep_work') {
-                els.timed.classList.add('hidden'); els.rep.classList.remove('hidden'); els.apexList.innerHTML = step.exercises.map(e => `<div class="flex items-center"><span class="w-1.5 h-1.5 bg-wolf-accent mr-3 rounded-full"></span><span class="text-white">${e}</span></div>`).join('');
+                els.timed.classList.add('hidden'); els.rep.classList.remove('hidden'); 
+                els.apexList.innerHTML = step.exercises.map(e => `<div class="flex items-center"><span class="w-1.5 h-1.5 bg-wolf-accent mr-3 rounded-full"></span><span class="text-white">${e}</span></div>`).join('');
             } else {
                 els.timed.classList.remove('hidden'); els.rep.classList.add('hidden'); els.manualBtn.classList.add('hidden'); 
-                let timeLeft = step.duration; els.timer.textContent = timeLeft; els.timer.classList.remove('text-wolf-accent');
+                
+                let timeLeft = step.duration;
+                // NEW: Use formatted time for display
+                els.timer.textContent = (timeLeft > 59) ? formatTime(timeLeft) : timeLeft; 
+                els.timer.style.fontSize = (timeLeft > 99) ? "8rem" : ""; // Adjust font size for long times
+
+                els.timer.classList.remove('text-wolf-accent');
+                
                 timerInt = setInterval(() => {
-                    timeLeft--; els.timer.textContent = timeLeft;
+                    timeLeft--; 
+                    els.timer.textContent = (timeLeft > 59) ? formatTime(timeLeft) : timeLeft;
+                    
                     if (timeLeft <= 3 && timeLeft > 0) { beep('Low'); els.timer.classList.add('text-wolf-accent'); }
                     if (timeLeft <= 0) {
                         clearInterval(timerInt); beep('High');
@@ -563,125 +603,38 @@
             }
         }
         function nextStep() { if(els.status.textContent !== 'GET READY') stepIndex++; if (stepIndex >= activeRoutine.length) { finishWorkout(); return; } runStep(activeRoutine[stepIndex]); }
+        
+        // Manual Round Counter
+        window.incrementRound = () => { manualRoundCount++; els.amrapRounds.textContent = manualRoundCount; beep('Mid'); };
+
         els.manualBtn.addEventListener('click', () => { beep('Mid'); nextStep(); });
         document.getElementById('round-complete-btn').addEventListener('click', () => { beep('Mid'); nextStep(); });
+        
         function finishWorkout() {
             clearInterval(totalInt); beep('High');
             let timeStr = "--:--";
+            let details = activeRoutine.details || {};
+            if(manualRoundCount > 0) details.roundsCompleted = manualRoundCount;
+
             if (isTracking && startTime) {
                 const s = Math.floor((Date.now() - startTime) / 1000);
                 timeStr = formatTime(s);
-                const entry = { date: new Date().toISOString(), type: currentWorkoutType, duration: timeStr, details: activeRoutine.details || {} };
+                const entry = { date: new Date().toISOString(), type: currentWorkoutType, duration: timeStr, details: details };
                 saveHistoryLog(entry);
             }
             els.finalTime.textContent = timeStr;
             const extraDiv = document.getElementById('final-stats-extra');
-            if (currentWorkoutType === 'apex') { extraDiv.innerHTML = `<div class="grid grid-cols-2 gap-4"><div><p class="text-wolf-muted uppercase text-[10px] tracking-widest">Peak</p><p class="text-2xl text-wolf-accent font-heading">${activeRoutine.details.maxReps}</p></div><div><p class="text-wolf-muted uppercase text-[10px] tracking-widest">Load</p><p class="text-2xl text-white font-heading">${activeRoutine.details.weight}</p></div></div>`; extraDiv.classList.remove('hidden'); } else { extraDiv.classList.add('hidden'); }
+            extraDiv.innerHTML = ''; 
+            
+            if (currentWorkoutType === 'apex') { 
+                extraDiv.innerHTML = `<div class="grid grid-cols-2 gap-4"><div><p class="text-wolf-muted uppercase text-[10px] tracking-widest">Peak</p><p class="text-2xl text-wolf-accent font-heading">${details.maxReps}</p></div><div><p class="text-wolf-muted uppercase text-[10px] tracking-widest">Load</p><p class="text-2xl text-white font-heading">${details.weight}</p></div></div>`; 
+                extraDiv.classList.remove('hidden'); 
+            } else if (manualRoundCount > 0) {
+                 extraDiv.innerHTML = `<div><p class="text-wolf-muted uppercase text-[10px] tracking-widest">Rounds Completed</p><p class="text-4xl text-wolf-accent font-heading">${manualRoundCount}</p></div>`;
+                 extraDiv.classList.remove('hidden');
+            } else { extraDiv.classList.add('hidden'); }
+            
             switchScreen('completion');
-        }
-
-        // --- TOOLS LOGIC ---
-        function switchTool(tool) {
-            initAudio(); clearInterval(toolInt);
-            document.querySelectorAll('[id^="tool-"]').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('[id^="tab-"]').forEach(el => { el.classList.remove('bg-wolf-accent', 'text-white'); el.classList.add('bg-wolf-surface', 'text-wolf-muted'); });
-            document.getElementById(`tool-${tool}`).classList.remove('hidden');
-            document.getElementById(`tab-${tool}`).classList.add('bg-wolf-accent', 'text-white'); document.getElementById(`tab-${tool}`).classList.remove('bg-wolf-surface', 'text-wolf-muted');
-        }
-        
-        // Stopwatch
-        function toggleStopwatch() {
-            const btn = document.getElementById('sw-btn');
-            if(toolInt) { clearInterval(toolInt); toolInt = null; btn.textContent = "START"; btn.classList.remove('bg-red-900'); btn.classList.add('btn-primary'); }
-            else { 
-                const start = Date.now() - swTime;
-                toolInt = setInterval(() => { swTime = Date.now() - start; document.getElementById('sw-display').textContent = formatTimeMs(swTime); }, 10);
-                btn.textContent = "STOP"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
-            }
-        }
-        function resetStopwatch() { clearInterval(toolInt); toolInt = null; swTime = 0; document.getElementById('sw-display').textContent = "00:00.00"; document.getElementById('sw-btn').textContent = "START"; document.getElementById('sw-btn').className = "flex-1 btn-primary py-4 text-xl"; }
-
-        // Timer
-        function toggleTimer() {
-            const btn = document.getElementById('tm-btn');
-            const display = document.getElementById('tm-display');
-            const inputs = document.getElementById('tm-input-container');
-            if(toolInt) { clearInterval(toolInt); toolInt = null; btn.textContent = "RESUME"; btn.classList.remove('bg-red-900'); btn.classList.add('btn-primary'); }
-            else {
-                if(tmTime <= 0) {
-                    const h = parseInt(document.getElementById('tm-h').value) || 0;
-                    const m = parseInt(document.getElementById('tm-m').value) || 0;
-                    const s = parseInt(document.getElementById('tm-s').value) || 0;
-                    tmTime = (h*3600) + (m*60) + s;
-                    if(tmTime <= 0) return;
-                }
-                inputs.classList.add('hidden'); display.classList.remove('hidden');
-                display.textContent = formatTime(tmTime);
-                toolInt = setInterval(() => {
-                    tmTime--; display.textContent = formatTime(tmTime);
-                    if(tmTime <= 0) { clearInterval(toolInt); toolInt = null; beep('High'); btn.textContent = "START"; btn.className = "flex-1 btn-primary py-4 text-xl"; inputs.classList.remove('hidden'); display.classList.add('hidden'); }
-                }, 1000);
-                btn.textContent = "PAUSE"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
-            }
-        }
-        function resetTimer() { clearInterval(toolInt); toolInt = null; tmTime = 0; document.getElementById('tm-input-container').classList.remove('hidden'); document.getElementById('tm-display').classList.add('hidden'); document.getElementById('tm-btn').textContent = "START"; document.getElementById('tm-btn').className = "flex-1 btn-primary py-4 text-xl"; }
-
-        // Tabata
-        function toggleTabata() {
-            const btn = document.getElementById('tb-btn');
-            if(tbState.active) { clearInterval(toolInt); toolInt = null; tbState.active = false; resetTabataUI(); return; }
-            
-            // Start
-            tbState.workTime = parseInt(document.getElementById('tb-work').value) || 20;
-            tbState.restTime = parseInt(document.getElementById('tb-rest').value) || 10;
-            tbState.totalRounds = parseInt(document.getElementById('tb-rounds').value) || 8;
-            tbState.round = 1; tbState.isWork = true; tbState.timeLeft = 10; // Prep time
-            tbState.active = true;
-
-            document.getElementById('tb-config').classList.add('hidden');
-            document.getElementById('tb-display-container').classList.remove('hidden');
-            btn.textContent = "STOP TABATA"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
-            
-            updateTabataUI("GET READY", tbState.timeLeft);
-
-            toolInt = setInterval(() => {
-                tbState.timeLeft--;
-                if(tbState.timeLeft < 0) {
-                    if(tbState.isWork) {
-                         // End of work
-                         beep('Mid');
-                         if(tbState.round >= tbState.totalRounds && !tbState.isWork) { finishTabata(); return; } // Should not happen here really
-                         tbState.isWork = false; tbState.timeLeft = tbState.restTime;
-                         updateTabataUI("REST", tbState.timeLeft);
-                    } else {
-                        // End of rest
-                        beep('High');
-                        if(tbState.round >= tbState.totalRounds) { finishTabata(); return; }
-                        tbState.round++; tbState.isWork = true; tbState.timeLeft = tbState.workTime;
-                        updateTabataUI("WORK", tbState.timeLeft);
-                    }
-                } else {
-                    document.getElementById('tb-timer').textContent = tbState.timeLeft;
-                    if(tbState.timeLeft <= 3) beep('Low');
-                }
-            }, 1000);
-        }
-        function updateTabataUI(status, time) {
-             const stEl = document.getElementById('tb-status');
-             stEl.textContent = status;
-             stEl.className = (status === "WORK") ? "text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading" : "text-green-500 uppercase tracking-widest text-2xl mb-2 font-heading";
-             if(status === "GET READY") stEl.className = "text-white uppercase tracking-widest text-2xl mb-2 font-heading";
-             document.getElementById('tb-timer').textContent = time;
-             document.getElementById('tb-round-counter').textContent = `Round ${tbState.round}/${tbState.totalRounds}`;
-        }
-        function finishTabata() {
-            clearInterval(toolInt); tbState.active = false; beep('High'); beep('High');
-            alert("TABATA COMPLETE"); resetTabataUI();
-        }
-        function resetTabataUI() {
-            document.getElementById('tb-config').classList.remove('hidden');
-            document.getElementById('tb-display-container').classList.add('hidden');
-            const btn = document.getElementById('tb-btn'); btn.textContent = "START TABATA"; btn.className = "w-full max-w-sm btn-primary py-4 text-xl mt-8";
         }
 
         // --- UTILS & EDITOR ---
@@ -768,10 +721,120 @@
                 const date = new Date(log.date);
                 const el = document.createElement('div');
                 el.className = 'bg-wolf-surface border-l-4 border-wolf-accent p-4 flex justify-between items-center rounded-r shadow-sm';
-                el.innerHTML = `<div><p class="text-white font-bold text-lg uppercase font-heading tracking-wide">${log.type.replace('_', ' ')}</p><p class="text-wolf-muted text-xs uppercase">${date.toLocaleDateString()}</p>${(log.details && log.details.maxReps) ? `<span class="inline-block mt-1 bg-wolf-bg px-2 py-0.5 rounded text-[10px] text-wolf-accent border border-wolf-border">MAX: ${log.details.maxReps} | ${log.details.weight}</span>` : ''}</div><div class="font-heading text-2xl text-wolf-text">${log.duration}</div>`;
+                let detailsHtml = '';
+                if(log.details) {
+                    if(log.details.maxReps) detailsHtml = `<span class="inline-block mt-1 bg-wolf-bg px-2 py-0.5 rounded text-[10px] text-wolf-accent border border-wolf-border">MAX: ${log.details.maxReps} | ${log.details.weight}</span>`;
+                    else if(log.details.roundsCompleted) detailsHtml = `<span class="inline-block mt-1 bg-wolf-bg px-2 py-0.5 rounded text-[10px] text-wolf-accent border border-wolf-border">ROUNDS: ${log.details.roundsCompleted}</span>`;
+                }
+                el.innerHTML = `<div><p class="text-white font-bold text-lg uppercase font-heading tracking-wide">${log.type.replace('_', ' ')}</p><p class="text-wolf-muted text-xs uppercase">${date.toLocaleDateString()}</p>${detailsHtml}</div><div class="font-heading text-2xl text-wolf-text">${log.duration}</div>`;
                 list.appendChild(el);
             });
         }
+
+        // --- TOOLS LOGIC ---
+        function switchTool(tool) {
+            initAudio(); clearInterval(toolInt);
+            document.querySelectorAll('[id^="tool-"]').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('[id^="tab-"]').forEach(el => { el.classList.remove('bg-wolf-accent', 'text-white'); el.classList.add('bg-wolf-surface', 'text-wolf-muted'); });
+            document.getElementById(`tool-${tool}`).classList.remove('hidden');
+            document.getElementById(`tab-${tool}`).classList.add('bg-wolf-accent', 'text-white'); document.getElementById(`tab-${tool}`).classList.remove('bg-wolf-surface', 'text-wolf-muted');
+        }
+        
+        // Stopwatch
+        function toggleStopwatch() {
+            const btn = document.getElementById('sw-btn');
+            if(toolInt) { clearInterval(toolInt); toolInt = null; btn.textContent = "START"; btn.classList.remove('bg-red-900'); btn.classList.add('btn-primary'); }
+            else { 
+                const start = Date.now() - swTime;
+                toolInt = setInterval(() => { swTime = Date.now() - start; document.getElementById('sw-display').textContent = formatTimeMs(swTime); }, 10);
+                btn.textContent = "STOP"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
+            }
+        }
+        function resetStopwatch() { clearInterval(toolInt); toolInt = null; swTime = 0; document.getElementById('sw-display').textContent = "00:00.00"; document.getElementById('sw-btn').textContent = "START"; document.getElementById('sw-btn').className = "flex-1 btn-primary py-4 text-xl"; }
+
+        // Timer
+        function toggleTimer() {
+            const btn = document.getElementById('tm-btn');
+            const display = document.getElementById('tm-display');
+            const inputs = document.getElementById('tm-input-container');
+            if(toolInt) { clearInterval(toolInt); toolInt = null; btn.textContent = "RESUME"; btn.classList.remove('bg-red-900'); btn.classList.add('btn-primary'); }
+            else {
+                if(tmTime <= 0) {
+                    const h = parseInt(document.getElementById('tm-h').value) || 0;
+                    const m = parseInt(document.getElementById('tm-m').value) || 0;
+                    const s = parseInt(document.getElementById('tm-s').value) || 0;
+                    tmTime = (h*3600) + (m*60) + s;
+                    if(tmTime <= 0) return;
+                }
+                inputs.classList.add('hidden'); display.classList.remove('hidden');
+                display.textContent = formatTime(tmTime);
+                toolInt = setInterval(() => {
+                    tmTime--; display.textContent = formatTime(tmTime);
+                    if(tmTime <= 0) { clearInterval(toolInt); toolInt = null; beep('High'); btn.textContent = "START"; btn.className = "flex-1 btn-primary py-4 text-xl"; inputs.classList.remove('hidden'); display.classList.add('hidden'); }
+                }, 1000);
+                btn.textContent = "PAUSE"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
+            }
+        }
+        function resetTimer() { clearInterval(toolInt); toolInt = null; tmTime = 0; document.getElementById('tm-input-container').classList.remove('hidden'); document.getElementById('tm-display').classList.add('hidden'); document.getElementById('tm-btn').textContent = "START"; document.getElementById('tm-btn').className = "flex-1 btn-primary py-4 text-xl"; }
+
+        // Tabata
+        function toggleTabata() {
+            const btn = document.getElementById('tb-btn');
+            if(tbState.active) { clearInterval(toolInt); toolInt = null; tbState.active = false; resetTabataUI(); return; }
+            
+            // Start
+            tbState.workTime = parseInt(document.getElementById('tb-work').value) || 20;
+            tbState.restTime = parseInt(document.getElementById('tb-rest').value) || 10;
+            tbState.totalRounds = parseInt(document.getElementById('tb-rounds').value) || 8;
+            tbState.round = 1; tbState.isWork = true; tbState.timeLeft = 10; // Prep time
+            tbState.active = true;
+
+            document.getElementById('tb-config').classList.add('hidden');
+            document.getElementById('tb-display-container').classList.remove('hidden');
+            btn.textContent = "STOP TABATA"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
+            
+            updateTabataUI("GET READY", tbState.timeLeft);
+
+            toolInt = setInterval(() => {
+                tbState.timeLeft--;
+                if(tbState.timeLeft < 0) {
+                    if(tbState.isWork) {
+                         // End of work
+                         beep('Mid');
+                         if(tbState.round >= tbState.totalRounds && !tbState.isWork) { finishTabata(); return; }
+                         tbState.isWork = false; tbState.timeLeft = tbState.restTime;
+                         updateTabataUI("REST", tbState.timeLeft);
+                    } else {
+                        // End of rest
+                        beep('High');
+                        if(tbState.round >= tbState.totalRounds) { finishTabata(); return; }
+                        tbState.round++; tbState.isWork = true; tbState.timeLeft = tbState.workTime;
+                        updateTabataUI("WORK", tbState.timeLeft);
+                    }
+                } else {
+                    document.getElementById('tb-timer').textContent = tbState.timeLeft;
+                    if(tbState.timeLeft <= 3) beep('Low');
+                }
+            }, 1000);
+        }
+        function updateTabataUI(status, time) {
+             const stEl = document.getElementById('tb-status');
+             stEl.textContent = status;
+             stEl.className = (status === "WORK") ? "text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading" : "text-green-500 uppercase tracking-widest text-2xl mb-2 font-heading";
+             if(status === "GET READY") stEl.className = "text-white uppercase tracking-widest text-2xl mb-2 font-heading";
+             document.getElementById('tb-timer').textContent = time;
+             document.getElementById('tb-round-counter').textContent = `Round ${tbState.round}/${tbState.totalRounds}`;
+        }
+        function finishTabata() {
+            clearInterval(toolInt); tbState.active = false; beep('High'); beep('High');
+            alert("TABATA COMPLETE"); resetTabataUI();
+        }
+        function resetTabataUI() {
+            document.getElementById('tb-config').classList.remove('hidden');
+            document.getElementById('tb-display-container').classList.add('hidden');
+            const btn = document.getElementById('tb-btn'); btn.textContent = "START TABATA"; btn.className = "w-full max-w-sm btn-primary py-4 text-xl mt-8";
+        }
+
         function switchScreen(name) { Object.values(screens).forEach(s => s.classList.remove('active')); screens[name].classList.add('active'); }
         window.openModal = (id) => { document.getElementById(id).classList.remove('hidden'); };
         window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
