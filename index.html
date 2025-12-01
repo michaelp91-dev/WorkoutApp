@@ -60,6 +60,7 @@
         }
         .btn-primary:active { transform: translateY(1px); }
         .btn-primary:hover { background-color: #92400e; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .btn-secondary {
             background-color: #292524;
@@ -118,7 +119,7 @@
 
     <div id="record-details-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto">
-            <h2 class="font-heading text-2xl text-wolf-accent mb-6">RECORD SESSION</h2>
+            <h2 id="record-modal-title" class="font-heading text-2xl text-wolf-accent mb-6">RECORD SESSION</h2>
             
             <div class="space-y-4">
                 <div>
@@ -128,7 +129,7 @@
                 <div class="flex gap-3">
                     <div class="flex-1">
                         <label class="block text-xs uppercase text-wolf-muted font-bold mb-1">Duration</label>
-                        <input type="text" id="rec-duration" readonly class="w-full bg-wolf-bg border border-wolf-border text-wolf-muted p-3 rounded outline-none select-none">
+                        <input type="text" id="rec-duration" class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none">
                     </div>
                     <div class="flex-1">
                         <label class="block text-xs uppercase text-wolf-muted font-bold mb-1">Rounds</label>
@@ -141,7 +142,7 @@
                 </div>
             </div>
 
-            <button onclick="saveCustomWorkout()" class="w-full btn-primary py-4 text-xl mt-6">SAVE TO HISTORY</button>
+            <button onclick="saveCustomWorkout()" id="save-custom-btn" class="w-full btn-primary py-4 text-xl mt-6">SAVE TO HISTORY</button>
             <button onclick="closeModal('record-details-modal')" class="mt-4 text-wolf-muted text-xs uppercase tracking-widest hover:text-white text-center">Cancel</button>
         </div>
     </div>
@@ -540,6 +541,8 @@
         let tbState = { round: 1, isWork: false, timeLeft: 0, totalRounds: 8, workTime: 20, restTime: 10, active: false };
         let toolRoundCount = 0;
         let isPrep = false;
+        
+        let editingHistoryIndex = null; // Track which history item is being edited
 
         // --- INIT ---
         window.addEventListener('DOMContentLoaded', () => {
@@ -892,31 +895,105 @@
         // Custom Record Logic
         function openRecordDetails() {
             closeModal('record-prompt-modal');
-            openModal('record-details-modal');
+            editingHistoryIndex = null; // Ensure we are in create mode
+            document.getElementById('record-modal-title').textContent = "RECORD SESSION";
+            document.getElementById('rec-name').value = "Custom Timer Workout";
             document.getElementById('rec-duration').value = formatTime(tmOriginalTime);
             document.getElementById('rec-rounds').value = toolRoundCount;
+            document.getElementById('rec-notes').value = "";
+            openModal('record-details-modal');
         }
+
+        function editHistory(index) {
+            const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
+            if (!h[index]) return;
+            
+            editingHistoryIndex = index; // Set edit mode
+            const entry = h[index];
+            
+            document.getElementById('record-modal-title').textContent = "EDIT ENTRY";
+            document.getElementById('rec-name').value = entry.type;
+            document.getElementById('rec-duration').value = entry.duration;
+            document.getElementById('rec-rounds').value = (entry.details && entry.details.roundsCompleted) ? entry.details.roundsCompleted : 0;
+            document.getElementById('rec-notes').value = (entry.details && entry.details.notes) ? entry.details.notes : "";
+            
+            openModal('record-details-modal');
+        }
+
+        function deleteHistory(index) {
+            if(!confirm("Are you sure you want to delete this log?")) return;
+            
+            const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
+            h.splice(index, 1);
+            localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
+            showHistory(); // Refresh list
+        }
+
         async function saveCustomWorkout() {
-            const name = document.getElementById('rec-name').value || "Custom Timer";
+            const btn = document.getElementById('save-custom-btn');
+            if(btn) {
+                btn.disabled = true;
+                btn.textContent = "SAVING...";
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+
+            const name = document.getElementById('rec-name').value || "Custom Workout";
             const duration = document.getElementById('rec-duration').value;
             const rounds = document.getElementById('rec-rounds').value;
             const notes = document.getElementById('rec-notes').value;
             
-            const entry = {
-                date: new Date().toISOString(),
-                type: name,
-                duration: duration,
-                details: {
-                    roundsCompleted: rounds,
-                    notes: notes
-                }
+            const details = {
+                roundsCompleted: rounds,
+                notes: notes
             };
-            await saveHistoryLog(entry);
+
+            // If we are editing, we preserve other details (like maxReps/weight if they exist)
+            let h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
+
+            if (editingHistoryIndex !== null) {
+                // Update Existing
+                const existing = h[editingHistoryIndex];
+                existing.type = name;
+                existing.duration = duration;
+                existing.details = { ...existing.details, ...details }; // Merge details
+                h[editingHistoryIndex] = existing;
+                localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
+            } else {
+                // Create New
+                const entry = {
+                    date: new Date().toISOString(),
+                    type: name,
+                    duration: duration,
+                    details: details
+                };
+                h.push(entry);
+                localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
+                
+                // Try cloud sync for new entries only (simple implementation)
+                const url = getApiUrl();
+                if(url) { try { await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(entry) }); } catch(e) {} }
+            }
+
             closeModal('record-details-modal');
+            
             // Reset fields
             document.getElementById('rec-notes').value = '';
             document.getElementById('rec-name').value = 'Custom Timer Workout';
-            alert("Workout Saved!");
+            editingHistoryIndex = null;
+            
+            // Reset button state
+            if(btn) {
+                btn.disabled = false;
+                btn.textContent = "SAVE TO HISTORY";
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            // If we are on history screen, refresh it
+            if(document.getElementById('history-screen').classList.contains('active')) {
+                showHistory();
+            } else {
+                alert("Saved!");
+            }
         }
 
         window.toolIncrementRound = () => { toolRoundCount++; els.tmRoundVal.textContent = toolRoundCount; beep('Mid'); };
@@ -1092,7 +1169,7 @@
             if(history.length === 0) { document.getElementById('no-history-msg').classList.remove('hidden'); return; }
             document.getElementById('no-history-msg').classList.add('hidden');
             
-            history.forEach(log => {
+            history.forEach((log, index) => {
                 const dateObj = new Date(log.date);
                 let dateDisplay = "Unknown Date";
                 if(!isNaN(dateObj.getTime())) {
@@ -1115,14 +1192,31 @@
                     // Show custom timer notes if they exist
                     if(log.details.notes) detailsHtml += `<div class="mt-2 text-[10px] text-wolf-muted italic border-t border-wolf-border pt-1 truncate max-w-[150px]">${log.details.notes}</div>`;
                 }
-                el.innerHTML = `<div><p class="text-white font-bold text-lg uppercase font-heading tracking-wide">${log.type.replace('_', ' ')}</p><p class="text-wolf-muted text-xs uppercase">${dateDisplay}</p>${detailsHtml}</div><div class="font-heading text-2xl text-wolf-text">${log.duration}</div>`;
+                
+                el.innerHTML = `
+                    <div class="flex-grow">
+                        <p class="text-white font-bold text-lg uppercase font-heading tracking-wide">${log.type.replace('_', ' ')}</p>
+                        <p class="text-wolf-muted text-xs uppercase">${dateDisplay}</p>
+                        ${detailsHtml}
+                    </div>
+                    <div class="flex flex-col items-end gap-2">
+                        <div class="font-heading text-2xl text-wolf-text">${log.duration}</div>
+                        <div class="flex gap-2">
+                            <button onclick="editHistory(${index})" class="text-[10px] text-wolf-muted uppercase hover:text-white border border-wolf-border px-2 rounded">Edit</button>
+                            <button onclick="deleteHistory(${index})" class="text-[10px] text-red-900 uppercase hover:text-red-500 border border-wolf-border px-2 rounded">Del</button>
+                        </div>
+                    </div>
+                `;
                 list.appendChild(el);
             });
         }
 
         function switchScreen(name) { Object.values(screens).forEach(s => s.classList.remove('active')); screens[name].classList.add('active'); }
         window.openModal = (id) => { document.getElementById(id).classList.remove('hidden'); };
-        window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
+        window.closeModal = (id) => {
+            document.getElementById(id).classList.add('hidden');
+            if(id === 'record-details-modal') editingHistoryIndex = null; // Clear edit mode if closed
+        };
         window.openApexConfig = () => openModal('apex-config-modal');
         window.adjustRep = (delta) => { const input = document.getElementById('apex-max-reps'); let val = parseInt(input.value) || 1; val += delta; if(val < 1) val = 1; input.value = val; };
         window.goToMenu = () => { clearInterval(timerInt); clearInterval(totalInt); switchScreen('menu'); };
