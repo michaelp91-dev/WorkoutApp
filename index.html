@@ -119,11 +119,16 @@
 
         <div id="tool-stopwatch" class="flex-grow flex flex-col items-center justify-start text-center pt-10">
             <div id="sw-status" class="hidden text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading animate-pulse">GET READY</div>
-            <div id="sw-display" class="font-heading text-7xl md:text-9xl text-white mb-8 tabular-nums">00:00.0</div>
+            <div id="sw-display" class="font-heading text-7xl md:text-9xl text-white mb-6 tabular-nums">00:00.0</div>
             
-            <div class="flex gap-4 w-full max-w-md mb-8">
+            <div class="flex gap-4 w-full max-w-md mb-4">
                 <button onclick="toggleStopwatch()" id="sw-btn" class="flex-1 btn-primary py-4 text-xl">START</button>
                 <button onclick="lapStopwatch()" id="sw-lap-btn" class="flex-1 btn-secondary py-4 text-xl disabled:opacity-50">LAP</button>
+            </div>
+            
+            <div class="flex items-center gap-2 mb-6">
+                <input type="checkbox" id="sw-countdown-check" class="w-5 h-5 accent-wolf-accent cursor-pointer">
+                <label for="sw-countdown-check" class="text-xs uppercase text-wolf-muted font-bold cursor-pointer">10 Sec Countdown</label>
             </div>
             
             <div id="sw-laps" class="w-full max-w-md h-40 overflow-y-auto bg-wolf-surface border border-wolf-border rounded-lg p-2 text-sm space-y-1">
@@ -159,9 +164,9 @@
             </div>
 
             <div id="tm-status" class="hidden text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading animate-pulse">GET READY</div>
-            <div id="tm-display" class="hidden font-heading text-7xl md:text-9xl text-white mb-8 tabular-nums">00:00</div>
+            <div id="tm-display" class="hidden font-heading text-7xl md:text-9xl text-white mb-6 tabular-nums">00:00</div>
             
-            <div id="tm-round-tracker" class="hidden mb-8 flex flex-col items-center animate-in fade-in">
+            <div id="tm-round-tracker" class="hidden mb-6 flex flex-col items-center animate-in fade-in">
                  <p class="text-wolf-muted uppercase text-[10px] tracking-widest mb-2">Round Counter</p>
                  <div class="flex items-center gap-6">
                     <div id="tm-rounds-val" class="font-heading text-5xl text-white">0</div>
@@ -169,9 +174,14 @@
                  </div>
             </div>
 
-            <div class="flex gap-4 w-full max-w-md">
+            <div class="flex gap-4 w-full max-w-md mb-4">
                 <button onclick="toggleTimer()" id="tm-btn" class="flex-1 btn-primary py-4 text-xl">START</button>
                 <button onclick="resetTimer()" class="flex-1 btn-secondary py-4 text-xl">RESET</button>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <input type="checkbox" id="tm-countdown-check" class="w-5 h-5 accent-wolf-accent cursor-pointer">
+                <label for="tm-countdown-check" class="text-xs uppercase text-wolf-muted font-bold cursor-pointer">10 Sec Countdown</label>
             </div>
         </div>
 
@@ -195,7 +205,12 @@
                 <div id="tb-timer" class="font-heading text-8xl md:text-9xl text-white mb-2 tabular-nums">20</div>
                 <p id="tb-round-counter" class="text-wolf-muted uppercase tracking-widest text-2xl font-bold">Round 1/8</p>
             </div>
-            <button onclick="toggleTabata()" id="tb-btn" class="w-full max-w-sm btn-primary py-4 text-xl mt-8">START TABATA</button>
+            <button onclick="toggleTabata()" id="tb-btn" class="w-full max-w-sm btn-primary py-4 text-xl mt-6">START TABATA</button>
+            
+            <div id="tb-countdown-container" class="flex items-center justify-center gap-2 mt-4">
+                <input type="checkbox" id="tb-countdown-check" class="w-5 h-5 accent-wolf-accent cursor-pointer" checked>
+                <label for="tb-countdown-check" class="text-xs uppercase text-wolf-muted font-bold cursor-pointer">10 Sec Countdown</label>
+            </div>
         </div>
     </div>
 
@@ -478,7 +493,7 @@
         // Tool Vars
         let toolInt = null;
         let swTime = 0;
-        let swLastLapTime = 0; // NEW: Track time at last lap
+        let swLastLapTime = 0; 
         let tmTime = 0;
         let tbState = { round: 1, isWork: false, timeLeft: 0, totalRounds: 8, workTime: 20, restTime: 10, active: false };
         let toolRoundCount = 0;
@@ -689,6 +704,7 @@
         // Stopwatch
         function toggleStopwatch() {
             const btn = document.getElementById('sw-btn');
+            const useCountdown = document.getElementById('sw-countdown-check').checked;
             
             if(toolInt) { // STOPPING
                 clearInterval(toolInt); toolInt = null; 
@@ -698,58 +714,57 @@
             }
             else { // STARTING
                 if(swTime === 0 && !isPrep) {
-                    // Start Countdown First
-                    isPrep = true;
-                    let prep = 10;
-                    els.swStatus.textContent = "GET READY"; els.swStatus.classList.remove('hidden');
-                    document.getElementById('sw-display').textContent = `00:${prep.toString().padStart(2, '0')}.0`;
-                    btn.textContent = "WAIT..."; btn.disabled = true;
+                    if(useCountdown) {
+                        // Start Countdown
+                        isPrep = true;
+                        let prep = 10;
+                        els.swStatus.textContent = "GET READY"; els.swStatus.classList.remove('hidden');
+                        document.getElementById('sw-display').textContent = `00:${prep.toString().padStart(2, '0')}.0`;
+                        btn.textContent = "WAIT..."; btn.disabled = true;
 
-                    toolInt = setInterval(() => {
-                        prep--;
-                        if(prep >= 0) {
-                            document.getElementById('sw-display').textContent = `00:${prep.toString().padStart(2, '0')}.0`;
-                            if(prep<=3) beep('Low');
-                        } else {
-                            // GO
-                            clearInterval(toolInt);
-                            beep('High');
-                            els.swStatus.classList.add('hidden');
-                            btn.disabled = false; btn.textContent = "STOP"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
-                            isPrep = false;
-                            
-                            // Start Clock
-                            const start = Date.now();
-                            toolInt = setInterval(() => { 
-                                swTime = Date.now() - start; 
-                                document.getElementById('sw-display').textContent = formatTimeTenths(swTime); 
-                            }, 50); 
-                        }
-                    }, 1000);
+                        toolInt = setInterval(() => {
+                            prep--;
+                            if(prep >= 0) {
+                                document.getElementById('sw-display').textContent = `00:${prep.toString().padStart(2, '0')}.0`;
+                                if(prep<=3) beep('Low');
+                            } else {
+                                clearInterval(toolInt); beep('High');
+                                els.swStatus.classList.add('hidden');
+                                btn.disabled = false; btn.textContent = "STOP"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
+                                isPrep = false;
+                                startStopwatchClock();
+                            }
+                        }, 1000);
+                    } else {
+                        // Immediate Start
+                        startStopwatchClock();
+                        btn.textContent = "STOP"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
+                    }
                 } else {
                     // RESUME
-                    const start = Date.now() - swTime;
-                    toolInt = setInterval(() => { 
-                        swTime = Date.now() - start; 
-                        document.getElementById('sw-display').textContent = formatTimeTenths(swTime); 
-                    }, 50);
+                    startStopwatchClock();
                     btn.textContent = "STOP"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
                 }
             }
         }
+        function startStopwatchClock() {
+            const start = Date.now() - swTime;
+            toolInt = setInterval(() => { 
+                swTime = Date.now() - start; 
+                document.getElementById('sw-display').textContent = formatTimeTenths(swTime); 
+            }, 50);
+        }
+
         function lapStopwatch() {
             if(!toolInt || isPrep) return; 
-            
-            // Calculate Split
             const splitMs = swTime - swLastLapTime;
             const splitTime = formatTimeTenths(splitMs);
             const totalTime = formatTimeTenths(swTime);
-            swLastLapTime = swTime; // Update last lap
+            swLastLapTime = swTime; 
 
             const lapDiv = document.createElement('div');
             lapDiv.className = "flex justify-between border-b border-wolf-border pb-1";
             lapDiv.innerHTML = `<span class="text-wolf-muted">Lap ${els.swLaps.children.length}</span><span class="text-white font-bold">${splitTime} / ${totalTime}</span>`;
-            
             if(els.swLaps.children[0]?.classList.contains('italic')) els.swLaps.innerHTML = '';
             els.swLaps.prepend(lapDiv);
         }
@@ -767,6 +782,7 @@
             const display = document.getElementById('tm-display');
             const config = document.getElementById('tm-config-container');
             const isRoundTrack = document.getElementById('tm-rounds-check').checked;
+            const useCountdown = document.getElementById('tm-countdown-check').checked;
 
             if(toolInt) { // PAUSE
                 clearInterval(toolInt); toolInt = null; 
@@ -781,50 +797,47 @@
                     tmTime = (h*3600) + (m*60) + s;
                     if(tmTime <= 0) return;
                     
-                    // PREP
-                    isPrep = true;
-                    let prep = 10;
                     config.classList.add('hidden'); display.classList.remove('hidden');
-                    els.tmStatus.textContent = "GET READY"; els.tmStatus.classList.remove('hidden');
-                    display.textContent = formatTime(prep);
-                    btn.textContent = "WAIT..."; btn.disabled = true;
+                    if(isRoundTrack) { els.tmRoundTracker.classList.remove('hidden'); toolRoundCount = 0; els.tmRoundVal.textContent = "0"; } 
+                    else { els.tmRoundTracker.classList.add('hidden'); }
 
-                    if(isRoundTrack) {
-                        els.tmRoundTracker.classList.remove('hidden');
-                        toolRoundCount = 0;
-                        els.tmRoundVal.textContent = "0";
-                    } else {
-                        els.tmRoundTracker.classList.add('hidden');
-                    }
-
-                    toolInt = setInterval(() => {
-                        prep--;
+                    if(useCountdown) {
+                        isPrep = true;
+                        let prep = 10;
+                        els.tmStatus.textContent = "GET READY"; els.tmStatus.classList.remove('hidden');
                         display.textContent = formatTime(prep);
-                        if(prep <= 3) beep('Low');
-                        if(prep <= 0) {
-                            clearInterval(toolInt);
-                            beep('High');
-                            // START ACTUAL TIMER
-                            isPrep = false;
-                            els.tmStatus.classList.add('hidden');
-                            btn.disabled = false; btn.textContent = "PAUSE"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
-                            display.textContent = formatTime(tmTime);
-                            
-                            toolInt = setInterval(() => {
-                                tmTime--; display.textContent = formatTime(tmTime);
-                                if(tmTime <= 0) { clearInterval(toolInt); toolInt = null; beep('High'); btn.textContent = "START"; btn.className = "flex-1 btn-primary py-4 text-xl"; config.classList.remove('hidden'); display.classList.add('hidden'); els.tmRoundTracker.classList.add('hidden'); }
-                            }, 1000);
-                        }
-                    }, 1000);
+                        btn.textContent = "WAIT..."; btn.disabled = true;
+
+                        toolInt = setInterval(() => {
+                            prep--;
+                            display.textContent = formatTime(prep);
+                            if(prep <= 3) beep('Low');
+                            if(prep <= 0) {
+                                clearInterval(toolInt); beep('High');
+                                isPrep = false; els.tmStatus.classList.add('hidden');
+                                btn.disabled = false; btn.textContent = "PAUSE"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
+                                startTimerClock();
+                            }
+                        }, 1000);
+                    } else {
+                        btn.textContent = "PAUSE"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
+                        startTimerClock();
+                    }
                 } else {
                     // RESUME
                     btn.textContent = "PAUSE"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
-                    toolInt = setInterval(() => {
-                        tmTime--; display.textContent = formatTime(tmTime);
-                        if(tmTime <= 0) { clearInterval(toolInt); toolInt = null; beep('High'); btn.textContent = "START"; btn.className = "flex-1 btn-primary py-4 text-xl"; config.classList.remove('hidden'); display.classList.add('hidden'); els.tmRoundTracker.classList.add('hidden'); }
-                    }, 1000);
+                    startTimerClock();
                 }
             }
+        }
+        function startTimerClock() {
+             const display = document.getElementById('tm-display');
+             const config = document.getElementById('tm-config-container');
+             display.textContent = formatTime(tmTime);
+             toolInt = setInterval(() => {
+                tmTime--; display.textContent = formatTime(tmTime);
+                if(tmTime <= 0) { clearInterval(toolInt); toolInt = null; beep('High'); document.getElementById('tm-btn').textContent = "START"; document.getElementById('tm-btn').className = "flex-1 btn-primary py-4 text-xl"; config.classList.remove('hidden'); display.classList.add('hidden'); els.tmRoundTracker.classList.add('hidden'); }
+            }, 1000);
         }
         window.toolIncrementRound = () => { toolRoundCount++; els.tmRoundVal.textContent = toolRoundCount; beep('Mid'); };
         function resetTimer() { 
@@ -839,6 +852,8 @@
         // Tabata
         function toggleTabata() {
             const btn = document.getElementById('tb-btn');
+            const useCountdown = document.getElementById('tb-countdown-check').checked;
+
             if(tbState.active) { clearInterval(toolInt); toolInt = null; tbState.active = false; resetTabataUI(); return; }
             
             // Start
@@ -847,39 +862,43 @@
             tbState.totalRounds = parseInt(document.getElementById('tb-rounds').value) || 8;
             tbState.round = 1; 
             tbState.active = true;
-            isPrep = true;
-            tbState.timeLeft = 10; // Prep time
 
             document.getElementById('tb-config').classList.add('hidden');
             document.getElementById('tb-display-container').classList.remove('hidden');
             btn.textContent = "STOP TABATA"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
-            
-            updateTabataUI("GET READY", tbState.timeLeft);
+            document.getElementById('tb-countdown-container').classList.add('hidden'); // Hide checkbox while running
 
+            if(useCountdown) {
+                isPrep = true;
+                tbState.timeLeft = 10;
+                updateTabataUI("GET READY", tbState.timeLeft);
+                startTabataClock();
+            } else {
+                // Immediate Start -> Go straight to Work
+                isPrep = false;
+                tbState.isWork = true;
+                tbState.timeLeft = tbState.workTime;
+                updateTabataUI("WORK", tbState.timeLeft);
+                startTabataClock();
+            }
+        }
+        function startTabataClock() {
             toolInt = setInterval(() => {
                 tbState.timeLeft--;
                 if(tbState.timeLeft < 0) {
                     if(isPrep) {
-                        // PREP DONE -> GO TO WORK
-                        isPrep = false;
-                        tbState.isWork = true; 
-                        beep('High');
-                        tbState.timeLeft = tbState.workTime;
+                        isPrep = false; tbState.isWork = true; 
+                        beep('High'); tbState.timeLeft = tbState.workTime;
                         updateTabataUI("WORK", tbState.timeLeft);
                     }
                     else if(tbState.isWork) {
-                         // WORK DONE -> GO TO REST
                          beep('Mid');
                          if(tbState.round >= tbState.totalRounds) { finishTabata(); return; }
-                         tbState.isWork = false; 
-                         tbState.timeLeft = tbState.restTime;
+                         tbState.isWork = false; tbState.timeLeft = tbState.restTime;
                          updateTabataUI("REST", tbState.timeLeft);
                     } else {
-                        // REST DONE -> GO TO WORK
                         beep('High');
-                        tbState.round++; 
-                        tbState.isWork = true; 
-                        tbState.timeLeft = tbState.workTime;
+                        tbState.round++; tbState.isWork = true; tbState.timeLeft = tbState.workTime;
                         updateTabataUI("WORK", tbState.timeLeft);
                     }
                 } else {
@@ -903,7 +922,8 @@
         function resetTabataUI() {
             document.getElementById('tb-config').classList.remove('hidden');
             document.getElementById('tb-display-container').classList.add('hidden');
-            const btn = document.getElementById('tb-btn'); btn.textContent = "START TABATA"; btn.className = "w-full max-w-sm btn-primary py-4 text-xl mt-8";
+            document.getElementById('tb-countdown-container').classList.remove('hidden');
+            const btn = document.getElementById('tb-btn'); btn.textContent = "START TABATA"; btn.className = "w-full max-w-sm btn-primary py-4 text-xl mt-6";
         }
 
         // --- UTILS & EDITOR ---
@@ -994,12 +1014,10 @@
             
             history.forEach(log => {
                 const dateObj = new Date(log.date);
-                // Safe Date Formatting
                 let dateDisplay = "Unknown Date";
                 if(!isNaN(dateObj.getTime())) {
-                     // Check for the "1899" issue (often happens if just a Time is saved in Excel/Sheets)
                      if(dateObj.getFullYear() < 2000) {
-                        dateDisplay = "Undated Entry";
+                        dateDisplay = "---";
                      } else {
                         dateDisplay = dateObj.toLocaleDateString();
                      }
