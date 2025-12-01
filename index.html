@@ -105,6 +105,47 @@
         </div>
     </div>
 
+    <div id="record-prompt-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-sm rounded-xl shadow-2xl text-center">
+            <h2 class="font-heading text-2xl text-white mb-2">WORKOUT COMPLETE</h2>
+            <p class="text-wolf-muted text-sm mb-6">Would you like to record this session?</p>
+            <div class="flex gap-3">
+                <button onclick="closeModal('record-prompt-modal')" class="flex-1 py-3 btn-secondary text-wolf-muted">No</button>
+                <button onclick="openRecordDetails()" class="flex-1 py-3 btn-primary">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="record-details-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto">
+            <h2 class="font-heading text-2xl text-wolf-accent mb-6">RECORD SESSION</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs uppercase text-wolf-muted font-bold mb-1">Workout Name</label>
+                    <input type="text" id="rec-name" value="Custom Timer Workout" class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none">
+                </div>
+                <div class="flex gap-3">
+                    <div class="flex-1">
+                        <label class="block text-xs uppercase text-wolf-muted font-bold mb-1">Duration</label>
+                        <input type="text" id="rec-duration" readonly class="w-full bg-wolf-bg border border-wolf-border text-wolf-muted p-3 rounded outline-none select-none">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs uppercase text-wolf-muted font-bold mb-1">Rounds</label>
+                        <input type="number" id="rec-rounds" class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs uppercase text-wolf-muted font-bold mb-1">Notes / Exercises</label>
+                    <textarea id="rec-notes" rows="4" placeholder="Enter exercises, weights, or details..." class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none"></textarea>
+                </div>
+            </div>
+
+            <button onclick="saveCustomWorkout()" class="w-full btn-primary py-4 text-xl mt-6">SAVE TO HISTORY</button>
+            <button onclick="closeModal('record-details-modal')" class="mt-4 text-wolf-muted text-xs uppercase tracking-widest hover:text-white text-center">Cancel</button>
+        </div>
+    </div>
+
     <div id="tools-screen" class="screen h-full w-full flex-col bg-wolf-bg p-4">
         <div class="flex justify-between items-center mb-6 pb-4 border-b border-wolf-border">
             <h2 class="font-heading text-3xl text-wolf-text">TOOLS</h2>
@@ -495,6 +536,7 @@
         let swTime = 0;
         let swLastLapTime = 0; 
         let tmTime = 0;
+        let tmOriginalTime = 0; // Capture original duration for logging
         let tbState = { round: 1, isWork: false, timeLeft: 0, totalRounds: 8, workTime: 20, restTime: 10, active: false };
         let toolRoundCount = 0;
         let isPrep = false;
@@ -796,6 +838,7 @@
                     const s = parseInt(document.getElementById('tm-s').value) || 0;
                     tmTime = (h*3600) + (m*60) + s;
                     if(tmTime <= 0) return;
+                    tmOriginalTime = tmTime; // Store for recording
                     
                     config.classList.add('hidden'); display.classList.remove('hidden');
                     if(isRoundTrack) { els.tmRoundTracker.classList.remove('hidden'); toolRoundCount = 0; els.tmRoundVal.textContent = "0"; } 
@@ -836,9 +879,46 @@
              display.textContent = formatTime(tmTime);
              toolInt = setInterval(() => {
                 tmTime--; display.textContent = formatTime(tmTime);
-                if(tmTime <= 0) { clearInterval(toolInt); toolInt = null; beep('High'); document.getElementById('tm-btn').textContent = "START"; document.getElementById('tm-btn').className = "flex-1 btn-primary py-4 text-xl"; config.classList.remove('hidden'); display.classList.add('hidden'); els.tmRoundTracker.classList.add('hidden'); }
+                if(tmTime <= 0) { 
+                    clearInterval(toolInt); toolInt = null; beep('High'); 
+                    document.getElementById('tm-btn').textContent = "START"; document.getElementById('tm-btn').className = "flex-1 btn-primary py-4 text-xl"; 
+                    config.classList.remove('hidden'); display.classList.add('hidden'); els.tmRoundTracker.classList.add('hidden');
+                    
+                    // Trigger Record Prompt
+                    openModal('record-prompt-modal');
+                }
             }, 1000);
         }
+        // Custom Record Logic
+        function openRecordDetails() {
+            closeModal('record-prompt-modal');
+            openModal('record-details-modal');
+            document.getElementById('rec-duration').value = formatTime(tmOriginalTime);
+            document.getElementById('rec-rounds').value = toolRoundCount;
+        }
+        async function saveCustomWorkout() {
+            const name = document.getElementById('rec-name').value || "Custom Timer";
+            const duration = document.getElementById('rec-duration').value;
+            const rounds = document.getElementById('rec-rounds').value;
+            const notes = document.getElementById('rec-notes').value;
+            
+            const entry = {
+                date: new Date().toISOString(),
+                type: name,
+                duration: duration,
+                details: {
+                    roundsCompleted: rounds,
+                    notes: notes
+                }
+            };
+            await saveHistoryLog(entry);
+            closeModal('record-details-modal');
+            // Reset fields
+            document.getElementById('rec-notes').value = '';
+            document.getElementById('rec-name').value = 'Custom Timer Workout';
+            alert("Workout Saved!");
+        }
+
         window.toolIncrementRound = () => { toolRoundCount++; els.tmRoundVal.textContent = toolRoundCount; beep('Mid'); };
         function resetTimer() { 
             clearInterval(toolInt); toolInt = null; tmTime = 0; isPrep = false;
@@ -1016,11 +1096,11 @@
                 const dateObj = new Date(log.date);
                 let dateDisplay = "Unknown Date";
                 if(!isNaN(dateObj.getTime())) {
-                     // Fix: Dates prior to year 2000 (often 1899 from spreadsheet timestamps) are hidden
+                     // Check if date is reasonable (e.g. not 1899)
                      if(dateObj.getFullYear() < 2000) {
                         dateDisplay = "---";
                      } else {
-                        // Fix: Using readable format e.g., Mon, Nov 26, 2025
+                        // Use readable format: Mon, Nov 26, 2025
                         dateDisplay = dateObj.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
                      }
                 }
@@ -1031,6 +1111,9 @@
                 if(log.details) {
                     if(log.details.maxReps) detailsHtml = `<span class="inline-block mt-1 bg-wolf-bg px-2 py-0.5 rounded text-[10px] text-wolf-accent border border-wolf-border">MAX: ${log.details.maxReps} | ${log.details.weight}</span>`;
                     else if(log.details.roundsCompleted) detailsHtml = `<span class="inline-block mt-1 bg-wolf-bg px-2 py-0.5 rounded text-[10px] text-wolf-accent border border-wolf-border">ROUNDS: ${log.details.roundsCompleted}</span>`;
+                    
+                    // Show custom timer notes if they exist
+                    if(log.details.notes) detailsHtml += `<div class="mt-2 text-[10px] text-wolf-muted italic border-t border-wolf-border pt-1 truncate max-w-[150px]">${log.details.notes}</div>`;
                 }
                 el.innerHTML = `<div><p class="text-white font-bold text-lg uppercase font-heading tracking-wide">${log.type.replace('_', ' ')}</p><p class="text-wolf-muted text-xs uppercase">${dateDisplay}</p>${detailsHtml}</div><div class="font-heading text-2xl text-wolf-text">${log.duration}</div>`;
                 list.appendChild(el);
