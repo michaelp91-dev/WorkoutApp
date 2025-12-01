@@ -1101,6 +1101,16 @@
             alert("Weight Logged!");
         }
 
+        // NEW: Insert Logic
+        window.insertStep = (idx) => {
+            if(editingRoutineKey === 'apex') {
+                editingCopy.exercises.splice(idx + 1, 0, "New Movement");
+            } else {
+                editingCopy.splice(idx + 1, 0, { type: 'work', name: 'New Exercise', duration: 30 });
+            }
+            renderEditor();
+        };
+
         window.toolIncrementRound = () => { toolRoundCount++; els.tmRoundVal.textContent = toolRoundCount; beep('Mid'); };
         function resetTimer() { 
             clearInterval(toolInt); toolInt = null; tmTime = 0; isPrep = false;
@@ -1212,7 +1222,9 @@
                 editingCopy.exercises.forEach((ex, idx) => {
                     const row = document.createElement('div');
                     row.className = "flex gap-2 mb-2 items-center";
-                    row.innerHTML = `<span class="text-wolf-muted text-xs w-4">${idx+1}.</span><input type="text" value="${ex}" onchange="updateApexEx(${idx}, this.value)" class="flex-grow bg-wolf-surface text-white p-3 rounded border border-wolf-border text-sm focus:border-wolf-accent outline-none"><button onclick="deleteApexEx(${idx})" class="text-red-500 hover:text-red-400 p-2">✕</button>`;
+                    row.innerHTML = `<span class="text-wolf-muted text-xs w-4">${idx+1}.</span><input type="text" value="${ex}" onchange="updateApexEx(${idx}, this.value)" class="flex-grow bg-wolf-surface text-white p-3 rounded border border-wolf-border text-sm focus:border-wolf-accent outline-none">
+                    <button onclick="insertStep(${idx})" class="text-wolf-accent hover:text-white p-2 text-lg font-bold">+</button>
+                    <button onclick="deleteApexEx(${idx})" class="text-red-500 hover:text-red-400 p-2">✕</button>`;
                     container.appendChild(row);
                 });
             } else {
@@ -1232,7 +1244,10 @@
                         inputs += `<div class="flex gap-2 items-center mt-2"><span class="text-xs text-wolf-muted">Secs</span><input type="number" value="${step.duration || 0}" onchange="updateStep(${idx}, 'duration', this.value)" class="w-20 bg-wolf-bg text-white p-2 text-sm text-center rounded border border-wolf-border outline-none"></div>`;
                     }
 
-                    inputs += `<div class="mt-2 text-right"><button onclick="deleteStep(${idx})" class="text-[10px] text-red-500 hover:text-white uppercase font-bold tracking-wider">Remove</button></div>`;
+                    inputs += `<div class="mt-2 flex justify-between">
+                        <button onclick="insertStep(${idx})" class="text-[10px] text-wolf-accent uppercase font-bold tracking-wider hover:text-white">+ Insert Below</button>
+                        <button onclick="deleteStep(${idx})" class="text-[10px] text-red-500 hover:text-white uppercase font-bold tracking-wider">Remove</button>
+                    </div>`;
                     row.innerHTML = inputs;
                     container.appendChild(row);
                 });
