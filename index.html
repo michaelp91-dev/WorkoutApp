@@ -193,7 +193,7 @@
             <div id="tb-display-container" class="hidden">
                 <p id="tb-status" class="text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading">WORK</p>
                 <div id="tb-timer" class="font-heading text-8xl md:text-9xl text-white mb-2 tabular-nums">20</div>
-                <p id="tb-round-counter" class="text-wolf-muted uppercase tracking-widest text-sm">Round 1/8</p>
+                <p id="tb-round-counter" class="text-wolf-muted uppercase tracking-widest text-2xl font-bold">Round 1/8</p>
             </div>
             <button onclick="toggleTabata()" id="tb-btn" class="w-full max-w-sm btn-primary py-4 text-xl mt-8">START TABATA</button>
         </div>
@@ -478,6 +478,7 @@
         // Tool Vars
         let toolInt = null;
         let swTime = 0;
+        let swLastLapTime = 0; // NEW: Track time at last lap
         let tmTime = 0;
         let tbState = { round: 1, isWork: false, timeLeft: 0, totalRounds: 8, workTime: 20, restTime: 10, active: false };
         let toolRoundCount = 0;
@@ -693,7 +694,7 @@
                 clearInterval(toolInt); toolInt = null; 
                 btn.textContent = "RESUME"; btn.classList.remove('bg-red-900'); btn.classList.add('btn-primary'); 
                 els.swStatus.classList.add('hidden');
-                isPrep = false; // Cancel prep if stopped
+                isPrep = false; 
             }
             else { // STARTING
                 if(swTime === 0 && !isPrep) {
@@ -722,11 +723,11 @@
                             toolInt = setInterval(() => { 
                                 swTime = Date.now() - start; 
                                 document.getElementById('sw-display').textContent = formatTimeTenths(swTime); 
-                            }, 50); // Tenths update speed
+                            }, 50); 
                         }
                     }, 1000);
                 } else {
-                    // RESUME (skip countdown)
+                    // RESUME
                     const start = Date.now() - swTime;
                     toolInt = setInterval(() => { 
                         swTime = Date.now() - start; 
@@ -738,15 +739,22 @@
         }
         function lapStopwatch() {
             if(!toolInt || isPrep) return; 
-            const lapTime = formatTimeTenths(swTime);
+            
+            // Calculate Split
+            const splitMs = swTime - swLastLapTime;
+            const splitTime = formatTimeTenths(splitMs);
+            const totalTime = formatTimeTenths(swTime);
+            swLastLapTime = swTime; // Update last lap
+
             const lapDiv = document.createElement('div');
             lapDiv.className = "flex justify-between border-b border-wolf-border pb-1";
-            lapDiv.innerHTML = `<span class="text-wolf-muted">Lap ${els.swLaps.children.length}</span><span class="text-white font-bold">${lapTime}</span>`;
+            lapDiv.innerHTML = `<span class="text-wolf-muted">Lap ${els.swLaps.children.length}</span><span class="text-white font-bold">${splitTime} / ${totalTime}</span>`;
+            
             if(els.swLaps.children[0]?.classList.contains('italic')) els.swLaps.innerHTML = '';
             els.swLaps.prepend(lapDiv);
         }
         function resetStopwatch() { 
-            clearInterval(toolInt); toolInt = null; swTime = 0; isPrep = false;
+            clearInterval(toolInt); toolInt = null; swTime = 0; swLastLapTime = 0; isPrep = false;
             document.getElementById('sw-display').textContent = "00:00.0"; 
             document.getElementById('sw-btn').textContent = "START"; document.getElementById('sw-btn').className = "flex-1 btn-primary py-4 text-xl"; document.getElementById('sw-btn').disabled = false;
             els.swLaps.innerHTML = '<div class="text-wolf-muted text-center italic py-2">Laps will appear here</div>';
@@ -773,7 +781,7 @@
                     tmTime = (h*3600) + (m*60) + s;
                     if(tmTime <= 0) return;
                     
-                    // PREP PHASE (only on fresh start)
+                    // PREP
                     isPrep = true;
                     let prep = 10;
                     config.classList.add('hidden'); display.classList.remove('hidden');
@@ -809,7 +817,7 @@
                         }
                     }, 1000);
                 } else {
-                    // RESUME (skip prep)
+                    // RESUME
                     btn.textContent = "PAUSE"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
                     toolInt = setInterval(() => {
                         tmTime--; display.textContent = formatTime(tmTime);
@@ -854,7 +862,7 @@
                     if(isPrep) {
                         // PREP DONE -> GO TO WORK
                         isPrep = false;
-                        tbState.isWork = true; // Set to work
+                        tbState.isWork = true; 
                         beep('High');
                         tbState.timeLeft = tbState.workTime;
                         updateTabataUI("WORK", tbState.timeLeft);
@@ -903,7 +911,7 @@
         function formatTimeTenths(ms) { 
             const m = Math.floor(ms/60000).toString().padStart(2,'0'); 
             const s = Math.floor((ms%60000)/1000).toString().padStart(2,'0'); 
-            const ds = Math.floor((ms%1000)/100); // Tenths
+            const ds = Math.floor((ms%1000)/100); 
             return `${m}:${s}.${ds}`; 
         }
 
@@ -983,8 +991,20 @@
             loading.classList.add('hidden');
             if(history.length === 0) { document.getElementById('no-history-msg').classList.remove('hidden'); return; }
             document.getElementById('no-history-msg').classList.add('hidden');
+            
             history.forEach(log => {
-                const date = new Date(log.date);
+                const dateObj = new Date(log.date);
+                // Safe Date Formatting
+                let dateDisplay = "Unknown Date";
+                if(!isNaN(dateObj.getTime())) {
+                     // Check for the "1899" issue (often happens if just a Time is saved in Excel/Sheets)
+                     if(dateObj.getFullYear() < 2000) {
+                        dateDisplay = "Undated Entry";
+                     } else {
+                        dateDisplay = dateObj.toLocaleDateString();
+                     }
+                }
+
                 const el = document.createElement('div');
                 el.className = 'bg-wolf-surface border-l-4 border-wolf-accent p-4 flex justify-between items-center rounded-r shadow-sm';
                 let detailsHtml = '';
@@ -992,7 +1012,7 @@
                     if(log.details.maxReps) detailsHtml = `<span class="inline-block mt-1 bg-wolf-bg px-2 py-0.5 rounded text-[10px] text-wolf-accent border border-wolf-border">MAX: ${log.details.maxReps} | ${log.details.weight}</span>`;
                     else if(log.details.roundsCompleted) detailsHtml = `<span class="inline-block mt-1 bg-wolf-bg px-2 py-0.5 rounded text-[10px] text-wolf-accent border border-wolf-border">ROUNDS: ${log.details.roundsCompleted}</span>`;
                 }
-                el.innerHTML = `<div><p class="text-white font-bold text-lg uppercase font-heading tracking-wide">${log.type.replace('_', ' ')}</p><p class="text-wolf-muted text-xs uppercase">${date.toLocaleDateString()}</p>${detailsHtml}</div><div class="font-heading text-2xl text-wolf-text">${log.duration}</div>`;
+                el.innerHTML = `<div><p class="text-white font-bold text-lg uppercase font-heading tracking-wide">${log.type.replace('_', ' ')}</p><p class="text-wolf-muted text-xs uppercase">${dateDisplay}</p>${detailsHtml}</div><div class="font-heading text-2xl text-wolf-text">${log.duration}</div>`;
                 list.appendChild(el);
             });
         }
