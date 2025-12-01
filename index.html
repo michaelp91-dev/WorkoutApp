@@ -73,6 +73,17 @@
         }
         .btn-secondary:active { transform: translateY(1px); }
         .btn-secondary:hover { border-color: #78716c; color: white; }
+        
+        /* Tool Inputs */
+        .tool-input {
+            background: transparent;
+            border: 2px solid #44403c;
+            color: white;
+            text-align: center;
+            font-family: 'Oswald', sans-serif;
+            border-radius: 0.5rem;
+        }
+        .tool-input:focus { border-color: #b45309; outline: none; }
 
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #0c0a09; }
@@ -91,6 +102,68 @@
             <div class="flex gap-3 mt-4">
                 <button onclick="closeModal('sync-modal')" class="flex-1 py-3 btn-secondary">Close</button>
             </div>
+        </div>
+    </div>
+
+    <div id="tools-screen" class="screen h-full w-full flex-col bg-wolf-bg p-4">
+        <div class="flex justify-between items-center mb-6 pb-4 border-b border-wolf-border">
+            <h2 class="font-heading text-3xl text-wolf-text">TOOLS</h2>
+            <button onclick="switchScreen('menu')" class="btn-secondary px-4 py-2 text-sm">Exit</button>
+        </div>
+        
+        <div class="flex gap-2 mb-6">
+            <button onclick="switchTool('stopwatch')" id="tab-stopwatch" class="flex-1 py-2 rounded text-xs uppercase font-bold bg-wolf-accent text-white transition">Stopwatch</button>
+            <button onclick="switchTool('timer')" id="tab-timer" class="flex-1 py-2 rounded text-xs uppercase font-bold bg-wolf-surface text-wolf-muted hover:text-white transition">Timer</button>
+            <button onclick="switchTool('tabata')" id="tab-tabata" class="flex-1 py-2 rounded text-xs uppercase font-bold bg-wolf-surface text-wolf-muted hover:text-white transition">Tabata</button>
+        </div>
+
+        <div id="tool-stopwatch" class="flex-grow flex flex-col items-center justify-center text-center">
+            <div id="sw-display" class="font-heading text-7xl md:text-9xl text-white mb-8 tabular-nums">00:00.00</div>
+            <div class="flex gap-4 w-full max-w-md">
+                <button onclick="toggleStopwatch()" id="sw-btn" class="flex-1 btn-primary py-4 text-xl">START</button>
+                <button onclick="resetStopwatch()" class="flex-1 btn-secondary py-4 text-xl">RESET</button>
+            </div>
+        </div>
+
+        <div id="tool-timer" class="hidden flex-grow flex flex-col items-center justify-center text-center">
+            <div id="tm-input-container" class="flex gap-2 items-center mb-8">
+                <input type="number" id="tm-h" placeholder="00" class="tool-input w-20 text-4xl p-2" min="0" max="99">
+                <span class="text-2xl text-wolf-muted">:</span>
+                <input type="number" id="tm-m" placeholder="00" class="tool-input w-20 text-4xl p-2" min="0" max="59">
+                <span class="text-2xl text-wolf-muted">:</span>
+                <input type="number" id="tm-s" placeholder="00" class="tool-input w-20 text-4xl p-2" min="0" max="59">
+            </div>
+            <div id="tm-display" class="hidden font-heading text-7xl md:text-9xl text-white mb-8 tabular-nums">00:00</div>
+            
+            <div class="flex gap-4 w-full max-w-md">
+                <button onclick="toggleTimer()" id="tm-btn" class="flex-1 btn-primary py-4 text-xl">START</button>
+                <button onclick="resetTimer()" class="flex-1 btn-secondary py-4 text-xl">RESET</button>
+            </div>
+        </div>
+
+        <div id="tool-tabata" class="hidden flex-grow flex flex-col items-center justify-center text-center">
+            <div id="tb-config" class="w-full max-w-sm space-y-4 mb-8">
+                <div class="flex justify-between items-center">
+                    <label class="text-wolf-muted uppercase text-sm font-bold">Work (Sec)</label>
+                    <input type="number" id="tb-work" value="20" class="tool-input w-24 text-2xl p-1">
+                </div>
+                <div class="flex justify-between items-center">
+                    <label class="text-wolf-muted uppercase text-sm font-bold">Rest (Sec)</label>
+                    <input type="number" id="tb-rest" value="10" class="tool-input w-24 text-2xl p-1">
+                </div>
+                <div class="flex justify-between items-center">
+                    <label class="text-wolf-muted uppercase text-sm font-bold">Rounds</label>
+                    <input type="number" id="tb-rounds" value="8" class="tool-input w-24 text-2xl p-1">
+                </div>
+            </div>
+
+            <div id="tb-display-container" class="hidden">
+                <p id="tb-status" class="text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading">WORK</p>
+                <div id="tb-timer" class="font-heading text-8xl md:text-9xl text-white mb-2 tabular-nums">20</div>
+                <p id="tb-round-counter" class="text-wolf-muted uppercase tracking-widest text-sm">Round 1/8</p>
+            </div>
+
+            <button onclick="toggleTabata()" id="tb-btn" class="w-full max-w-sm btn-primary py-4 text-xl mt-8">START TABATA</button>
         </div>
     </div>
 
@@ -161,9 +234,10 @@
 
             <div class="w-full space-y-3 mt-3 pt-3 border-t border-wolf-border">
                  <button onclick="openApexConfig()" class="w-full btn-secondary py-4 text-lg border-wolf-accent text-wolf-accent hover:bg-wolf-accent hover:text-white">Apex</button>
-                 <div class="grid grid-cols-2 gap-3 mt-2">
-                    <button onclick="showHistory()" class="btn-secondary py-3 text-xs tracking-widest text-wolf-muted">History</button>
-                    <button onclick="openManager()" class="btn-secondary py-3 text-xs tracking-widest text-wolf-muted">Edit Program</button>
+                 <div class="grid grid-cols-3 gap-3 mt-2">
+                    <button onclick="showHistory()" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted">History</button>
+                    <button onclick="switchScreen('tools')" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted">Tools</button>
+                    <button onclick="openManager()" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted">Edit</button>
                 </div>
             </div>
             
@@ -272,8 +346,8 @@
 
         const STORAGE_KEY_HIST = 'wolf_history';
         const STORAGE_KEY_ROUTINES = 'wolf_routines';
-        // We ignore local storage for URL if hardcoded exists
         
+        // DEFAULT DATA
         const defaultRoutines = {
             'Wake Up': [
                 { type: 'work', name: 'Bounce & Breathe', duration: 60 },
@@ -287,16 +361,11 @@
             'Morning Grind': [
                 { type: 'work', name: 'Push-ups', round: '1/4', duration: 40 }, { type: 'rest', name: 'Shake It Out', duration: 15 },
                 { type: 'work', name: 'Push-ups', round: '2/4', duration: 40 }, { type: 'rest', name: 'Shake It Out', duration: 15 },
-                { type: 'work', name: 'Push-ups', round: '3/4', duration: 40 }, { type: 'rest', name: 'Shake It Out', duration: 15 },
-                { type: 'work', name: 'Push-ups', round: '4/4', duration: 40 }, { type: 'rest', name: 'Recover', duration: 45 },
+                { type: 'work', name: 'Push-ups', round: '3/4', duration: 40 }, { type: 'rest', name: 'Recover', duration: 45 },
                 { type: 'work', name: 'Air Squats', round: '1/4', duration: 40 }, { type: 'rest', name: 'Shake It Out', duration: 15 },
-                { type: 'work', name: 'Air Squats', round: '2/4', duration: 40 }, { type: 'rest', name: 'Shake It Out', duration: 15 },
-                { type: 'work', name: 'Air Squats', round: '3/4', duration: 40 }, { type: 'rest', name: 'Shake It Out', duration: 15 },
-                { type: 'work', name: 'Air Squats', round: '4/4', duration: 40 }, { type: 'rest', name: 'Recover', duration: 45 },
+                { type: 'work', name: 'Air Squats', round: '2/4', duration: 40 }, { type: 'rest', name: 'Recover', duration: 45 },
                 { type: 'work', name: 'Burpees', round: '1/4', duration: 40 }, { type: 'rest', name: 'Shake It Out', duration: 15 },
-                { type: 'work', name: 'Burpees', round: '2/4', duration: 40 }, { type: 'rest', name: 'Shake It Out', duration: 15 },
-                { type: 'work', name: 'Burpees', round: '3/4', duration: 40 }, { type: 'rest', name: 'Shake It Out', duration: 15 },
-                { type: 'work', name: 'Burpees', round: '4/4', duration: 40 }, { type: 'rest', name: 'Recover', duration: 45 },
+                { type: 'work', name: 'Burpees', round: '2/4', duration: 40 }, { type: 'rest', name: 'Recover', duration: 45 },
                 { type: 'work', name: 'Mountain Climbers', duration: 45 },
                 { type: 'cooldown', name: 'Stretch', duration: 60 }
             ],
@@ -314,7 +383,8 @@
             workout: document.getElementById('workout-screen'),
             completion: document.getElementById('completion-screen'),
             history: document.getElementById('history-screen'),
-            editor: document.getElementById('editor-screen')
+            editor: document.getElementById('editor-screen'),
+            tools: document.getElementById('tools-screen')
         };
         const els = {
             timer: document.getElementById('timer-display'),
@@ -347,6 +417,12 @@
         let editingRoutineKey = null;
         let editingCopy = null;
 
+        // Tool Vars
+        let toolInt = null;
+        let swTime = 0;
+        let tmTime = 0;
+        let tbState = { round: 1, isWork: true, timeLeft: 0, totalRounds: 8, workTime: 20, restTime: 10, active: false };
+
         // --- INIT ---
         window.addEventListener('DOMContentLoaded', () => {
             initSync();
@@ -357,9 +433,9 @@
         // --- SYNC LOGIC ---
         function initSync() {
             if(HARDCODED_URL && HARDCODED_URL.startsWith('http')) {
-                els.syncStatus.textContent = "CLOUD ACTIVE (HARDCODED)";
+                els.syncStatus.textContent = "CLOUD ACTIVE";
                 els.syncStatus.classList.add('text-wolf-accent');
-                els.modalStatus.textContent = "CONNECTED VIA CODE";
+                els.modalStatus.textContent = "CONNECTED";
                 els.modalStatus.classList.add('text-green-500');
                 syncRoutines();
             } else {
@@ -504,8 +580,114 @@
             switchScreen('completion');
         }
 
+        // --- TOOLS LOGIC ---
+        function switchTool(tool) {
+            initAudio(); clearInterval(toolInt);
+            document.querySelectorAll('[id^="tool-"]').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('[id^="tab-"]').forEach(el => { el.classList.remove('bg-wolf-accent', 'text-white'); el.classList.add('bg-wolf-surface', 'text-wolf-muted'); });
+            document.getElementById(`tool-${tool}`).classList.remove('hidden');
+            document.getElementById(`tab-${tool}`).classList.add('bg-wolf-accent', 'text-white'); document.getElementById(`tab-${tool}`).classList.remove('bg-wolf-surface', 'text-wolf-muted');
+        }
+        
+        // Stopwatch
+        function toggleStopwatch() {
+            const btn = document.getElementById('sw-btn');
+            if(toolInt) { clearInterval(toolInt); toolInt = null; btn.textContent = "START"; btn.classList.remove('bg-red-900'); btn.classList.add('btn-primary'); }
+            else { 
+                const start = Date.now() - swTime;
+                toolInt = setInterval(() => { swTime = Date.now() - start; document.getElementById('sw-display').textContent = formatTimeMs(swTime); }, 10);
+                btn.textContent = "STOP"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
+            }
+        }
+        function resetStopwatch() { clearInterval(toolInt); toolInt = null; swTime = 0; document.getElementById('sw-display').textContent = "00:00.00"; document.getElementById('sw-btn').textContent = "START"; document.getElementById('sw-btn').className = "flex-1 btn-primary py-4 text-xl"; }
+
+        // Timer
+        function toggleTimer() {
+            const btn = document.getElementById('tm-btn');
+            const display = document.getElementById('tm-display');
+            const inputs = document.getElementById('tm-input-container');
+            if(toolInt) { clearInterval(toolInt); toolInt = null; btn.textContent = "RESUME"; btn.classList.remove('bg-red-900'); btn.classList.add('btn-primary'); }
+            else {
+                if(tmTime <= 0) {
+                    const h = parseInt(document.getElementById('tm-h').value) || 0;
+                    const m = parseInt(document.getElementById('tm-m').value) || 0;
+                    const s = parseInt(document.getElementById('tm-s').value) || 0;
+                    tmTime = (h*3600) + (m*60) + s;
+                    if(tmTime <= 0) return;
+                }
+                inputs.classList.add('hidden'); display.classList.remove('hidden');
+                display.textContent = formatTime(tmTime);
+                toolInt = setInterval(() => {
+                    tmTime--; display.textContent = formatTime(tmTime);
+                    if(tmTime <= 0) { clearInterval(toolInt); toolInt = null; beep('High'); btn.textContent = "START"; btn.className = "flex-1 btn-primary py-4 text-xl"; inputs.classList.remove('hidden'); display.classList.add('hidden'); }
+                }, 1000);
+                btn.textContent = "PAUSE"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
+            }
+        }
+        function resetTimer() { clearInterval(toolInt); toolInt = null; tmTime = 0; document.getElementById('tm-input-container').classList.remove('hidden'); document.getElementById('tm-display').classList.add('hidden'); document.getElementById('tm-btn').textContent = "START"; document.getElementById('tm-btn').className = "flex-1 btn-primary py-4 text-xl"; }
+
+        // Tabata
+        function toggleTabata() {
+            const btn = document.getElementById('tb-btn');
+            if(tbState.active) { clearInterval(toolInt); toolInt = null; tbState.active = false; resetTabataUI(); return; }
+            
+            // Start
+            tbState.workTime = parseInt(document.getElementById('tb-work').value) || 20;
+            tbState.restTime = parseInt(document.getElementById('tb-rest').value) || 10;
+            tbState.totalRounds = parseInt(document.getElementById('tb-rounds').value) || 8;
+            tbState.round = 1; tbState.isWork = true; tbState.timeLeft = 10; // Prep time
+            tbState.active = true;
+
+            document.getElementById('tb-config').classList.add('hidden');
+            document.getElementById('tb-display-container').classList.remove('hidden');
+            btn.textContent = "STOP TABATA"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
+            
+            updateTabataUI("GET READY", tbState.timeLeft);
+
+            toolInt = setInterval(() => {
+                tbState.timeLeft--;
+                if(tbState.timeLeft < 0) {
+                    if(tbState.isWork) {
+                         // End of work
+                         beep('Mid');
+                         if(tbState.round >= tbState.totalRounds && !tbState.isWork) { finishTabata(); return; } // Should not happen here really
+                         tbState.isWork = false; tbState.timeLeft = tbState.restTime;
+                         updateTabataUI("REST", tbState.timeLeft);
+                    } else {
+                        // End of rest
+                        beep('High');
+                        if(tbState.round >= tbState.totalRounds) { finishTabata(); return; }
+                        tbState.round++; tbState.isWork = true; tbState.timeLeft = tbState.workTime;
+                        updateTabataUI("WORK", tbState.timeLeft);
+                    }
+                } else {
+                    document.getElementById('tb-timer').textContent = tbState.timeLeft;
+                    if(tbState.timeLeft <= 3) beep('Low');
+                }
+            }, 1000);
+        }
+        function updateTabataUI(status, time) {
+             const stEl = document.getElementById('tb-status');
+             stEl.textContent = status;
+             stEl.className = (status === "WORK") ? "text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading" : "text-green-500 uppercase tracking-widest text-2xl mb-2 font-heading";
+             if(status === "GET READY") stEl.className = "text-white uppercase tracking-widest text-2xl mb-2 font-heading";
+             document.getElementById('tb-timer').textContent = time;
+             document.getElementById('tb-round-counter').textContent = `Round ${tbState.round}/${tbState.totalRounds}`;
+        }
+        function finishTabata() {
+            clearInterval(toolInt); tbState.active = false; beep('High'); beep('High');
+            alert("TABATA COMPLETE"); resetTabataUI();
+        }
+        function resetTabataUI() {
+            document.getElementById('tb-config').classList.remove('hidden');
+            document.getElementById('tb-display-container').classList.add('hidden');
+            const btn = document.getElementById('tb-btn'); btn.textContent = "START TABATA"; btn.className = "w-full max-w-sm btn-primary py-4 text-xl mt-8";
+        }
+
         // --- UTILS & EDITOR ---
         function formatTime(s) { const min = Math.floor(s / 60).toString().padStart(2, '0'); const sec = (s % 60).toString().padStart(2, '0'); return `${min}:${sec}`; }
+        function formatTimeMs(ms) { const m = Math.floor(ms/60000).toString().padStart(2,'0'); const s = Math.floor((ms%60000)/1000).toString().padStart(2,'0'); const c = Math.floor((ms%1000)/10).toString().padStart(2,'0'); return `${m}:${s}.${c}`; }
+
         function generateApexRoutine(config, maxReps) { const routine = []; const reps = []; for (let i = 1; i <= maxReps; i++) reps.push(i); for (let i = maxReps - 1; i >= 1; i--) reps.push(i); reps.forEach((repCount, idx) => { routine.push({ type: 'rep_work', name: `${repCount} Reps`, round: `${idx + 1}/${reps.length}`, exercises: config.exercises }); if (idx < reps.length - 1) routine.push({ type: 'rest', name: 'Rest', duration: config.restTime || 30, round: 'Recover' }); }); return routine; }
         function openEditor(key) { editingRoutineKey = key; closeModal('editor-select-modal'); if(key === 'apex') editingCopy = JSON.parse(JSON.stringify(routines.apex_config || defaultRoutines.apex_config)); else editingCopy = JSON.parse(JSON.stringify(routines[key])); renderEditor(); switchScreen('editor'); }
         function renderEditor() {
