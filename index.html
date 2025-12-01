@@ -107,6 +107,20 @@
         </div>
     </div>
 
+    <div id="weight-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-sm rounded-xl shadow-2xl text-center">
+            <h2 class="font-heading text-3xl text-wolf-accent mb-6">WEIGHT CHECK</h2>
+            
+            <div class="flex items-center justify-center gap-2 mb-8">
+                <input type="number" id="weight-input" placeholder="000" class="bg-transparent border-b-2 border-wolf-muted text-center text-5xl text-white w-32 focus:border-wolf-accent outline-none font-heading" inputmode="decimal">
+                <span class="text-wolf-muted text-xl font-bold mt-4">LBS</span>
+            </div>
+
+            <button onclick="saveWeightEntry()" id="save-weight-btn" class="w-full btn-primary py-4 text-xl">LOG WEIGHT</button>
+            <button onclick="closeModal('weight-modal')" class="mt-4 text-wolf-muted text-xs uppercase tracking-widest hover:text-white">Cancel</button>
+        </div>
+    </div>
+
     <div id="record-prompt-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-sm rounded-xl shadow-2xl text-center">
             <h2 class="font-heading text-2xl text-white mb-2">WORKOUT COMPLETE</h2>
@@ -332,10 +346,11 @@
 
             <div class="w-full space-y-3 mt-3 pt-3 border-t border-wolf-border">
                  <button onclick="openApexConfig()" class="w-full btn-secondary py-4 text-lg border-wolf-accent text-wolf-accent hover:bg-wolf-accent hover:text-white">Apex</button>
-                 <div class="grid grid-cols-3 gap-3 mt-2">
-                    <button onclick="showHistory()" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted">History</button>
-                    <button onclick="switchScreen('tools')" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted">Tools</button>
-                    <button onclick="openManager()" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted">Edit</button>
+                 <div class="grid grid-cols-2 gap-3 mt-2">
+                    <button onclick="openModal('weight-modal')" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted hover:text-white uppercase font-bold">Weight</button>
+                    <button onclick="showHistory()" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">History</button>
+                    <button onclick="switchScreen('tools')" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">Tools</button>
+                    <button onclick="openManager()" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">Edit Pgm</button>
                 </div>
             </div>
             
@@ -447,7 +462,7 @@
         // >>> ACTION REQUIRED: PASTE YOUR GOOGLE SCRIPT URL BELOW <<<
         // Example: "https://script.google.com/macros/s/AKfycbx.../exec"
         // --------------------------------------------------------------
-        const HARDCODED_URL = "https://script.google.com/macros/s/AKfycbxx2iCp9PgKa2XcY_zZuhvCjN0BeCrthAa93OjHPNDpRr9zXgozhpKi9zZcoEfjGHl6/exec"; 
+        const HARDCODED_URL = "https://script.google.com/macros/s/AKfycbwXWzOPRt2LWKCtcryrodToEvnLQPGwCLj7FjPIJV4vvWmmLyakT_-fmnlKyXsarIDV/exec"; 
         // --------------------------------------------------------------
 
         const STORAGE_KEY_HIST = 'wolf_history';
@@ -905,15 +920,14 @@
             openModal('record-details-modal');
         }
 
-        // FIXED: Edit Logic using ID (Date String)
+        // EDIT LOGIC
         function editHistory(id) {
             const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
-            // Find item by ID/Date
             const entry = h.find(x => x.date === id);
             
             if (!entry) { alert("Error: Could not find entry to edit."); return; }
             
-            editingHistoryId = id; // Store the ID we are editing
+            editingHistoryId = id; // Store ID
             
             document.getElementById('record-modal-title').textContent = "EDIT ENTRY";
             document.getElementById('rec-name').value = entry.type;
@@ -924,7 +938,7 @@
             openModal('record-details-modal');
         }
 
-        // FIXED: Delete Logic using ID (Date String)
+        // DELETE LOGIC
         async function deleteHistory(id) {
             if(!confirm("Are you sure you want to delete this log?")) return;
             
@@ -932,12 +946,10 @@
             const index = h.findIndex(x => x.date === id);
             
             if (index > -1) {
-                // Local Delete
                 h.splice(index, 1);
                 localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
                 showHistory(); 
                 
-                // Cloud Delete
                 const url = getApiUrl();
                 if(url) {
                     try {
@@ -986,7 +998,6 @@
                     h[index] = existing;
                     localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
                     
-                    // Cloud Edit
                     if(url) {
                         try {
                             await fetch(url, { 
@@ -1036,6 +1047,30 @@
             } else {
                 alert("Saved!");
             }
+        }
+
+        // NEW: Weight Logic
+        async function saveWeightEntry() {
+            const weightVal = document.getElementById('weight-input').value;
+            if(!weightVal) { alert("Enter a valid weight."); return; }
+
+            const btn = document.getElementById('save-weight-btn');
+            if(btn) { btn.disabled = true; btn.textContent = "SAVING..."; btn.classList.add('opacity-50'); }
+
+            const entry = {
+                date: new Date().toISOString(),
+                type: "Weight Check-In",
+                duration: "", // No duration for weight
+                details: { weight: weightVal + " lbs" }
+            };
+
+            await saveHistoryLog(entry);
+            
+            closeModal('weight-modal');
+            document.getElementById('weight-input').value = "";
+            if(btn) { btn.disabled = false; btn.textContent = "LOG WEIGHT"; btn.classList.remove('opacity-50'); }
+            
+            alert("Weight Logged!");
         }
 
         window.toolIncrementRound = () => { toolRoundCount++; els.tmRoundVal.textContent = toolRoundCount; beep('Mid'); };
@@ -1227,7 +1262,11 @@
                 const el = document.createElement('div');
                 el.className = 'bg-wolf-surface border-l-4 border-wolf-accent p-4 flex justify-between items-center rounded-r shadow-sm';
                 let detailsHtml = '';
-                if(log.details) {
+                let mainValue = log.duration;
+
+                if(log.type === "Weight Check-In" && log.details && log.details.weight) {
+                    mainValue = log.details.weight;
+                } else if(log.details) {
                     if(log.details.maxReps) detailsHtml = `<span class="inline-block mt-1 bg-wolf-bg px-2 py-0.5 rounded text-[10px] text-wolf-accent border border-wolf-border">MAX: ${log.details.maxReps} | ${log.details.weight}</span>`;
                     else if(log.details.roundsCompleted) detailsHtml = `<span class="inline-block mt-1 bg-wolf-bg px-2 py-0.5 rounded text-[10px] text-wolf-accent border border-wolf-border">ROUNDS: ${log.details.roundsCompleted}</span>`;
                     
@@ -1243,7 +1282,7 @@
                         ${detailsHtml}
                     </div>
                     <div class="flex flex-col items-end gap-2">
-                        <div class="font-heading text-2xl text-wolf-text">${log.duration}</div>
+                        <div class="font-heading text-2xl text-wolf-text">${mainValue}</div>
                         <div class="flex gap-2">
                             <button onclick="editHistory('${log.date}')" class="text-[10px] text-wolf-muted uppercase hover:text-white border border-wolf-border px-2 rounded">Edit</button>
                             <button onclick="deleteHistory('${log.date}')" class="text-[10px] text-red-900 uppercase hover:text-red-500 border border-wolf-border px-2 rounded">Del</button>
