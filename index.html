@@ -493,7 +493,16 @@
             apex_config: {
                 exercises: ['KB Swings', 'Front Squats', 'Shoulder Press', 'Row', 'Push-Ups'],
                 restTime: 30
-            }
+            },
+            'Garage Games': [
+                 { 
+                   type: "amrap", 
+                   name: "AMRAP 20", 
+                   duration: 1200, 
+                   round: "See List Below",
+                   exercises: ["10 Med Ball Cleans", "10 Pull-Ups", "40 Double Unders"]
+                 }
+            ]
         };
 
         let routines = JSON.parse(localStorage.getItem(STORAGE_KEY_ROUTINES)) || JSON.parse(JSON.stringify(defaultRoutines));
@@ -687,7 +696,7 @@
                 els.nextEx.textContent = next ? next.name : 'COMPLETE';
             }
 
-            const isAmrap = currentWorkoutType.includes("Garage") || currentWorkoutType.includes("AMRAP") || (step.name && step.name.includes("AMRAP"));
+            const isAmrap = currentWorkoutType.includes("Garage") || currentWorkoutType.includes("AMRAP") || (step.name && step.name.includes("AMRAP")) || (step.type === 'amrap');
             if(isAmrap && step.type !== 'countdown') {
                 els.amrapContainer.classList.remove('hidden');
                 els.amrapRounds.textContent = manualRoundCount;
@@ -695,11 +704,30 @@
                 els.amrapContainer.classList.add('hidden');
             }
 
-            if (step.type === 'rep_work') {
-                els.timed.classList.add('hidden'); els.rep.classList.remove('hidden'); 
-                els.apexList.innerHTML = step.exercises.map(e => `<div class="flex items-center"><span class="w-1.5 h-1.5 bg-wolf-accent mr-3 rounded-full"></span><span class="text-white">${e}</span></div>`).join('');
-            } else {
-                els.timed.classList.remove('hidden'); els.rep.classList.add('hidden'); els.manualBtn.classList.add('hidden'); 
+            // Logic for AMRAP and Rep Work
+            if (step.type === 'rep_work' || step.type === 'amrap') {
+                // If it's pure rep work, hide timer. If AMRAP, show BOTH.
+                if(step.type === 'rep_work') {
+                    els.timed.classList.add('hidden'); 
+                    els.rep.classList.remove('hidden'); 
+                } else {
+                    // AMRAP: Show Timer AND List
+                    els.timed.classList.remove('hidden');
+                    els.rep.classList.remove('hidden');
+                    document.getElementById('round-complete-btn').classList.add('hidden'); // Hide completion button for AMRAP
+                }
+
+                if(step.exercises) {
+                    els.apexList.innerHTML = step.exercises.map(e => `<div class="flex items-center"><span class="w-1.5 h-1.5 bg-wolf-accent mr-3 rounded-full"></span><span class="text-white">${e}</span></div>`).join('');
+                }
+            } 
+            
+            if (step.type !== 'rep_work' || step.type === 'amrap') {
+                if(step.type !== 'amrap') { // Standard timed work
+                    els.timed.classList.remove('hidden'); 
+                    els.rep.classList.add('hidden'); 
+                }
+                els.manualBtn.classList.add('hidden'); 
                 
                 let timeLeft = step.duration;
                 els.timer.textContent = (timeLeft > 59) ? formatTime(timeLeft) : timeLeft; 
@@ -1192,9 +1220,18 @@
                 editingCopy.forEach((step, idx) => {
                     const row = document.createElement('div');
                     row.className = "bg-wolf-surface p-3 rounded-lg border border-wolf-border mb-3";
-                    let inputs = `<div class="flex gap-2 mb-2"><input type="text" value="${step.name}" onchange="updateStep(${idx}, 'name', this.value)" class="flex-grow bg-wolf-bg text-white font-medium p-2 rounded text-sm border border-wolf-border focus:border-wolf-accent outline-none"><select onchange="updateStep(${idx}, 'type', this.value)" class="bg-wolf-bg text-wolf-muted p-2 text-xs uppercase rounded border border-wolf-border outline-none"><option value="work" ${step.type==='work'?'selected':''}>Work</option><option value="rest" ${step.type==='rest'?'selected':''}>Rest</option><option value="rep_work" ${step.type==='rep_work'?'selected':''}>Reps</option><option value="cooldown" ${step.type==='cooldown'?'selected':''}>Cool</option></select></div>`;
-                    if(step.type === 'rep_work') inputs += `<div class="flex gap-2 items-center"><span class="text-xs text-wolf-muted">Detail</span><input type="text" value="${step.exercises ? step.exercises[0] : ''}" onchange="updateStep(${idx}, 'rep_text', this.value)" class="flex-grow bg-wolf-bg text-white p-2 text-xs rounded border border-wolf-border outline-none"></div>`;
-                    else inputs += `<div class="flex gap-2 items-center"><span class="text-xs text-wolf-muted">Secs</span><input type="number" value="${step.duration || 0}" onchange="updateStep(${idx}, 'duration', this.value)" class="w-20 bg-wolf-bg text-white p-2 text-sm text-center rounded border border-wolf-border outline-none"></div>`;
+                    let inputs = `<div class="flex gap-2 mb-2"><input type="text" value="${step.name}" onchange="updateStep(${idx}, 'name', this.value)" class="flex-grow bg-wolf-bg text-white font-medium p-2 rounded text-sm border border-wolf-border focus:border-wolf-accent outline-none"><select onchange="updateStep(${idx}, 'type', this.value)" class="bg-wolf-bg text-wolf-muted p-2 text-xs uppercase rounded border border-wolf-border outline-none"><option value="work" ${step.type==='work'?'selected':''}>Work</option><option value="rest" ${step.type==='rest'?'selected':''}>Rest</option><option value="rep_work" ${step.type==='rep_work'?'selected':''}>Reps</option><option value="cooldown" ${step.type==='cooldown'?'selected':''}>Cool</option><option value="amrap" ${step.type==='amrap'?'selected':''}>AMRAP</option></select></div>`;
+                    
+                    if(step.type === 'rep_work' || step.type === 'amrap') {
+                        // AMRAP/Reps need Detail/Exercise list
+                        inputs += `<div class="flex gap-2 items-center"><span class="text-xs text-wolf-muted">List</span><input type="text" value="${step.exercises ? step.exercises.join(', ') : ''}" onchange="updateStep(${idx}, 'exercises', this.value)" class="flex-grow bg-wolf-bg text-white p-2 text-xs rounded border border-wolf-border outline-none placeholder:text-wolf-muted/50" placeholder="Ex 1, Ex 2..."></div>`;
+                    }
+                    
+                    if(step.type !== 'rep_work') {
+                        // Timer based types need Duration
+                        inputs += `<div class="flex gap-2 items-center mt-2"><span class="text-xs text-wolf-muted">Secs</span><input type="number" value="${step.duration || 0}" onchange="updateStep(${idx}, 'duration', this.value)" class="w-20 bg-wolf-bg text-white p-2 text-sm text-center rounded border border-wolf-border outline-none"></div>`;
+                    }
+
                     inputs += `<div class="mt-2 text-right"><button onclick="deleteStep(${idx})" class="text-[10px] text-red-500 hover:text-white uppercase font-bold tracking-wider">Remove</button></div>`;
                     row.innerHTML = inputs;
                     container.appendChild(row);
@@ -1205,7 +1242,26 @@
         window.updateApexEx = (idx, val) => { editingCopy.exercises[idx] = val; };
         window.deleteApexEx = (idx) => { editingCopy.exercises.splice(idx, 1); renderEditor(); };
         window.addStepToEditor = () => { if(editingRoutineKey === 'apex') editingCopy.exercises.push("New Movement"); else editingCopy.push({ type: 'work', name: 'New Exercise', duration: 30 }); renderEditor(); };
-        window.updateStep = (idx, field, val) => { if(field === 'duration') editingCopy[idx].duration = parseInt(val); else if(field === 'name') editingCopy[idx].name = val; else if(field === 'type') { editingCopy[idx].type = val; if(val === 'rep_work' && !editingCopy[idx].exercises) editingCopy[idx].exercises = ['10 Reps']; renderEditor(); } else if(field === 'rep_text') editingCopy[idx].exercises = [val]; };
+        
+        window.updateStep = (idx, field, val) => { 
+            if(field === 'duration') editingCopy[idx].duration = parseInt(val); 
+            else if(field === 'name') editingCopy[idx].name = val; 
+            else if(field === 'type') { 
+                editingCopy[idx].type = val; 
+                // Default props for new type
+                if(val === 'rep_work' && !editingCopy[idx].exercises) editingCopy[idx].exercises = ['10 Reps']; 
+                if(val === 'amrap') { 
+                    if(!editingCopy[idx].exercises) editingCopy[idx].exercises = ['List Exercises Here'];
+                    if(!editingCopy[idx].duration) editingCopy[idx].duration = 600;
+                }
+                renderEditor(); 
+            } 
+            else if(field === 'exercises') {
+                // Split comma separated string into array
+                editingCopy[idx].exercises = val.split(',').map(s => s.trim()).filter(s => s.length > 0);
+            }
+        };
+        
         window.deleteStep = (idx) => { editingCopy.splice(idx, 1); renderEditor(); };
         async function saveRoutineChanges() {
             if(editingRoutineKey === 'apex') routines.apex_config = editingCopy; else routines[editingRoutineKey] = editingCopy;
