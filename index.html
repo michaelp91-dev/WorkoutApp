@@ -119,14 +119,14 @@
 
         <div id="tool-stopwatch" class="flex-grow flex flex-col items-center justify-start text-center pt-10">
             <div id="sw-status" class="hidden text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading animate-pulse">GET READY</div>
-            <div id="sw-display" class="font-heading text-7xl md:text-9xl text-white mb-6 tabular-nums">00:00.0</div>
+            <div id="sw-display" class="font-heading text-7xl md:text-9xl text-white mb-4 tabular-nums">00:00.0</div>
             
-            <div class="flex gap-4 w-full max-w-md mb-4">
+            <div class="flex gap-4 w-full max-w-md mb-6">
                 <button onclick="toggleStopwatch()" id="sw-btn" class="flex-1 btn-primary py-4 text-xl">START</button>
                 <button onclick="lapStopwatch()" id="sw-lap-btn" class="flex-1 btn-secondary py-4 text-xl disabled:opacity-50">LAP</button>
             </div>
             
-            <div class="flex items-center gap-2 mb-6">
+            <div class="flex items-center gap-2 mb-8">
                 <input type="checkbox" id="sw-countdown-check" class="w-5 h-5 accent-wolf-accent cursor-pointer">
                 <label for="sw-countdown-check" class="text-xs uppercase text-wolf-muted font-bold cursor-pointer">10 Sec Countdown</label>
             </div>
@@ -164,7 +164,7 @@
             </div>
 
             <div id="tm-status" class="hidden text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading animate-pulse">GET READY</div>
-            <div id="tm-display" class="hidden font-heading text-7xl md:text-9xl text-white mb-6 tabular-nums">00:00</div>
+            <div id="tm-display" class="hidden font-heading text-7xl md:text-9xl text-white mb-4 tabular-nums">00:00</div>
             
             <div id="tm-round-tracker" class="hidden mb-6 flex flex-col items-center animate-in fade-in">
                  <p class="text-wolf-muted uppercase text-[10px] tracking-widest mb-2">Round Counter</p>
@@ -174,7 +174,7 @@
                  </div>
             </div>
 
-            <div class="flex gap-4 w-full max-w-md mb-4">
+            <div class="flex gap-4 w-full max-w-md mb-6">
                 <button onclick="toggleTimer()" id="tm-btn" class="flex-1 btn-primary py-4 text-xl">START</button>
                 <button onclick="resetTimer()" class="flex-1 btn-secondary py-4 text-xl">RESET</button>
             </div>
@@ -1016,10 +1016,12 @@
                 const dateObj = new Date(log.date);
                 let dateDisplay = "Unknown Date";
                 if(!isNaN(dateObj.getTime())) {
+                     // Fix: Dates prior to year 2000 (often 1899 from spreadsheet timestamps) are hidden
                      if(dateObj.getFullYear() < 2000) {
                         dateDisplay = "---";
                      } else {
-                        dateDisplay = dateObj.toLocaleDateString();
+                        // Fix: Using readable format e.g., Mon, Nov 26, 2025
+                        dateDisplay = dateObj.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
                      }
                 }
 
