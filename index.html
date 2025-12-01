@@ -447,7 +447,7 @@
         // >>> ACTION REQUIRED: PASTE YOUR GOOGLE SCRIPT URL BELOW <<<
         // Example: "https://script.google.com/macros/s/AKfycbx.../exec"
         // --------------------------------------------------------------
-        const HARDCODED_URL = "https://script.google.com/macros/s/AKfycbwXWzOPRt2LWKCtcryrodToEvnLQPGwCLj7FjPIJV4vvWmmLyakT_-fmnlKyXsarIDV/exec"; 
+        const HARDCODED_URL = "https://script.google.com/macros/s/AKfycbxx2iCp9PgKa2XcY_zZuhvCjN0BeCrthAa93OjHPNDpRr9zXgozhpKi9zZcoEfjGHl6/exec"; 
         // --------------------------------------------------------------
 
         const STORAGE_KEY_HIST = 'wolf_history';
@@ -543,7 +543,7 @@
         let toolRoundCount = 0;
         let isPrep = false;
         
-        let editingHistoryIndex = null; // Track which history item is being edited
+        let editingHistoryId = null; // Store ID (date string), not index
 
         // --- INIT ---
         window.addEventListener('DOMContentLoaded', () => {
@@ -896,7 +896,7 @@
         // Custom Record Logic
         function openRecordDetails() {
             closeModal('record-prompt-modal');
-            editingHistoryIndex = null; // Ensure we are in create mode
+            editingHistoryId = null; // Ensure we are in create mode
             document.getElementById('record-modal-title').textContent = "RECORD SESSION";
             document.getElementById('rec-name').value = "Custom Timer Workout";
             document.getElementById('rec-duration').value = formatTime(tmOriginalTime);
@@ -905,12 +905,15 @@
             openModal('record-details-modal');
         }
 
-        function editHistory(index) {
+        // FIXED: Edit Logic using ID (Date String)
+        function editHistory(id) {
             const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
-            if (!h[index]) return;
+            // Find item by ID/Date
+            const entry = h.find(x => x.date === id);
             
-            editingHistoryIndex = index; // Set edit mode
-            const entry = h[index];
+            if (!entry) { alert("Error: Could not find entry to edit."); return; }
+            
+            editingHistoryId = id; // Store the ID we are editing
             
             document.getElementById('record-modal-title').textContent = "EDIT ENTRY";
             document.getElementById('rec-name').value = entry.type;
@@ -921,31 +924,33 @@
             openModal('record-details-modal');
         }
 
-        async function deleteHistory(index) {
+        // FIXED: Delete Logic using ID (Date String)
+        async function deleteHistory(id) {
             if(!confirm("Are you sure you want to delete this log?")) return;
             
-            const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
-            const entryToDelete = h[index];
+            let h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
+            const index = h.findIndex(x => x.date === id);
             
-            // Local Delete
-            h.splice(index, 1);
-            localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
-            showHistory(); // Refresh list immediately
-            
-            // Cloud Delete
-            const url = getApiUrl();
-            if(url && entryToDelete && entryToDelete.date) {
-                try {
-                    // Show some sync status if possible, or just fire and forget
-                    document.getElementById('history-loading').classList.remove('hidden');
-                    await fetch(url, { 
-                        method: 'POST', 
-                        mode: 'no-cors', 
-                        headers: {'Content-Type': 'application/json'}, 
-                        body: JSON.stringify({ action: 'delete', date: entryToDelete.date }) 
-                    });
-                    document.getElementById('history-loading').classList.add('hidden');
-                } catch(e) {}
+            if (index > -1) {
+                // Local Delete
+                h.splice(index, 1);
+                localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
+                showHistory(); 
+                
+                // Cloud Delete
+                const url = getApiUrl();
+                if(url) {
+                    try {
+                        document.getElementById('history-loading').classList.remove('hidden');
+                        await fetch(url, { 
+                            method: 'POST', 
+                            mode: 'no-cors', 
+                            headers: {'Content-Type': 'application/json'}, 
+                            body: JSON.stringify({ action: 'delete', date: id }) 
+                        });
+                        document.getElementById('history-loading').classList.add('hidden');
+                    } catch(e) {}
+                }
             }
         }
 
@@ -970,36 +975,37 @@
             let h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
             const url = getApiUrl();
 
-            if (editingHistoryIndex !== null) {
-                // Update Existing
-                const existing = h[editingHistoryIndex];
-                const originalDate = existing.date; // Keep original date as ID
-                
-                existing.type = name;
-                existing.duration = duration;
-                existing.details = { ...existing.details, ...details }; 
-                h[editingHistoryIndex] = existing;
-                localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
-                
-                // Cloud Edit
-                if(url) {
-                    try {
-                        await fetch(url, { 
-                            method: 'POST', 
-                            mode: 'no-cors', 
-                            headers: {'Content-Type': 'application/json'}, 
-                            body: JSON.stringify({ 
-                                action: 'edit', 
-                                date: originalDate, 
-                                type: name, 
-                                duration: duration, 
-                                details: existing.details 
-                            }) 
-                        });
-                    } catch(e) {}
+            if (editingHistoryId !== null) {
+                // UPDATE
+                const index = h.findIndex(x => x.date === editingHistoryId);
+                if (index > -1) {
+                    const existing = h[index];
+                    existing.type = name;
+                    existing.duration = duration;
+                    existing.details = { ...existing.details, ...details }; 
+                    h[index] = existing;
+                    localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
+                    
+                    // Cloud Edit
+                    if(url) {
+                        try {
+                            await fetch(url, { 
+                                method: 'POST', 
+                                mode: 'no-cors', 
+                                headers: {'Content-Type': 'application/json'}, 
+                                body: JSON.stringify({ 
+                                    action: 'edit', 
+                                    date: editingHistoryId, 
+                                    type: name, 
+                                    duration: duration, 
+                                    details: existing.details 
+                                }) 
+                            });
+                        } catch(e) {}
+                    }
                 }
             } else {
-                // Create New
+                // CREATE NEW
                 const entry = {
                     date: new Date().toISOString(),
                     type: name,
@@ -1014,19 +1020,17 @@
 
             closeModal('record-details-modal');
             
-            // Reset fields
+            // Reset
             document.getElementById('rec-notes').value = '';
             document.getElementById('rec-name').value = 'Custom Timer Workout';
-            editingHistoryIndex = null;
+            editingHistoryId = null;
             
-            // Reset button state
             if(btn) {
                 btn.disabled = false;
                 btn.textContent = "SAVE TO HISTORY";
                 btn.classList.remove('opacity-50', 'cursor-not-allowed');
             }
 
-            // If we are on history screen, refresh it
             if(document.getElementById('history-screen').classList.contains('active')) {
                 showHistory();
             } else {
@@ -1231,6 +1235,7 @@
                     if(log.details.notes) detailsHtml += `<div class="mt-2 text-[10px] text-wolf-muted italic border-t border-wolf-border pt-1 truncate max-w-[150px]">${log.details.notes}</div>`;
                 }
                 
+                // IMPORTANT FIX: Passing the ID (log.date) instead of index
                 el.innerHTML = `
                     <div class="flex-grow">
                         <p class="text-white font-bold text-lg uppercase font-heading tracking-wide">${log.type.replace('_', ' ')}</p>
@@ -1240,8 +1245,8 @@
                     <div class="flex flex-col items-end gap-2">
                         <div class="font-heading text-2xl text-wolf-text">${log.duration}</div>
                         <div class="flex gap-2">
-                            <button onclick="editHistory(${index})" class="text-[10px] text-wolf-muted uppercase hover:text-white border border-wolf-border px-2 rounded">Edit</button>
-                            <button onclick="deleteHistory(${index})" class="text-[10px] text-red-900 uppercase hover:text-red-500 border border-wolf-border px-2 rounded">Del</button>
+                            <button onclick="editHistory('${log.date}')" class="text-[10px] text-wolf-muted uppercase hover:text-white border border-wolf-border px-2 rounded">Edit</button>
+                            <button onclick="deleteHistory('${log.date}')" class="text-[10px] text-red-900 uppercase hover:text-red-500 border border-wolf-border px-2 rounded">Del</button>
                         </div>
                     </div>
                 `;
@@ -1253,7 +1258,7 @@
         window.openModal = (id) => { document.getElementById(id).classList.remove('hidden'); };
         window.closeModal = (id) => {
             document.getElementById(id).classList.add('hidden');
-            if(id === 'record-details-modal') editingHistoryIndex = null; // Clear edit mode if closed
+            if(id === 'record-details-modal') editingHistoryId = null; // Clear edit mode if closed
         };
         window.openApexConfig = () => openModal('apex-config-modal');
         window.adjustRep = (delta) => { const input = document.getElementById('apex-max-reps'); let val = parseInt(input.value) || 1; val += delta; if(val < 1) val = 1; input.value = val; };
