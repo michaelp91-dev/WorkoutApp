@@ -74,6 +74,7 @@
         }
         .btn-secondary:active { transform: translateY(1px); }
         .btn-secondary:hover { border-color: #78716c; color: white; }
+        .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
         
         /* Tool Inputs */
         .tool-input {
@@ -920,13 +921,32 @@
             openModal('record-details-modal');
         }
 
-        function deleteHistory(index) {
+        async function deleteHistory(index) {
             if(!confirm("Are you sure you want to delete this log?")) return;
             
             const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
+            const entryToDelete = h[index];
+            
+            // Local Delete
             h.splice(index, 1);
             localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
-            showHistory(); // Refresh list
+            showHistory(); // Refresh list immediately
+            
+            // Cloud Delete
+            const url = getApiUrl();
+            if(url && entryToDelete && entryToDelete.date) {
+                try {
+                    // Show some sync status if possible, or just fire and forget
+                    document.getElementById('history-loading').classList.remove('hidden');
+                    await fetch(url, { 
+                        method: 'POST', 
+                        mode: 'no-cors', 
+                        headers: {'Content-Type': 'application/json'}, 
+                        body: JSON.stringify({ action: 'delete', date: entryToDelete.date }) 
+                    });
+                    document.getElementById('history-loading').classList.add('hidden');
+                } catch(e) {}
+            }
         }
 
         async function saveCustomWorkout() {
@@ -947,17 +967,37 @@
                 notes: notes
             };
 
-            // If we are editing, we preserve other details (like maxReps/weight if they exist)
             let h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
+            const url = getApiUrl();
 
             if (editingHistoryIndex !== null) {
                 // Update Existing
                 const existing = h[editingHistoryIndex];
+                const originalDate = existing.date; // Keep original date as ID
+                
                 existing.type = name;
                 existing.duration = duration;
-                existing.details = { ...existing.details, ...details }; // Merge details
+                existing.details = { ...existing.details, ...details }; 
                 h[editingHistoryIndex] = existing;
                 localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
+                
+                // Cloud Edit
+                if(url) {
+                    try {
+                        await fetch(url, { 
+                            method: 'POST', 
+                            mode: 'no-cors', 
+                            headers: {'Content-Type': 'application/json'}, 
+                            body: JSON.stringify({ 
+                                action: 'edit', 
+                                date: originalDate, 
+                                type: name, 
+                                duration: duration, 
+                                details: existing.details 
+                            }) 
+                        });
+                    } catch(e) {}
+                }
             } else {
                 // Create New
                 const entry = {
@@ -969,8 +1009,6 @@
                 h.push(entry);
                 localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
                 
-                // Try cloud sync for new entries only (simple implementation)
-                const url = getApiUrl();
                 if(url) { try { await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(entry) }); } catch(e) {} }
             }
 
