@@ -370,7 +370,7 @@
             <div class="w-full space-y-3 mb-6">
                  <button onclick="switchScreen('list')" class="w-full btn-primary py-4 text-xl shadow-lg shadow-orange-900/20">WORKOUTS</button>
                  <div class="flex gap-3">
-                    <button onclick="startVoiceInput()" class="w-1/4 btn-secondary py-4 flex items-center justify-center text-wolf-accent border-wolf-accent relative group overflow-hidden">
+                    <button onclick="toggleVoiceInput()" class="w-1/4 btn-secondary py-4 flex items-center justify-center text-wolf-accent border-wolf-accent relative group overflow-hidden">
                         <svg id="mic-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
                         <div id="mic-wave" class="absolute inset-0 flex items-center justify-center opacity-50 z-0">
                             <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
@@ -605,6 +605,8 @@
         
         let editingHistoryId = null;
         let recognition;
+        let isRecording = false; // New global
+        let finalTranscript = ""; // Accumulate text
 
         // --- INIT ---
         window.addEventListener('DOMContentLoaded', () => {
@@ -618,15 +620,31 @@
             if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                 recognition = new SpeechRecognition();
-                recognition.continuous = false;
+                recognition.continuous = true; // CHANGED: Keep listening even if user pauses
                 recognition.lang = 'en-US';
                 recognition.interimResults = false;
 
-                recognition.onstart = () => { document.getElementById('mic-wave').classList.add('listening'); };
-                recognition.onend = () => { document.getElementById('mic-wave').classList.remove('listening'); };
+                recognition.onstart = () => { 
+                    isRecording = true;
+                    document.getElementById('mic-wave').classList.add('listening'); 
+                };
+                
+                recognition.onend = () => { 
+                    isRecording = false;
+                    document.getElementById('mic-wave').classList.remove('listening');
+                    if(finalTranscript.trim()) {
+                        parseVoiceInput(finalTranscript);
+                    }
+                    finalTranscript = ""; // Reset
+                };
+                
                 recognition.onresult = (event) => {
-                    const transcript = event.results[0][0].transcript;
-                    parseVoiceInput(transcript);
+                    // Accumulate results as they come in
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript + " ";
+                        }
+                    }
                 };
             } else {
                 document.getElementById('mic-icon').style.opacity = '0.3';
@@ -667,9 +685,17 @@
         }
 
         // --- ACTIVITY LOGIC ---
-        function startVoiceInput() {
+        function toggleVoiceInput() {
             if(!recognition) return alert("Speech recognition not supported.");
-            recognition.start();
+            
+            if (isRecording) {
+                // STOPPING
+                recognition.stop();
+            } else {
+                // STARTING
+                finalTranscript = "";
+                recognition.start();
+            }
         }
 
         function parseVoiceInput(text) {
