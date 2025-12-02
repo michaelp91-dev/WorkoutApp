@@ -4,26 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WOLF ALPHA</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     
-    <meta name="theme-color" content="#1c1917">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="apple-touch-icon" href="https://placehold.co/180x180/292524/d6d3d1?text=W" sizes="180x180">
-
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
                         wolf: {
-                            bg: '#0c0a09',      
-                            surface: '#1c1917', 
-                            border: '#44403c',  
-                            text: '#e7e5e4',    
-                            accent: '#b45309',  
+                            bg: '#0c0a09',
+                            surface: '#1c1917',
+                            border: '#44403c',
+                            text: '#e7e5e4',
+                            accent: '#b45309',
                             accentHover: '#92400e',
                             muted: '#78716c',
                         }
@@ -36,7 +35,6 @@
             }
         }
     </script>
-
     <style>
         body {
             background-color: #0c0a09;
@@ -45,1343 +43,1060 @@
             overscroll-behavior: none;
         }
         h1, h2, h3, .font-heading { font-family: 'Oswald', sans-serif; }
-        .screen { display: none; }
-        .active { display: flex; }
-        
-        .btn-primary {
-            background-color: #b45309;
-            color: white;
-            font-family: 'Oswald', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            transition: all 0.2s;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-        }
-        .btn-primary:active { transform: translateY(1px); }
-        .btn-primary:hover { background-color: #92400e; }
-        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .btn-secondary {
-            background-color: #292524;
-            border: 1px solid #44403c;
-            color: #d6d3d1;
-            font-family: 'Oswald', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            border-radius: 0.5rem;
-            transition: all 0.2s;
-        }
-        .btn-secondary:active { transform: translateY(1px); }
-        .btn-secondary:hover { border-color: #78716c; color: white; }
-        .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
-        
-        /* Tool Inputs */
-        .tool-input {
-            background: transparent;
-            border: 2px solid #44403c;
-            color: white;
-            text-align: center;
-            font-family: 'Oswald', sans-serif;
-            border-radius: 0.5rem;
-        }
-        .tool-input:focus { border-color: #b45309; outline: none; }
-
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #0c0a09; }
         ::-webkit-scrollbar-thumb { background: #44403c; border-radius: 3px; }
     </style>
+
+    <!-- React & Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body class="h-screen overflow-hidden selection:bg-wolf-accent selection:text-white">
+<body>
+    <div id="root"></div>
 
-    <div id="sync-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl shadow-2xl">
-            <h2 class="font-heading text-2xl text-wolf-accent mb-2 tracking-wide">CLOUD SYNC</h2>
-            <p class="text-wolf-muted text-sm mb-4">
-                System status: <span id="modal-status" class="text-white font-bold">CHECKING...</span>
-            </p>
-            <p class="text-[10px] text-wolf-muted">To change the URL, edit the HARDCODED_URL variable in the source code.</p>
-            <div class="flex gap-3 mt-4">
-                <button onclick="closeModal('sync-modal')" class="flex-1 py-3 btn-secondary">Close</button>
-            </div>
-        </div>
-    </div>
+    <script type="text/babel" data-presets="react,typescript">
+        const { useState, useEffect, useRef, useCallback } = React;
 
-    <div id="weight-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-sm rounded-xl shadow-2xl text-center">
-            <h2 class="font-heading text-3xl text-wolf-accent mb-6">WEIGHT CHECK</h2>
-            
-            <div class="flex items-center justify-center gap-2 mb-8">
-                <input type="number" step="0.1" id="weight-input" placeholder="000.0" class="bg-transparent border-b-2 border-wolf-muted text-center text-5xl text-white w-48 focus:border-wolf-accent outline-none font-heading" inputmode="decimal">
-                <span class="text-wolf-muted text-xl font-bold mt-4">LBS</span>
-            </div>
+        // -------------------------------------------------------------------------
+        // TYPES & CONSTANTS
+        // -------------------------------------------------------------------------
 
-            <button onclick="saveWeightEntry()" id="save-weight-btn" class="w-full btn-primary py-4 text-xl">LOG WEIGHT</button>
-            <button onclick="closeModal('weight-modal')" class="mt-4 text-wolf-muted text-xs uppercase tracking-widest hover:text-white">Cancel</button>
-        </div>
-    </div>
+        interface LogEntry {
+            id: string; // ISO Date String as ID
+            type: 'Workout' | 'Activity';
+            title: string; // "Morning Grind" or "Brushing Teeth"
+            timestamp: string; // ISO Date String
+            duration?: string; // For workouts
+            amount: string; // "10", "20", etc.
+            unit: string; // "mins", "lbs", etc.
+            rating: 'Positive' | 'Negative' | 'Neutral';
+            focus: 'High' | 'Medium' | 'Low' | 'None';
+            note: string;
+            details?: any; // Backward compatibility for specific workout stats
+        }
 
-    <div id="record-prompt-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-sm rounded-xl shadow-2xl text-center">
-            <h2 class="font-heading text-2xl text-white mb-2">WORKOUT COMPLETE</h2>
-            <p class="text-wolf-muted text-sm mb-6">Would you like to record this session?</p>
-            <div class="flex gap-3">
-                <button onclick="closeModal('record-prompt-modal')" class="flex-1 py-3 btn-secondary text-wolf-muted">No</button>
-                <button onclick="openRecordDetails()" class="flex-1 py-3 btn-primary">Yes</button>
-            </div>
-        </div>
-    </div>
+        interface RoutineStep {
+            type: 'work' | 'rest' | 'rep_work' | 'cooldown' | 'amrap' | 'countdown';
+            name: string;
+            duration?: number;
+            round?: string;
+            exercises?: string[];
+        }
 
-    <div id="record-details-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto">
-            <h2 id="record-modal-title" class="font-heading text-2xl text-wolf-accent mb-6">RECORD SESSION</h2>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs uppercase text-wolf-muted font-bold mb-1">Workout Name</label>
-                    <input type="text" id="rec-name" value="Custom Timer Workout" class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none">
-                </div>
-                <div class="flex gap-3">
-                    <div class="flex-1">
-                        <label class="block text-xs uppercase text-wolf-muted font-bold mb-1">Duration</label>
-                        <input type="text" id="rec-duration" class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none">
-                    </div>
-                    <div class="flex-1">
-                        <label class="block text-xs uppercase text-wolf-muted font-bold mb-1">Rounds</label>
-                        <input type="number" id="rec-rounds" class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs uppercase text-wolf-muted font-bold mb-1">Notes / Exercises</label>
-                    <textarea id="rec-notes" rows="4" placeholder="Enter exercises, weights, or details..." class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none"></textarea>
-                </div>
-            </div>
+        interface Routine {
+            [key: string]: RoutineStep[] | any;
+        }
 
-            <button onclick="saveCustomWorkout()" id="save-custom-btn" class="w-full btn-primary py-4 text-xl mt-6">SAVE TO HISTORY</button>
-            <button onclick="closeModal('record-details-modal')" class="mt-4 text-wolf-muted text-xs uppercase tracking-widest hover:text-white text-center">Cancel</button>
-        </div>
-    </div>
+        const HARDCODED_URL = "https://script.google.com/macros/s/AKfycbxx2iCp9PgKa2XcY_zZuhvCjN0BeCrthAa93OjHPNDpRr9zXgozhpKi9zZcoEfjGHl6/exec";
 
-    <div id="tools-screen" class="screen h-full w-full flex-col bg-wolf-bg p-4">
-        <div class="flex justify-between items-center mb-6 pb-4 border-b border-wolf-border">
-            <h2 class="font-heading text-3xl text-wolf-text">TOOLS</h2>
-            <button onclick="switchScreen('menu')" class="btn-secondary px-4 py-2 text-sm">Exit</button>
-        </div>
-        
-        <div class="flex gap-2 mb-6">
-            <button onclick="switchTool('stopwatch')" id="tab-stopwatch" class="flex-1 py-2 rounded text-xs uppercase font-bold bg-wolf-accent text-white transition">Stopwatch</button>
-            <button onclick="switchTool('timer')" id="tab-timer" class="flex-1 py-2 rounded text-xs uppercase font-bold bg-wolf-surface text-wolf-muted hover:text-white transition">Timer</button>
-            <button onclick="switchTool('tabata')" id="tab-tabata" class="flex-1 py-2 rounded text-xs uppercase font-bold bg-wolf-surface text-wolf-muted hover:text-white transition">Tabata</button>
-        </div>
-
-        <div id="tool-stopwatch" class="flex-grow flex flex-col items-center justify-start text-center pt-10">
-            <div id="sw-status" class="hidden text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading animate-pulse">GET READY</div>
-            <div id="sw-display" class="font-heading text-7xl md:text-9xl text-white mb-4 tabular-nums">00:00.0</div>
-            
-            <div class="flex gap-4 w-full max-w-md mb-6">
-                <button onclick="toggleStopwatch()" id="sw-btn" class="flex-1 btn-primary py-4 text-xl">START</button>
-                <button onclick="lapStopwatch()" id="sw-lap-btn" class="flex-1 btn-secondary py-4 text-xl disabled:opacity-50">LAP</button>
-            </div>
-            
-            <div class="flex items-center gap-2 mb-8">
-                <input type="checkbox" id="sw-countdown-check" class="w-5 h-5 accent-wolf-accent cursor-pointer">
-                <label for="sw-countdown-check" class="text-xs uppercase text-wolf-muted font-bold cursor-pointer">10 Sec Countdown</label>
-            </div>
-            
-            <div id="sw-laps" class="w-full max-w-md h-40 overflow-y-auto bg-wolf-surface border border-wolf-border rounded-lg p-2 text-sm space-y-1">
-                <div class="text-wolf-muted text-center italic py-2">Laps will appear here</div>
-            </div>
-            
-             <button onclick="resetStopwatch()" class="mt-4 text-wolf-muted text-xs uppercase tracking-widest hover:text-white">Reset All</button>
-        </div>
-
-        <div id="tool-timer" class="hidden flex-grow flex flex-col items-center justify-start text-center pt-10">
-            <div id="tm-config-container" class="flex flex-col items-center">
-                <div class="flex gap-4 items-center mb-8">
-                    <div class="flex flex-col">
-                        <label class="text-[10px] uppercase text-wolf-muted mb-1 tracking-widest">Hours</label>
-                        <input type="number" id="tm-h" placeholder="00" class="tool-input w-20 text-4xl p-2" min="0" max="99">
-                    </div>
-                    <span class="text-2xl text-wolf-muted mt-4">:</span>
-                    <div class="flex flex-col">
-                        <label class="text-[10px] uppercase text-wolf-muted mb-1 tracking-widest">Mins</label>
-                        <input type="number" id="tm-m" placeholder="00" class="tool-input w-20 text-4xl p-2" min="0" max="59">
-                    </div>
-                    <span class="text-2xl text-wolf-muted mt-4">:</span>
-                    <div class="flex flex-col">
-                        <label class="text-[10px] uppercase text-wolf-muted mb-1 tracking-widest">Secs</label>
-                        <input type="number" id="tm-s" placeholder="00" class="tool-input w-20 text-4xl p-2" min="0" max="59">
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-3 mb-10 bg-wolf-surface px-4 py-2 rounded-lg border border-wolf-border">
-                    <input type="checkbox" id="tm-rounds-check" class="w-5 h-5 accent-wolf-accent cursor-pointer">
-                    <label for="tm-rounds-check" class="text-sm uppercase font-bold text-wolf-muted cursor-pointer select-none">Track Rounds</label>
-                </div>
-            </div>
-
-            <div id="tm-status" class="hidden text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading animate-pulse">GET READY</div>
-            <div id="tm-display" class="hidden font-heading text-7xl md:text-9xl text-white mb-4 tabular-nums">00:00</div>
-            
-            <div id="tm-round-tracker" class="hidden mb-6 flex flex-col items-center animate-in fade-in">
-                 <p class="text-wolf-muted uppercase text-[10px] tracking-widest mb-2">Round Counter</p>
-                 <div class="flex items-center gap-6">
-                    <div id="tm-rounds-val" class="font-heading text-5xl text-white">0</div>
-                    <button onclick="toolIncrementRound()" class="btn-secondary px-4 py-2 text-lg font-bold border-wolf-accent text-wolf-accent hover:bg-wolf-accent hover:text-white">+ ROUND</button>
-                 </div>
-            </div>
-
-            <div class="flex gap-4 w-full max-w-md mb-6">
-                <button onclick="toggleTimer()" id="tm-btn" class="flex-1 btn-primary py-4 text-xl">START</button>
-                <button onclick="resetTimer()" class="flex-1 btn-secondary py-4 text-xl">RESET</button>
-            </div>
-            
-            <div class="flex items-center gap-2">
-                <input type="checkbox" id="tm-countdown-check" class="w-5 h-5 accent-wolf-accent cursor-pointer">
-                <label for="tm-countdown-check" class="text-xs uppercase text-wolf-muted font-bold cursor-pointer">10 Sec Countdown</label>
-            </div>
-        </div>
-
-        <div id="tool-tabata" class="hidden flex-grow flex flex-col items-center justify-center text-center">
-            <div id="tb-config" class="w-full max-w-sm space-y-4 mb-8">
-                <div class="flex justify-between items-center">
-                    <label class="text-wolf-muted uppercase text-sm font-bold">Work (Sec)</label>
-                    <input type="number" id="tb-work" value="20" class="tool-input w-24 text-2xl p-1">
-                </div>
-                <div class="flex justify-between items-center">
-                    <label class="text-wolf-muted uppercase text-sm font-bold">Rest (Sec)</label>
-                    <input type="number" id="tb-rest" value="10" class="tool-input w-24 text-2xl p-1">
-                </div>
-                <div class="flex justify-between items-center">
-                    <label class="text-wolf-muted uppercase text-sm font-bold">Rounds</label>
-                    <input type="number" id="tb-rounds" value="8" class="tool-input w-24 text-2xl p-1">
-                </div>
-            </div>
-            <div id="tb-display-container" class="hidden">
-                <p id="tb-status" class="text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading">WORK</p>
-                <div id="tb-timer" class="font-heading text-8xl md:text-9xl text-white mb-2 tabular-nums">20</div>
-                <p id="tb-round-counter" class="text-wolf-muted uppercase tracking-widest text-2xl font-bold">Round 1/8</p>
-            </div>
-            <button onclick="toggleTabata()" id="tb-btn" class="w-full max-w-sm btn-primary py-4 text-xl mt-6">START TABATA</button>
-            
-            <div id="tb-countdown-container" class="flex items-center justify-center gap-2 mt-4">
-                <input type="checkbox" id="tb-countdown-check" class="w-5 h-5 accent-wolf-accent cursor-pointer" checked>
-                <label for="tb-countdown-check" class="text-xs uppercase text-wolf-muted font-bold cursor-pointer">10 Sec Countdown</label>
-            </div>
-        </div>
-    </div>
-
-    <div id="list-screen" class="screen h-full w-full flex-col bg-wolf-bg p-4">
-        <div class="flex justify-between items-center mb-6 pb-4 border-b border-wolf-border">
-            <h2 class="font-heading text-3xl text-wolf-text">PROTOCOLS</h2>
-            <button onclick="switchScreen('menu')" class="btn-secondary px-4 py-2 text-sm">Back</button>
-        </div>
-        <div id="workout-list-container" class="flex-grow overflow-y-auto space-y-3 pb-20"></div>
-    </div>
-
-    <div id="editor-select-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl flex flex-col max-h-[90vh]">
-            <h2 class="font-heading text-2xl text-wolf-accent mb-6 tracking-wide text-center">MANAGE PROTOCOLS</h2>
-            
-            <div class="flex gap-2 mb-6 border-b border-wolf-border pb-6">
-                <input type="text" id="new-workout-name" placeholder="New Protocol Name" class="flex-1 bg-wolf-bg border border-wolf-border text-white px-4 py-2 rounded text-sm focus:border-wolf-accent outline-none">
-                <button onclick="createNewWorkout()" class="btn-primary px-4 py-2 text-xl font-bold">+</button>
-            </div>
-
-            <div id="manager-list" class="flex-grow overflow-y-auto space-y-3 pr-1"></div>
-            
-            <button onclick="closeModal('editor-select-modal')" class="mt-6 text-wolf-muted hover:text-white uppercase text-xs tracking-widest text-center">Close Manager</button>
-        </div>
-    </div>
-
-    <div id="editor-screen" class="screen h-full w-full flex-col bg-wolf-bg p-4">
-        <div class="flex justify-between items-center mb-6 pb-4 border-b border-wolf-border">
-            <h2 id="editor-title" class="font-heading text-3xl text-wolf-text truncate max-w-[50%]">EDIT</h2>
-            <div class="flex gap-2 shrink-0">
-                <button onclick="saveRoutineChanges()" class="btn-primary px-4 py-2 text-sm">Save</button>
-                <button onclick="switchScreen('menu')" class="btn-secondary px-4 py-2 text-sm">Exit</button>
-            </div>
-        </div>
-        <div id="editor-content" class="flex-grow overflow-y-auto space-y-3 pb-20"></div>
-        <div class="pt-4 border-t border-wolf-border">
-            <button onclick="addStepToEditor()" class="w-full py-3 border border-dashed border-wolf-muted text-wolf-muted hover:text-white hover:border-white rounded-lg uppercase text-sm tracking-widest transition">+ Add Exercise</button>
-        </div>
-    </div>
-
-    <div id="menu-screen" class="screen active h-full w-full flex-col items-center justify-center p-6 relative">
-        <button onclick="openModal('sync-modal')" class="absolute top-6 right-6 text-wolf-muted hover:text-wolf-accent transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-        </button>
-
-        <div class="z-10 text-center w-full max-w-sm flex flex-col items-center">
-            <h1 class="font-heading text-6xl text-wolf-text tracking-tight mb-2">WOLF<span class="text-wolf-accent">ALPHA</span></h1>
-            <p class="text-wolf-muted text-sm uppercase tracking-[0.3em] mb-8">Conquer Your Day</p>
-
-            <div class="w-full space-y-3 mb-8">
-                <div class="flex items-center justify-between bg-wolf-surface p-1 rounded-lg border border-wolf-border">
-                    <label class="flex-1 text-center cursor-pointer">
-                        <input type="radio" name="mode-toggle" value="auto" class="peer sr-only" checked onchange="toggleMode(false)">
-                        <span class="block py-2 rounded-md text-xs font-bold uppercase text-wolf-muted peer-checked:bg-wolf-bg peer-checked:text-white transition">Auto Timer</span>
-                    </label>
-                    <label class="flex-1 text-center cursor-pointer">
-                        <input type="radio" name="mode-toggle" value="manual" class="peer sr-only" onchange="toggleMode(true)">
-                        <span class="block py-2 rounded-md text-xs font-bold uppercase text-wolf-muted peer-checked:bg-wolf-accent peer-checked:text-white transition">Manual</span>
-                    </label>
-                </div>
-                <div class="flex items-center justify-between bg-wolf-surface p-1 rounded-lg border border-wolf-border">
-                    <label class="flex-1 text-center cursor-pointer">
-                        <input type="radio" name="track-toggle" value="on" class="peer sr-only" checked onchange="toggleTracking(true)">
-                        <span class="block py-2 rounded-md text-xs font-bold uppercase text-wolf-muted peer-checked:bg-wolf-bg peer-checked:text-white transition">Record Stats</span>
-                    </label>
-                    <label class="flex-1 text-center cursor-pointer">
-                        <input type="radio" name="track-toggle" value="off" class="peer sr-only" onchange="toggleTracking(false)">
-                        <span class="block py-2 rounded-md text-xs font-bold uppercase text-wolf-muted peer-checked:bg-gray-700 peer-checked:text-white transition">Incognito</span>
-                    </label>
-                </div>
-            </div>
-
-            <div class="w-full space-y-3">
-                 <button onclick="switchScreen('list')" class="w-full btn-primary py-4 text-xl shadow-lg shadow-orange-900/20">SAVED PROTOCOLS</button>
-            </div>
-
-            <div class="w-full space-y-3 mt-3 pt-3 border-t border-wolf-border">
-                 <button onclick="openApexConfig()" class="w-full btn-secondary py-4 text-lg border-wolf-accent text-wolf-accent hover:bg-wolf-accent hover:text-white">Apex</button>
-                 <div class="grid grid-cols-2 gap-3 mt-2">
-                    <button onclick="openModal('weight-modal')" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted hover:text-white uppercase font-bold">Weight</button>
-                    <button onclick="showHistory()" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">History</button>
-                    <button onclick="switchScreen('tools')" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">Tools</button>
-                    <button onclick="openManager()" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">Edit Pgm</button>
-                </div>
-            </div>
-            
-            <div id="sync-status" class="mt-6 text-[10px] text-wolf-muted uppercase tracking-widest opacity-50">Connecting...</div>
-        </div>
-    </div>
-
-    <div id="apex-config-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-wolf-surface border border-wolf-border p-8 w-full max-w-sm rounded-xl text-center shadow-2xl">
-            <h2 class="font-heading text-4xl text-wolf-accent mb-6">APEX CONFIG</h2>
-            <div class="mb-6 text-left">
-                <label class="block text-wolf-muted text-xs font-bold mb-2 uppercase tracking-wide">Ladder Peak (Reps)</label>
-                <div class="flex items-center bg-wolf-bg rounded-lg border border-wolf-border">
-                    <button onclick="adjustRep(-1)" class="p-4 text-wolf-muted hover:text-white transition text-xl">-</button>
-                    <input type="number" id="apex-max-reps" value="8" class="flex-1 bg-transparent text-white text-3xl p-2 text-center font-heading focus:outline-none">
-                    <button onclick="adjustRep(1)" class="p-4 text-wolf-muted hover:text-white transition text-xl">+</button>
-                </div>
-            </div>
-            <div class="mb-8 text-left">
-                <label class="block text-wolf-muted text-xs font-bold mb-2 uppercase tracking-wide">Weight Load</label>
-                <input type="text" id="apex-weight" placeholder="e.g. 35lbs" class="w-full bg-wolf-bg border border-wolf-border text-white text-xl p-3 text-center font-heading rounded-lg outline-none focus:border-wolf-accent">
-            </div>
-            <div class="flex gap-3">
-                <button onclick="closeModal('apex-config-modal')" class="flex-1 py-3 btn-secondary">Cancel</button>
-                <button onclick="confirmApexStart()" class="flex-1 py-3 btn-primary">Start</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="quote-screen" class="screen min-h-screen w-full flex-col items-center justify-center p-8 text-center bg-wolf-bg">
-        <div class="z-10 max-w-2xl">
-            <div class="w-16 h-1 bg-wolf-accent mx-auto mb-8 rounded-full"></div>
-            <blockquote id="quote-text" class="font-heading text-3xl md:text-5xl text-wolf-text leading-tight opacity-90"></blockquote>
-            <cite id="quote-author" class="block text-wolf-muted font-bold text-sm mt-6 uppercase tracking-widest"></cite>
-        </div>
-        <button id="start-btn" class="z-10 mt-16 btn-primary py-4 px-12 text-2xl shadow-xl shadow-orange-900/10">BEGIN</button>
-    </div>
-
-    <div id="workout-screen" class="screen h-full w-full flex-col relative bg-wolf-bg">
-        <div class="absolute top-0 left-0 w-full p-6 flex justify-between items-start z-20">
-            <div>
-                <span class="text-wolf-muted text-[10px] uppercase tracking-widest block">Elapsed</span>
-                <span id="total-time-display" class="font-heading text-2xl text-wolf-text">--:--</span>
-            </div>
-            <button onclick="goToMenu()" class="text-wolf-muted hover:text-white text-xs font-bold uppercase tracking-widest px-3 py-1 border border-transparent hover:border-wolf-muted rounded transition">Exit</button>
-        </div>
-
-        <div class="flex-grow flex flex-col items-center justify-center p-4 z-10 w-full max-w-4xl mx-auto mt-10">
-            <div class="w-full bg-wolf-surface h-1.5 mb-12 rounded-full overflow-hidden">
-                <div id="progress-bar" class="bg-wolf-accent h-full transition-all duration-300 rounded-full" style="width: 0%"></div>
-            </div>
-
-            <p id="status-text" class="font-heading text-3xl text-wolf-accent uppercase tracking-widest mb-2 animate-pulse">Prepare</p>
-            <p id="current-exercise" class="text-4xl md:text-7xl font-bold text-white mb-8 text-center leading-none tracking-tight"></p>
-            
-            <div id="timed-content" class="w-full text-center">
-                <div id="timer-display" class="font-heading text-[8rem] md:text-[14rem] text-wolf-text leading-none select-none tabular-nums">10</div>
-                
-                <div id="amrap-counter-container" class="hidden mt-6 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4">
-                    <p class="text-wolf-muted uppercase text-xs tracking-widest mb-2">Round Tracker</p>
-                    <div class="flex items-center gap-6">
-                        <div id="amrap-rounds" class="font-heading text-6xl text-white">0</div>
-                        <button onclick="incrementRound()" class="btn-secondary px-6 py-4 text-xl font-bold border-wolf-accent text-wolf-accent hover:bg-wolf-accent hover:text-white">+ ROUND</button>
-                    </div>
-                </div>
-
-                <button id="manual-next-btn" class="hidden mt-8 btn-primary px-10 py-4 text-xl mx-auto">Next</button>
-            </div>
-
-            <div id="rep-content" class="hidden w-full text-center max-w-xl">
-                <div id="apex-exercise-list" class="text-left text-lg font-medium mb-10 space-y-3 bg-wolf-surface p-6 rounded-xl border border-wolf-border"></div>
-                <button id="round-complete-btn" class="btn-primary w-full md:w-auto px-16 py-5 text-2xl">Complete</button>
-            </div>
-        </div>
-        
-        <div class="p-6 z-20 pb-10 text-center">
-            <span class="text-wolf-muted text-[10px] uppercase tracking-widest block mb-1">Up Next</span>
-            <span id="next-exercise" class="text-wolf-text text-xl font-heading uppercase"></span>
-        </div>
-    </div>
-
-    <div id="completion-screen" class="screen min-h-screen w-full flex-col items-center justify-center p-6 text-center bg-wolf-bg">
-        <h2 class="font-heading text-5xl md:text-8xl text-wolf-accent mb-2">COMPLETE</h2>
-        <p class="text-wolf-muted uppercase tracking-widest mb-12 text-sm">Well Done</p>
-        
-        <div class="bg-wolf-surface border border-wolf-border p-8 w-full max-w-sm mb-10 rounded-xl">
-            <p class="text-wolf-muted text-[10px] uppercase tracking-widest mb-1">Total Time</p>
-            <p id="final-time-display" class="text-6xl text-white font-heading my-2">--:--</p>
-            <div id="final-stats-extra" class="mt-6 pt-6 border-t border-wolf-border text-left hidden"></div>
-        </div>
-        
-        <button onclick="goToMenu()" class="btn-secondary px-12 py-4 text-lg">Back to Menu</button>
-    </div>
-
-    <div id="history-screen" class="screen min-h-screen w-full flex-col p-6 bg-wolf-bg">
-        <div class="max-w-2xl mx-auto w-full flex flex-col h-full">
-            <div class="flex items-center justify-between mb-8 pb-4 border-b border-wolf-border">
-                <h2 class="font-heading text-3xl text-wolf-text">HISTORY</h2>
-                <button onclick="goToMenu()" class="text-wolf-muted hover:text-white text-xs uppercase font-bold tracking-widest">Back</button>
-            </div>
-            <div id="history-loading" class="hidden text-center text-wolf-accent animate-pulse mt-10 text-sm tracking-widest uppercase">Syncing...</div>
-            <div id="history-list" class="flex-grow overflow-y-auto space-y-3 pb-20"></div>
-            <div id="no-history-msg" class="hidden text-center text-wolf-muted mt-20 text-sm">No workouts recorded yet.</div>
-        </div>
-    </div>
-
-    <script>
-        // --------------------------------------------------------------
-        // >>> ACTION REQUIRED: PASTE YOUR GOOGLE SCRIPT URL BELOW <<<
-        // Example: "https://script.google.com/macros/s/AKfycbx.../exec"
-        // --------------------------------------------------------------
-        const HARDCODED_URL = "https://script.google.com/macros/s/AKfycbxx2iCp9PgKa2XcY_zZuhvCjN0BeCrthAa93OjHPNDpRr9zXgozhpKi9zZcoEfjGHl6/exec"; 
-        // --------------------------------------------------------------
-
-        const STORAGE_KEY_HIST = 'wolf_history';
-        const STORAGE_KEY_ROUTINES = 'wolf_routines';
-        
-        // DEFAULT DATA
-        const defaultRoutines = {
+        const DEFAULT_ROUTINES: Routine = {
             'Wake Up': [
                 { type: 'work', name: 'Bounce & Breathe', duration: 60 },
                 { type: 'rep_work', name: 'Shoulder Pinches', exercises: ['10 Reps'] },
-                { type: 'rep_work', name: 'Arm Circles', exercises: ['10 Fwd / 10 Bwd'] },
-                { type: 'rep_work', name: 'Hip Bridges', exercises: ['10 Reps + Hold'] },
-                { type: 'rep_work', name: 'Windshield Wipers', exercises: ['10 Reps'] },
-                { type: 'rep_work', name: 'Cat-Cow', exercises: ['10 Reps'] },
                 { type: 'cooldown', name: "Child's Pose", duration: 60 }
             ],
             'Morning Grind': [
-                { type: 'work', name: 'Push-ups', round: '1/4', duration: 40 }, { type: 'rest', name: 'Shake It Out', duration: 15 },
-                { type: 'work', name: 'Push-ups', round: '2/4', duration: 40 }, { type: 'rest', name: 'Shake It Out', duration: 15 },
-                { type: 'work', name: 'Push-ups', round: '3/4', duration: 40 }, { type: 'rest', name: 'Recover', duration: 45 },
-                { type: 'work', name: 'Air Squats', round: '1/4', duration: 40 }, { type: 'rest', name: 'Shake It Out', duration: 15 },
-                { type: 'work', name: 'Air Squats', round: '2/4', duration: 40 }, { type: 'rest', name: 'Recover', duration: 45 },
-                { type: 'work', name: 'Burpees', round: '1/4', duration: 40 }, { type: 'rest', name: 'Shake It Out', duration: 15 },
-                { type: 'work', name: 'Burpees', round: '2/4', duration: 40 }, { type: 'rest', name: 'Recover', duration: 45 },
-                { type: 'work', name: 'Mountain Climbers', duration: 45 },
+                { type: 'work', name: 'Push-ups', round: '1/4', duration: 40 },
+                { type: 'rest', name: 'Recover', duration: 15 },
+                { type: 'work', name: 'Air Squats', round: '1/4', duration: 40 },
                 { type: 'cooldown', name: 'Stretch', duration: 60 }
             ],
-            apex_config: {
-                exercises: ['KB Swings', 'Front Squats', 'Shoulder Press', 'Row', 'Push-Ups'],
-                restTime: 30
-            },
             'Garage Games': [
-                 { 
-                   type: "amrap", 
-                   name: "AMRAP 20", 
-                   duration: 1200, 
-                   round: "See List Below",
-                   exercises: ["10 Med Ball Cleans", "10 Pull-Ups", "40 Double Unders"]
-                 }
+                 { type: "amrap", name: "AMRAP 20", duration: 1200, exercises: ["10 Med Ball Cleans", "10 Pull-Ups"] }
             ]
         };
 
-        let routines = JSON.parse(localStorage.getItem(STORAGE_KEY_ROUTINES)) || JSON.parse(JSON.stringify(defaultRoutines));
+        // -------------------------------------------------------------------------
+        // UTILS
+        // -------------------------------------------------------------------------
 
-        const screens = {
-            menu: document.getElementById('menu-screen'),
-            quote: document.getElementById('quote-screen'),
-            workout: document.getElementById('workout-screen'),
-            completion: document.getElementById('completion-screen'),
-            history: document.getElementById('history-screen'),
-            editor: document.getElementById('editor-screen'),
-            tools: document.getElementById('tools-screen'),
-            list: document.getElementById('list-screen')
-        };
-        const els = {
-            timer: document.getElementById('timer-display'),
-            currEx: document.getElementById('current-exercise'),
-            nextEx: document.getElementById('next-exercise'),
-            status: document.getElementById('status-text'),
-            bar: document.getElementById('progress-bar'),
-            timed: document.getElementById('timed-content'),
-            rep: document.getElementById('rep-content'),
-            manualBtn: document.getElementById('manual-next-btn'),
-            apexList: document.getElementById('apex-exercise-list'),
-            totalTime: document.getElementById('total-time-display'),
-            finalTime: document.getElementById('final-time-display'),
-            syncStatus: document.getElementById('sync-status'),
-            modalStatus: document.getElementById('modal-status'),
-            workoutList: document.getElementById('workout-list-container'),
-            managerList: document.getElementById('manager-list'),
-            newWorkoutName: document.getElementById('new-workout-name'),
-            amrapContainer: document.getElementById('amrap-counter-container'),
-            amrapRounds: document.getElementById('amrap-rounds'),
-            // Tools
-            tmRoundTracker: document.getElementById('tm-round-tracker'),
-            tmRoundVal: document.getElementById('tm-rounds-val'),
-            swLaps: document.getElementById('sw-laps'),
-            swStatus: document.getElementById('sw-status'),
-            tmStatus: document.getElementById('tm-status')
+        const formatTime = (s: number): string => {
+            const min = Math.floor(s / 60).toString().padStart(2, '0');
+            const sec = (s % 60).toString().padStart(2, '0');
+            return `${min}:${sec}`;
         };
 
-        let currentWorkoutType = null;
-        let activeRoutine = [];
-        let stepIndex = 0;
-        let timerInt = null;
-        let totalInt = null;
-        let startTime = null;
-        let isManual = false;
-        let isTracking = true;
-        let audioCtx;
-        let editingRoutineKey = null;
-        let editingCopy = null;
-        let manualRoundCount = 0;
+        const formatTimeTenths = (ms: number): string => {
+            const m = Math.floor(ms / 60000).toString().padStart(2, '0');
+            const s = Math.floor((ms % 60000) / 1000).toString().padStart(2, '0');
+            const ds = Math.floor((ms % 1000) / 100);
+            return `${m}:${s}.${ds}`;
+        };
 
-        // Tool Vars
-        let toolInt = null;
-        let swTime = 0;
-        let swLastLapTime = 0; 
-        let tmTime = 0;
-        let tmOriginalTime = 0; // Capture original duration for logging
-        let tbState = { round: 1, isWork: false, timeLeft: 0, totalRounds: 8, workTime: 20, restTime: 10, active: false };
-        let toolRoundCount = 0;
-        let isPrep = false;
-        
-        let editingHistoryId = null; // Store ID (date string), not index
+        const parseRelativeTime = (timeStr: string): Date => {
+            const now = new Date();
+            const str = timeStr.toLowerCase().trim();
 
-        // --- INIT ---
-        window.addEventListener('DOMContentLoaded', () => {
-            initSync();
-            renderMenuWorkouts();
-            document.getElementById('start-btn').addEventListener('click', startWorkoutSession);
-        });
+            // Handle "10:30 AM" or "5:00 PM"
+            const timeMatch = str.match(/(\d{1,2}):(\d{2})\s*(am|pm)?/);
+            if (timeMatch) {
+                let hours = parseInt(timeMatch[1]);
+                const minutes = parseInt(timeMatch[2]);
+                const period = timeMatch[3];
 
-        // --- SYNC LOGIC ---
-        function initSync() {
-            if(HARDCODED_URL && HARDCODED_URL.startsWith('http')) {
-                els.syncStatus.textContent = "CLOUD ACTIVE";
-                els.syncStatus.classList.add('text-wolf-accent');
-                els.modalStatus.textContent = "CONNECTED";
-                els.modalStatus.classList.add('text-green-500');
-                syncRoutines();
-            } else {
-                els.syncStatus.textContent = "LOCAL MODE";
-                els.modalStatus.textContent = "NOT CONNECTED";
-                els.modalStatus.classList.add('text-red-500');
-            }
-        }
+                if (period === 'pm' && hours < 12) hours += 12;
+                if (period === 'am' && hours === 12) hours = 0;
 
-        function getApiUrl() {
-            return (HARDCODED_URL && HARDCODED_URL.startsWith('http')) ? HARDCODED_URL : null;
-        }
-
-        // --- DYNAMIC MENU ---
-        function renderMenuWorkouts() {
-            els.workoutList.innerHTML = '';
-            Object.keys(routines).forEach(key => {
-                if(key === 'apex_config') return;
-                const btn = document.createElement('button');
-                btn.className = "w-full btn-secondary py-4 text-lg";
-                if(key === 'Morning Grind') btn.className = "w-full btn-primary py-4 text-xl shadow-lg shadow-orange-900/20";
-                btn.textContent = key;
-                btn.onclick = () => selectWorkout(key);
-                els.workoutList.appendChild(btn);
-            });
-        }
-
-        // --- WORKOUT MANAGER ---
-        function openManager() { renderManagerList(); openModal('editor-select-modal'); }
-        function renderManagerList() {
-            els.managerList.innerHTML = '';
-            const apexItem = document.createElement('div');
-            apexItem.className = "flex justify-between items-center bg-wolf-bg p-3 rounded border border-wolf-border";
-            apexItem.innerHTML = `<span class="text-wolf-text font-bold">APEX PROTOCOL</span><button onclick="openEditor('apex')" class="text-wolf-accent text-sm font-bold uppercase hover:text-white">Edit</button>`;
-            els.managerList.appendChild(apexItem);
-            Object.keys(routines).forEach(key => {
-                if(key === 'apex_config') return;
-                const item = document.createElement('div');
-                item.className = "flex flex-col bg-wolf-bg p-3 rounded border border-wolf-border gap-2";
-                item.innerHTML = `<div class="flex justify-between items-center"><span class="text-wolf-text truncate font-bold">${key}</span></div><div class="flex gap-2 justify-end mt-1"><button onclick="renameWorkout('${key}')" class="text-wolf-muted text-xs font-bold uppercase hover:text-white px-2 py-1 border border-wolf-border rounded">Rename</button><button onclick="openEditor('${key}')" class="text-wolf-muted text-xs font-bold uppercase hover:text-white px-2 py-1 border border-wolf-border rounded">Edit</button><button onclick="deleteWorkout('${key}')" class="text-red-900 text-xs font-bold uppercase hover:text-red-500 px-2 py-1 border border-red-900/30 rounded">Delete</button></div>`;
-                els.managerList.appendChild(item);
-            });
-        }
-        async function createNewWorkout() {
-            const name = els.newWorkoutName.value.trim();
-            if(!name) return alert("Enter a name first.");
-            if(routines[name]) return alert("Name already exists.");
-            routines[name] = [{ type: 'work', name: 'First Exercise', duration: 30 }, { type: 'rest', name: 'Rest', duration: 30 }];
-            await saveRoutinesToStorage();
-            els.newWorkoutName.value = '';
-            renderManagerList();
-            renderMenuWorkouts();
-        }
-        async function renameWorkout(oldKey) {
-            const newName = prompt("Enter new protocol name:", oldKey);
-            if(!newName || newName === oldKey) return;
-            if(routines[newName]) return alert("That name is already taken.");
-            routines[newName] = routines[oldKey];
-            delete routines[oldKey];
-            await saveRoutinesToStorage();
-            renderManagerList();
-            renderMenuWorkouts();
-        }
-        async function deleteWorkout(key) {
-            if(!confirm(`Delete ${key} permanently?`)) return;
-            delete routines[key];
-            await saveRoutinesToStorage();
-            renderManagerList();
-            renderMenuWorkouts();
-        }
-        async function saveRoutinesToStorage() {
-            localStorage.setItem(STORAGE_KEY_ROUTINES, JSON.stringify(routines));
-            const url = getApiUrl();
-            if(url) {
-                try { await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'save_routine', data: routines }) }); } catch(e) {}
-            }
-        }
-
-        // --- RUNTIME ---
-        window.toggleMode = (val) => { isManual = val; };
-        window.toggleTracking = (val) => { isTracking = val; };
-        function selectWorkout(type) { currentWorkoutType = type; activeRoutine = routines[type]; goToQuote(); }
-        function confirmApexStart() {
-            const max = parseInt(document.getElementById('apex-max-reps').value) || 8;
-            const weight = document.getElementById('apex-weight').value || "Bodyweight";
-            currentWorkoutType = 'apex';
-            const config = routines.apex_config || defaultRoutines.apex_config;
-            activeRoutine = generateApexRoutine(config, max);
-            activeRoutine.details = { maxReps: max, weight: weight };
-            closeModal('apex-config-modal');
-            goToQuote();
-        }
-        function startWorkoutSession() { initAudio(); stepIndex = 0; startTime = null; manualRoundCount = 0; els.totalTime.textContent = "--:--"; switchScreen('workout'); startCountdown(); }
-        function startCountdown() { els.currEx.textContent = ""; els.nextEx.textContent = ""; runStep({ type: 'countdown', duration: 10, name: '' }); }
-        function startMissionClock() {
-            if(!isTracking) return;
-            startTime = Date.now();
-            clearInterval(totalInt);
-            totalInt = setInterval(() => { const s = Math.floor((Date.now() - startTime) / 1000); els.totalTime.textContent = formatTime(s); }, 1000);
-            els.totalTime.textContent = "00:00"; 
-        }
-        
-        function runStep(step) {
-            clearInterval(timerInt);
-            const pct = (stepIndex / activeRoutine.length) * 100;
-            els.bar.style.width = `${pct}%`;
-            els.status.textContent = step.type === 'countdown' ? 'GET READY' : step.type.toUpperCase();
-            
-            if (step.type !== 'countdown') {
-                els.currEx.textContent = step.name + (step.round ? ` (${step.round})` : '');
-                const next = activeRoutine[stepIndex + 1];
-                els.nextEx.textContent = next ? next.name : 'COMPLETE';
+                const d = new Date();
+                d.setHours(hours, minutes, 0, 0);
+                return d;
             }
 
-            const isAmrap = currentWorkoutType.includes("Garage") || currentWorkoutType.includes("AMRAP") || (step.name && step.name.includes("AMRAP")) || (step.type === 'amrap');
-            if(isAmrap && step.type !== 'countdown') {
-                els.amrapContainer.classList.remove('hidden');
-                els.amrapRounds.textContent = manualRoundCount;
-            } else {
-                els.amrapContainer.classList.add('hidden');
+            // Handle "2 hours ago", "10 minutes ago"
+            const relativeMatch = str.match(/(\d+)\s*(hour|minute|sec|second)s?\s*ago/);
+            if (relativeMatch) {
+                const val = parseInt(relativeMatch[1]);
+                const unit = relativeMatch[2];
+                if (unit.startsWith('hour')) now.setHours(now.getHours() - val);
+                else if (unit.startsWith('minute')) now.setMinutes(now.getMinutes() - val);
+                else if (unit.startsWith('sec')) now.setSeconds(now.getSeconds() - val);
+                return now;
             }
 
-            // Logic for AMRAP and Rep Work
-            if (step.type === 'rep_work' || step.type === 'amrap') {
-                // If it's pure rep work, hide timer. If AMRAP, show BOTH.
-                if(step.type === 'rep_work') {
-                    els.timed.classList.add('hidden'); 
-                    els.rep.classList.remove('hidden'); 
-                } else {
-                    // AMRAP: Show Timer AND List
-                    els.timed.classList.remove('hidden');
-                    els.rep.classList.remove('hidden');
-                    document.getElementById('round-complete-btn').classList.add('hidden'); // Hide completion button for AMRAP
-                }
+            return now;
+        };
 
-                if(step.exercises) {
-                    els.apexList.innerHTML = step.exercises.map(e => `<div class="flex items-center"><span class="w-1.5 h-1.5 bg-wolf-accent mr-3 rounded-full"></span><span class="text-white">${e}</span></div>`).join('');
-                }
-            } 
+        const parseVoiceInput = (transcript: string): Partial<LogEntry> => {
+            const lower = transcript.toLowerCase();
             
-            if (step.type !== 'rep_work' || step.type === 'amrap') {
-                if(step.type !== 'amrap') { // Standard timed work
-                    els.timed.classList.remove('hidden'); 
-                    els.rep.classList.add('hidden'); 
-                }
-                els.manualBtn.classList.add('hidden'); 
-                
-                let timeLeft = step.duration;
-                els.timer.textContent = (timeLeft > 59) ? formatTime(timeLeft) : timeLeft; 
-                els.timer.style.fontSize = (timeLeft > 99) ? "8rem" : ""; 
-
-                els.timer.classList.remove('text-wolf-accent');
-                
-                timerInt = setInterval(() => {
-                    timeLeft--; 
-                    els.timer.textContent = (timeLeft > 59) ? formatTime(timeLeft) : timeLeft;
-                    
-                    if (timeLeft <= 3 && timeLeft > 0) { beep('Low'); els.timer.classList.add('text-wolf-accent'); }
-                    if (timeLeft <= 0) {
-                        clearInterval(timerInt); beep('High');
-                        if (step.type === 'countdown') { startMissionClock(); nextStep(); } else if (isManual && (step.type === 'work' || step.type === 'rest')) { els.timer.textContent = "0"; els.manualBtn.classList.remove('hidden'); } else { nextStep(); }
-                    }
-                }, 1000);
-            }
-        }
-        function nextStep() { if(els.status.textContent !== 'GET READY') stepIndex++; if (stepIndex >= activeRoutine.length) { finishWorkout(); return; } runStep(activeRoutine[stepIndex]); }
-        
-        window.incrementRound = () => { manualRoundCount++; els.amrapRounds.textContent = manualRoundCount; beep('Mid'); };
-
-        els.manualBtn.addEventListener('click', () => { beep('Mid'); nextStep(); });
-        document.getElementById('round-complete-btn').addEventListener('click', () => { beep('Mid'); nextStep(); });
-        
-        function finishWorkout() {
-            clearInterval(totalInt); beep('High');
-            let timeStr = "--:--";
-            let details = activeRoutine.details || {};
-            if(manualRoundCount > 0) details.roundsCompleted = manualRoundCount;
-
-            if (isTracking && startTime) {
-                const s = Math.floor((Date.now() - startTime) / 1000);
-                timeStr = formatTime(s);
-                const entry = { date: new Date().toISOString(), type: currentWorkoutType, duration: timeStr, details: details };
-                saveHistoryLog(entry);
-            }
-            els.finalTime.textContent = timeStr;
-            const extraDiv = document.getElementById('final-stats-extra');
-            extraDiv.innerHTML = ''; 
-            
-            if (currentWorkoutType === 'apex') { 
-                extraDiv.innerHTML = `<div class="grid grid-cols-2 gap-4"><div><p class="text-wolf-muted uppercase text-[10px] tracking-widest">Peak</p><p class="text-2xl text-wolf-accent font-heading">${details.maxReps}</p></div><div><p class="text-wolf-muted uppercase text-[10px] tracking-widest">Load</p><p class="text-2xl text-white font-heading">${details.weight}</p></div></div>`; 
-                extraDiv.classList.remove('hidden'); 
-            } else if (manualRoundCount > 0) {
-                 extraDiv.innerHTML = `<div><p class="text-wolf-muted uppercase text-[10px] tracking-widest">Rounds Completed</p><p class="text-4xl text-wolf-accent font-heading">${manualRoundCount}</p></div>`;
-                 extraDiv.classList.remove('hidden');
-            } else { extraDiv.classList.add('hidden'); }
-            
-            switchScreen('completion');
-        }
-
-        // --- TOOLS LOGIC ---
-        function switchTool(tool) {
-            initAudio(); clearInterval(toolInt);
-            document.querySelectorAll('[id^="tool-"]').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('[id^="tab-"]').forEach(el => { el.classList.remove('bg-wolf-accent', 'text-white'); el.classList.add('bg-wolf-surface', 'text-wolf-muted'); });
-            document.getElementById(`tool-${tool}`).classList.remove('hidden');
-            document.getElementById(`tab-${tool}`).classList.add('bg-wolf-accent', 'text-white'); document.getElementById(`tab-${tool}`).classList.remove('bg-wolf-surface', 'text-wolf-muted');
-        }
-        
-        // Stopwatch
-        function toggleStopwatch() {
-            const btn = document.getElementById('sw-btn');
-            const useCountdown = document.getElementById('sw-countdown-check').checked;
-            
-            if(toolInt) { // STOPPING
-                clearInterval(toolInt); toolInt = null; 
-                btn.textContent = "RESUME"; btn.classList.remove('bg-red-900'); btn.classList.add('btn-primary'); 
-                els.swStatus.classList.add('hidden');
-                isPrep = false; 
-            }
-            else { // STARTING
-                if(swTime === 0 && !isPrep) {
-                    if(useCountdown) {
-                        // Start Countdown
-                        isPrep = true;
-                        let prep = 10;
-                        els.swStatus.textContent = "GET READY"; els.swStatus.classList.remove('hidden');
-                        document.getElementById('sw-display').textContent = `00:${prep.toString().padStart(2, '0')}.0`;
-                        btn.textContent = "WAIT..."; btn.disabled = true;
-
-                        toolInt = setInterval(() => {
-                            prep--;
-                            if(prep >= 0) {
-                                document.getElementById('sw-display').textContent = `00:${prep.toString().padStart(2, '0')}.0`;
-                                if(prep<=3) beep('Low');
-                            } else {
-                                clearInterval(toolInt); beep('High');
-                                els.swStatus.classList.add('hidden');
-                                btn.disabled = false; btn.textContent = "STOP"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
-                                isPrep = false;
-                                startStopwatchClock();
-                            }
-                        }, 1000);
-                    } else {
-                        // Immediate Start
-                        startStopwatchClock();
-                        btn.textContent = "STOP"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
-                    }
-                } else {
-                    // RESUME
-                    startStopwatchClock();
-                    btn.textContent = "STOP"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
-                }
-            }
-        }
-        function startStopwatchClock() {
-            const start = Date.now() - swTime;
-            toolInt = setInterval(() => { 
-                swTime = Date.now() - start; 
-                document.getElementById('sw-display').textContent = formatTimeTenths(swTime); 
-            }, 50);
-        }
-
-        function lapStopwatch() {
-            if(!toolInt || isPrep) return; 
-            const splitMs = swTime - swLastLapTime;
-            const splitTime = formatTimeTenths(splitMs);
-            const totalTime = formatTimeTenths(swTime);
-            swLastLapTime = swTime; 
-
-            const lapDiv = document.createElement('div');
-            lapDiv.className = "flex justify-between border-b border-wolf-border pb-1";
-            lapDiv.innerHTML = `<span class="text-wolf-muted">Lap ${els.swLaps.children.length}</span><span class="text-white font-bold">${splitTime} / ${totalTime}</span>`;
-            if(els.swLaps.children[0]?.classList.contains('italic')) els.swLaps.innerHTML = '';
-            els.swLaps.prepend(lapDiv);
-        }
-        function resetStopwatch() { 
-            clearInterval(toolInt); toolInt = null; swTime = 0; swLastLapTime = 0; isPrep = false;
-            document.getElementById('sw-display').textContent = "00:00.0"; 
-            document.getElementById('sw-btn').textContent = "START"; document.getElementById('sw-btn').className = "flex-1 btn-primary py-4 text-xl"; document.getElementById('sw-btn').disabled = false;
-            els.swLaps.innerHTML = '<div class="text-wolf-muted text-center italic py-2">Laps will appear here</div>';
-            els.swStatus.classList.add('hidden');
-        }
-
-        // Timer
-        function toggleTimer() {
-            const btn = document.getElementById('tm-btn');
-            const display = document.getElementById('tm-display');
-            const config = document.getElementById('tm-config-container');
-            const isRoundTrack = document.getElementById('tm-rounds-check').checked;
-            const useCountdown = document.getElementById('tm-countdown-check').checked;
-
-            if(toolInt) { // PAUSE
-                clearInterval(toolInt); toolInt = null; 
-                btn.textContent = "RESUME"; btn.classList.remove('bg-red-900'); btn.classList.add('btn-primary'); 
-                els.tmStatus.classList.add('hidden');
-            }
-            else { // START
-                if(tmTime <= 0) {
-                    const h = parseInt(document.getElementById('tm-h').value) || 0;
-                    const m = parseInt(document.getElementById('tm-m').value) || 0;
-                    const s = parseInt(document.getElementById('tm-s').value) || 0;
-                    tmTime = (h*3600) + (m*60) + s;
-                    if(tmTime <= 0) return;
-                    tmOriginalTime = tmTime; // Store for recording
-                    
-                    config.classList.add('hidden'); display.classList.remove('hidden');
-                    if(isRoundTrack) { els.tmRoundTracker.classList.remove('hidden'); toolRoundCount = 0; els.tmRoundVal.textContent = "0"; } 
-                    else { els.tmRoundTracker.classList.add('hidden'); }
-
-                    if(useCountdown) {
-                        isPrep = true;
-                        let prep = 10;
-                        els.tmStatus.textContent = "GET READY"; els.tmStatus.classList.remove('hidden');
-                        display.textContent = formatTime(prep);
-                        btn.textContent = "WAIT..."; btn.disabled = true;
-
-                        toolInt = setInterval(() => {
-                            prep--;
-                            display.textContent = formatTime(prep);
-                            if(prep <= 3) beep('Low');
-                            if(prep <= 0) {
-                                clearInterval(toolInt); beep('High');
-                                isPrep = false; els.tmStatus.classList.add('hidden');
-                                btn.disabled = false; btn.textContent = "PAUSE"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
-                                startTimerClock();
-                            }
-                        }, 1000);
-                    } else {
-                        btn.textContent = "PAUSE"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
-                        startTimerClock();
-                    }
-                } else {
-                    // RESUME
-                    btn.textContent = "PAUSE"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
-                    startTimerClock();
-                }
-            }
-        }
-        function startTimerClock() {
-             const display = document.getElementById('tm-display');
-             const config = document.getElementById('tm-config-container');
-             display.textContent = formatTime(tmTime);
-             toolInt = setInterval(() => {
-                tmTime--; display.textContent = formatTime(tmTime);
-                if(tmTime <= 0) { 
-                    clearInterval(toolInt); toolInt = null; beep('High'); 
-                    document.getElementById('tm-btn').textContent = "START"; document.getElementById('tm-btn').className = "flex-1 btn-primary py-4 text-xl"; 
-                    config.classList.remove('hidden'); display.classList.add('hidden'); els.tmRoundTracker.classList.add('hidden');
-                    
-                    // Trigger Record Prompt
-                    openModal('record-prompt-modal');
-                }
-            }, 1000);
-        }
-        // Custom Record Logic
-        function openRecordDetails() {
-            closeModal('record-prompt-modal');
-            editingHistoryId = null; // Ensure we are in create mode
-            document.getElementById('record-modal-title').textContent = "RECORD SESSION";
-            document.getElementById('rec-name').value = "Custom Timer Workout";
-            document.getElementById('rec-duration').value = formatTime(tmOriginalTime);
-            document.getElementById('rec-rounds').value = toolRoundCount;
-            document.getElementById('rec-notes').value = "";
-            openModal('record-details-modal');
-        }
-
-        // EDIT LOGIC
-        function editHistory(id) {
-            const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
-            const entry = h.find(x => x.date === id);
-            
-            if (!entry) { alert("Error: Could not find entry to edit."); return; }
-            
-            editingHistoryId = id; // Store ID
-            
-            document.getElementById('record-modal-title').textContent = "EDIT ENTRY";
-            document.getElementById('rec-name').value = entry.type;
-            document.getElementById('rec-duration').value = entry.duration;
-            document.getElementById('rec-rounds').value = (entry.details && entry.details.roundsCompleted) ? entry.details.roundsCompleted : 0;
-            document.getElementById('rec-notes').value = (entry.details && entry.details.notes) ? entry.details.notes : "";
-            
-            openModal('record-details-modal');
-        }
-
-        // DELETE LOGIC
-        async function deleteHistory(id) {
-            if(!confirm("Are you sure you want to delete this log?")) return;
-            
-            let h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
-            const index = h.findIndex(x => x.date === id);
-            
-            if (index > -1) {
-                h.splice(index, 1);
-                localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
-                showHistory(); 
-                
-                const url = getApiUrl();
-                if(url) {
-                    try {
-                        document.getElementById('history-loading').classList.remove('hidden');
-                        await fetch(url, { 
-                            method: 'POST', 
-                            mode: 'no-cors', 
-                            headers: {'Content-Type': 'application/json'}, 
-                            body: JSON.stringify({ action: 'delete', date: id }) 
-                        });
-                        document.getElementById('history-loading').classList.add('hidden');
-                    } catch(e) {}
-                }
-            }
-        }
-
-        async function saveCustomWorkout() {
-            const btn = document.getElementById('save-custom-btn');
-            if(btn) {
-                btn.disabled = true;
-                btn.textContent = "SAVING...";
-                btn.classList.add('opacity-50', 'cursor-not-allowed');
-            }
-
-            const name = document.getElementById('rec-name').value || "Custom Workout";
-            const duration = document.getElementById('rec-duration').value;
-            const rounds = document.getElementById('rec-rounds').value;
-            const notes = document.getElementById('rec-notes').value;
-            
-            const details = {
-                roundsCompleted: rounds,
-                notes: notes
+            const result: Partial<LogEntry> = {
+                title: 'New Activity',
+                timestamp: new Date().toISOString(),
+                amount: '',
+                unit: '',
+                rating: 'Neutral',
+                focus: 'None',
+                note: ''
             };
 
-            let h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
-            const url = getApiUrl();
-
-            if (editingHistoryId !== null) {
-                // UPDATE
-                const index = h.findIndex(x => x.date === editingHistoryId);
-                if (index > -1) {
-                    const existing = h[index];
-                    existing.type = name;
-                    existing.duration = duration;
-                    existing.details = { ...existing.details, ...details }; 
-                    h[index] = existing;
-                    localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
-                    
-                    if(url) {
-                        try {
-                            await fetch(url, { 
-                                method: 'POST', 
-                                mode: 'no-cors', 
-                                headers: {'Content-Type': 'application/json'}, 
-                                body: JSON.stringify({ 
-                                    action: 'edit', 
-                                    date: editingHistoryId, 
-                                    type: name, 
-                                    duration: duration, 
-                                    details: existing.details 
-                                }) 
-                            });
-                        } catch(e) {}
-                    }
-                }
-            } else {
-                // CREATE NEW
-                const entry = {
-                    date: new Date().toISOString(),
-                    type: name,
-                    duration: duration,
-                    details: details
-                };
-                h.push(entry);
-                localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
+            const extract = (key: string, nextKeys: string[]): string | null => {
+                const startIdx = lower.indexOf(key);
+                if (startIdx === -1) return null;
                 
-                if(url) { try { await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(entry) }); } catch(e) {} }
-            }
+                let contentStart = startIdx + key.length;
+                
+                let minNextIdx = lower.length;
+                nextKeys.forEach(nk => {
+                    const idx = lower.indexOf(nk, contentStart);
+                    if (idx !== -1 && idx < minNextIdx) {
+                        minNextIdx = idx;
+                    }
+                });
 
-            closeModal('record-details-modal');
-            
-            // Reset
-            document.getElementById('rec-notes').value = '';
-            document.getElementById('rec-name').value = 'Custom Timer Workout';
-            editingHistoryId = null;
-            
-            if(btn) {
-                btn.disabled = false;
-                btn.textContent = "SAVE TO HISTORY";
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
-
-            if(document.getElementById('history-screen').classList.contains('active')) {
-                showHistory();
-            } else {
-                alert("Saved!");
-            }
-        }
-
-        // NEW: Weight Logic
-        async function saveWeightEntry() {
-            const weightVal = document.getElementById('weight-input').value;
-            if(!weightVal) { alert("Enter a valid weight."); return; }
-
-            const btn = document.getElementById('save-weight-btn');
-            if(btn) { btn.disabled = true; btn.textContent = "SAVING..."; btn.classList.add('opacity-50'); }
-
-            const entry = {
-                date: new Date().toISOString(),
-                type: "Weight Check-In",
-                duration: "", // No duration for weight
-                details: { weight: weightVal + " lbs" }
+                return lower.substring(contentStart, minNextIdx).trim();
             };
 
-            await saveHistoryLog(entry);
-            
-            closeModal('weight-modal');
-            document.getElementById('weight-input').value = "";
-            if(btn) { btn.disabled = false; btn.textContent = "LOG WEIGHT"; btn.classList.remove('opacity-50'); }
-            
-            alert("Weight Logged!");
-        }
+            const keys = ['activity', 'time', 'amount', 'unit', 'rating', 'focus', 'note'];
 
-        // NEW: Insert Logic
-        window.insertStep = (idx) => {
-            if(editingRoutineKey === 'apex') {
-                editingCopy.exercises.splice(idx + 1, 0, "New Movement");
-            } else {
-                editingCopy.splice(idx + 1, 0, { type: 'work', name: 'New Exercise', duration: 30 });
+            const act = extract('activity', keys);
+            if (act) result.title = act.charAt(0).toUpperCase() + act.slice(1);
+
+            const timeStr = extract('time', keys);
+            if (timeStr) result.timestamp = parseRelativeTime(timeStr).toISOString();
+
+            const amt = extract('amount', keys);
+            if (amt) result.amount = amt;
+
+            const unit = extract('unit', keys);
+            if (unit) result.unit = unit;
+
+            const rate = extract('rating', keys);
+            if (rate) {
+                if (rate.includes('positive') || rate.includes('good')) result.rating = 'Positive';
+                else if (rate.includes('negative') || rate.includes('bad')) result.rating = 'Negative';
+                else result.rating = 'Neutral';
             }
-            renderEditor();
+
+            const focus = extract('focus', keys);
+            if (focus) {
+                if (focus.includes('high')) result.focus = 'High';
+                else if (focus.includes('medium')) result.focus = 'Medium';
+                else if (focus.includes('low')) result.focus = 'Low';
+                else result.focus = 'None';
+            }
+
+            const note = extract('note', keys);
+            if (note) result.note = note.charAt(0).toUpperCase() + note.slice(1);
+
+            return result;
         };
 
-        window.toolIncrementRound = () => { toolRoundCount++; els.tmRoundVal.textContent = toolRoundCount; beep('Mid'); };
-        function resetTimer() { 
-            clearInterval(toolInt); toolInt = null; tmTime = 0; isPrep = false;
-            document.getElementById('tm-config-container').classList.remove('hidden'); 
-            document.getElementById('tm-display').classList.add('hidden'); 
-            document.getElementById('tm-btn').textContent = "START"; document.getElementById('tm-btn').disabled = false; document.getElementById('tm-btn').className = "flex-1 btn-primary py-4 text-xl"; 
-            els.tmStatus.classList.add('hidden');
-            els.tmRoundTracker.classList.add('hidden');
-        }
+        // -------------------------------------------------------------------------
+        // COMPONENTS
+        // -------------------------------------------------------------------------
 
-        // Tabata
-        function toggleTabata() {
-            const btn = document.getElementById('tb-btn');
-            const useCountdown = document.getElementById('tb-countdown-check').checked;
-
-            if(tbState.active) { clearInterval(toolInt); toolInt = null; tbState.active = false; resetTabataUI(); return; }
-            
-            // Start
-            tbState.workTime = parseInt(document.getElementById('tb-work').value) || 20;
-            tbState.restTime = parseInt(document.getElementById('tb-rest').value) || 10;
-            tbState.totalRounds = parseInt(document.getElementById('tb-rounds').value) || 8;
-            tbState.round = 1; 
-            tbState.active = true;
-
-            document.getElementById('tb-config').classList.add('hidden');
-            document.getElementById('tb-display-container').classList.remove('hidden');
-            btn.textContent = "STOP TABATA"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
-            document.getElementById('tb-countdown-container').classList.add('hidden'); // Hide checkbox while running
-
-            if(useCountdown) {
-                isPrep = true;
-                tbState.timeLeft = 10;
-                updateTabataUI("GET READY", tbState.timeLeft);
-                startTabataClock();
-            } else {
-                // Immediate Start -> Go straight to Work
-                isPrep = false;
-                tbState.isWork = true;
-                tbState.timeLeft = tbState.workTime;
-                updateTabataUI("WORK", tbState.timeLeft);
-                startTabataClock();
-            }
-        }
-        function startTabataClock() {
-            toolInt = setInterval(() => {
-                tbState.timeLeft--;
-                if(tbState.timeLeft < 0) {
-                    if(isPrep) {
-                        isPrep = false; tbState.isWork = true; 
-                        beep('High'); tbState.timeLeft = tbState.workTime;
-                        updateTabataUI("WORK", tbState.timeLeft);
-                    }
-                    else if(tbState.isWork) {
-                         beep('Mid');
-                         if(tbState.round >= tbState.totalRounds) { finishTabata(); return; }
-                         tbState.isWork = false; tbState.timeLeft = tbState.restTime;
-                         updateTabataUI("REST", tbState.timeLeft);
-                    } else {
-                        beep('High');
-                        tbState.round++; tbState.isWork = true; tbState.timeLeft = tbState.workTime;
-                        updateTabataUI("WORK", tbState.timeLeft);
-                    }
-                } else {
-                    document.getElementById('tb-timer').textContent = tbState.timeLeft;
-                    if(tbState.timeLeft <= 3) beep('Low');
-                }
-            }, 1000);
-        }
-        function updateTabataUI(status, time) {
-             const stEl = document.getElementById('tb-status');
-             stEl.textContent = status;
-             stEl.className = (status === "WORK") ? "text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading" : "text-green-500 uppercase tracking-widest text-2xl mb-2 font-heading";
-             if(status === "GET READY") stEl.className = "text-white uppercase tracking-widest text-2xl mb-2 font-heading";
-             document.getElementById('tb-timer').textContent = time;
-             document.getElementById('tb-round-counter').textContent = `Round ${tbState.round}/${tbState.totalRounds}`;
-        }
-        function finishTabata() {
-            clearInterval(toolInt); tbState.active = false; beep('High'); beep('High');
-            alert("TABATA COMPLETE"); resetTabataUI();
-        }
-        function resetTabataUI() {
-            document.getElementById('tb-config').classList.remove('hidden');
-            document.getElementById('tb-display-container').classList.add('hidden');
-            document.getElementById('tb-countdown-container').classList.remove('hidden');
-            const btn = document.getElementById('tb-btn'); btn.textContent = "START TABATA"; btn.className = "w-full max-w-sm btn-primary py-4 text-xl mt-6";
-        }
-
-        // --- UTILS & EDITOR ---
-        function formatTime(s) { const min = Math.floor(s / 60).toString().padStart(2, '0'); const sec = (s % 60).toString().padStart(2, '0'); return `${min}:${sec}`; }
-        function formatTimeTenths(ms) { 
-            const m = Math.floor(ms/60000).toString().padStart(2,'0'); 
-            const s = Math.floor((ms%60000)/1000).toString().padStart(2,'0'); 
-            const ds = Math.floor((ms%1000)/100); 
-            return `${m}:${s}.${ds}`; 
-        }
-
-        function generateApexRoutine(config, maxReps) { const routine = []; const reps = []; for (let i = 1; i <= maxReps; i++) reps.push(i); for (let i = maxReps - 1; i >= 1; i--) reps.push(i); reps.forEach((repCount, idx) => { routine.push({ type: 'rep_work', name: `${repCount} Reps`, round: `${idx + 1}/${reps.length}`, exercises: config.exercises }); if (idx < reps.length - 1) routine.push({ type: 'rest', name: 'Rest', duration: config.restTime || 30, round: 'Recover' }); }); return routine; }
-        function openEditor(key) { editingRoutineKey = key; closeModal('editor-select-modal'); if(key === 'apex') editingCopy = JSON.parse(JSON.stringify(routines.apex_config || defaultRoutines.apex_config)); else editingCopy = JSON.parse(JSON.stringify(routines[key])); renderEditor(); switchScreen('editor'); }
-        function renderEditor() {
-            const container = document.getElementById('editor-content');
-            const title = document.getElementById('editor-title');
-            container.innerHTML = '';
-            if(editingRoutineKey === 'apex') {
-                title.textContent = "EDIT APEX";
-                const restDiv = document.createElement('div');
-                restDiv.className = "bg-wolf-surface p-4 mb-4 rounded-lg border border-wolf-border";
-                restDiv.innerHTML = `<label class="text-xs text-wolf-muted uppercase font-bold">Ladder Rest Time (Seconds)</label><input type="number" onchange="updateApexRest(this.value)" value="${editingCopy.restTime}" class="w-full bg-wolf-bg text-white p-2 mt-2 rounded border border-wolf-border focus:border-wolf-accent outline-none">`;
-                container.appendChild(restDiv);
-                editingCopy.exercises.forEach((ex, idx) => {
-                    const row = document.createElement('div');
-                    row.className = "flex gap-2 mb-2 items-center";
-                    row.innerHTML = `<span class="text-wolf-muted text-xs w-4">${idx+1}.</span><input type="text" value="${ex}" onchange="updateApexEx(${idx}, this.value)" class="flex-grow bg-wolf-surface text-white p-3 rounded border border-wolf-border text-sm focus:border-wolf-accent outline-none">
-                    <button onclick="insertStep(${idx})" class="text-wolf-accent hover:text-white p-2 text-lg font-bold">+</button>
-                    <button onclick="deleteApexEx(${idx})" class="text-red-500 hover:text-red-400 p-2">✕</button>`;
-                    container.appendChild(row);
-                });
-            } else {
-                title.textContent = editingRoutineKey.toUpperCase();
-                editingCopy.forEach((step, idx) => {
-                    const row = document.createElement('div');
-                    row.className = "bg-wolf-surface p-3 rounded-lg border border-wolf-border mb-3";
-                    let inputs = `<div class="flex gap-2 mb-2"><input type="text" value="${step.name}" onchange="updateStep(${idx}, 'name', this.value)" class="flex-grow bg-wolf-bg text-white font-medium p-2 rounded text-sm border border-wolf-border focus:border-wolf-accent outline-none"><select onchange="updateStep(${idx}, 'type', this.value)" class="bg-wolf-bg text-wolf-muted p-2 text-xs uppercase rounded border border-wolf-border outline-none"><option value="work" ${step.type==='work'?'selected':''}>Work</option><option value="rest" ${step.type==='rest'?'selected':''}>Rest</option><option value="rep_work" ${step.type==='rep_work'?'selected':''}>Reps</option><option value="cooldown" ${step.type==='cooldown'?'selected':''}>Cool</option><option value="amrap" ${step.type==='amrap'?'selected':''}>AMRAP</option></select></div>`;
-                    
-                    if(step.type === 'rep_work' || step.type === 'amrap') {
-                        // AMRAP/Reps need Detail/Exercise list
-                        inputs += `<div class="flex gap-2 items-center"><span class="text-xs text-wolf-muted">List</span><input type="text" value="${step.exercises ? step.exercises.join(', ') : ''}" onchange="updateStep(${idx}, 'exercises', this.value)" class="flex-grow bg-wolf-bg text-white p-2 text-xs rounded border border-wolf-border outline-none placeholder:text-wolf-muted/50" placeholder="Ex 1, Ex 2..."></div>`;
-                    }
-                    
-                    if(step.type !== 'rep_work') {
-                        // Timer based types need Duration
-                        inputs += `<div class="flex gap-2 items-center mt-2"><span class="text-xs text-wolf-muted">Secs</span><input type="number" value="${step.duration || 0}" onchange="updateStep(${idx}, 'duration', this.value)" class="w-20 bg-wolf-bg text-white p-2 text-sm text-center rounded border border-wolf-border outline-none"></div>`;
-                    }
-
-                    inputs += `<div class="mt-2 flex justify-between">
-                        <button onclick="insertStep(${idx})" class="text-[10px] text-wolf-accent uppercase font-bold tracking-wider hover:text-white">+ Insert Below</button>
-                        <button onclick="deleteStep(${idx})" class="text-[10px] text-red-500 hover:text-white uppercase font-bold tracking-wider">Remove</button>
-                    </div>`;
-                    row.innerHTML = inputs;
-                    container.appendChild(row);
-                });
-            }
-        }
-        window.updateApexRest = (val) => { editingCopy.restTime = parseInt(val); };
-        window.updateApexEx = (idx, val) => { editingCopy.exercises[idx] = val; };
-        window.deleteApexEx = (idx) => { editingCopy.exercises.splice(idx, 1); renderEditor(); };
-        window.addStepToEditor = () => { if(editingRoutineKey === 'apex') editingCopy.exercises.push("New Movement"); else editingCopy.push({ type: 'work', name: 'New Exercise', duration: 30 }); renderEditor(); };
-        
-        window.updateStep = (idx, field, val) => { 
-            if(field === 'duration') editingCopy[idx].duration = parseInt(val); 
-            else if(field === 'name') editingCopy[idx].name = val; 
-            else if(field === 'type') { 
-                editingCopy[idx].type = val; 
-                // Default props for new type
-                if(val === 'rep_work' && !editingCopy[idx].exercises) editingCopy[idx].exercises = ['10 Reps']; 
-                if(val === 'amrap') { 
-                    if(!editingCopy[idx].exercises) editingCopy[idx].exercises = ['List Exercises Here'];
-                    if(!editingCopy[idx].duration) editingCopy[idx].duration = 600;
-                }
-                renderEditor(); 
-            } 
-            else if(field === 'exercises') {
-                // Split comma separated string into array
-                editingCopy[idx].exercises = val.split(',').map(s => s.trim()).filter(s => s.length > 0);
-            }
+        const Button = ({ onClick, children, variant = 'primary', className = '', disabled = false }: any) => {
+            const base = "font-heading uppercase letter-spacing-0.1em transition-all rounded-lg shadow-md active:transform active:translate-y-px disabled:opacity-50 disabled:cursor-not-allowed ";
+            const styles = variant === 'primary' 
+                ? "bg-wolf-accent text-white hover:bg-wolf-accentHover" 
+                : "bg-wolf-surface border border-wolf-border text-wolf-text hover:text-white hover:border-wolf-muted";
+            return <button disabled={disabled} onClick={onClick} className={`${base} ${styles} ${className}`}>{children}</button>;
         };
-        
-        window.deleteStep = (idx) => { editingCopy.splice(idx, 1); renderEditor(); };
-        async function saveRoutineChanges() {
-            if(editingRoutineKey === 'apex') routines.apex_config = editingCopy; else routines[editingRoutineKey] = editingCopy;
-            await saveRoutinesToStorage();
-            renderMenuWorkouts();
-            switchScreen('menu');
-        }
-        async function syncRoutines(url) {
-            const targetUrl = url || getApiUrl();
-            if(!targetUrl) return;
-            try {
-                const res = await fetch(targetUrl);
-                const data = await res.json();
-                if(data.routines && Object.keys(data.routines).length > 0) {
-                    routines = data.routines;
-                    localStorage.setItem(STORAGE_KEY_ROUTINES, JSON.stringify(routines));
-                    renderMenuWorkouts();
-                }
-            } catch(e) {}
-        }
-        async function saveHistoryLog(entry) {
-            const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
-            h.push(entry);
-            localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
-            const url = getApiUrl();
-            if(url) { try { await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(entry) }); } catch(e) {} }
-        }
-        async function showHistory() {
-            switchScreen('history');
-            const list = document.getElementById('history-list');
-            const loading = document.getElementById('history-loading');
-            list.innerHTML = '';
-            loading.classList.remove('hidden');
-            const url = getApiUrl();
-            let history = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
-            if(url) { try { const res = await fetch(url); const data = await res.json(); if(data.history) history = data.history.reverse(); } catch(e) {} } else { history.sort((a,b) => new Date(b.date) - new Date(a.date)); }
-            loading.classList.add('hidden');
-            if(history.length === 0) { document.getElementById('no-history-msg').classList.remove('hidden'); return; }
-            document.getElementById('no-history-msg').classList.add('hidden');
-            
-            history.forEach((log, index) => {
-                const dateObj = new Date(log.date);
-                let dateDisplay = "Unknown Date";
-                if(!isNaN(dateObj.getTime())) {
-                     // Check if date is reasonable (e.g. not 1899)
-                     if(dateObj.getFullYear() < 2000) {
-                        dateDisplay = "---";
-                     } else {
-                        // Use readable format: Mon, Nov 26, 2025
-                        dateDisplay = dateObj.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-                     }
-                }
 
-                const el = document.createElement('div');
-                el.className = 'bg-wolf-surface border-l-4 border-wolf-accent p-4 flex justify-between items-center rounded-r shadow-sm';
-                let detailsHtml = '';
-                let mainValue = log.duration;
-
-                if(log.type === "Weight Check-In" && log.details && log.details.weight) {
-                    mainValue = log.details.weight;
-                } else if(log.details) {
-                    if(log.details.maxReps) detailsHtml = `<span class="inline-block mt-1 bg-wolf-bg px-2 py-0.5 rounded text-[10px] text-wolf-accent border border-wolf-border">MAX: ${log.details.maxReps} | ${log.details.weight}</span>`;
-                    else if(log.details.roundsCompleted) detailsHtml = `<span class="inline-block mt-1 bg-wolf-bg px-2 py-0.5 rounded text-[10px] text-wolf-accent border border-wolf-border">ROUNDS: ${log.details.roundsCompleted}</span>`;
-                    
-                    // Show custom timer notes if they exist
-                    if(log.details.notes) detailsHtml += `<div class="mt-2 text-[10px] text-wolf-muted italic border-t border-wolf-border pt-1 truncate max-w-[150px]">${log.details.notes}</div>`;
-                }
-                
-                // IMPORTANT FIX: Passing the ID (log.date) instead of index
-                el.innerHTML = `
-                    <div class="flex-grow">
-                        <p class="text-white font-bold text-lg uppercase font-heading tracking-wide">${log.type.replace('_', ' ')}</p>
-                        <p class="text-wolf-muted text-xs uppercase">${dateDisplay}</p>
-                        ${detailsHtml}
+        const Modal = ({ isOpen, onClose, children, title }: any) => {
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
+                    <div className="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="font-heading text-2xl text-wolf-accent tracking-wide">{title}</h2>
+                            <button onClick={onClose} className="text-wolf-muted hover:text-white">✕</button>
+                        </div>
+                        {children}
                     </div>
-                    <div class="flex flex-col items-end gap-2">
-                        <div class="font-heading text-2xl text-wolf-text">${mainValue}</div>
-                        <div class="flex gap-2">
-                            <button onclick="editHistory('${log.date}')" class="text-[10px] text-wolf-muted uppercase hover:text-white border border-wolf-border px-2 rounded">Edit</button>
-                            <button onclick="deleteHistory('${log.date}')" class="text-[10px] text-red-900 uppercase hover:text-red-500 border border-wolf-border px-2 rounded">Del</button>
+                </div>
+            );
+        };
+
+        // --- Activity/Log Modal ---
+
+        interface ActivityModalProps {
+            isOpen: boolean;
+            onClose: () => void;
+            initialData?: Partial<LogEntry>;
+            onSave: (entry: LogEntry) => void;
+        }
+
+        const ActivityModal: React.FC<ActivityModalProps> = ({ isOpen, onClose, initialData, onSave }) => {
+            const [data, setData] = useState<Partial<LogEntry>>({});
+
+            useEffect(() => {
+                if (isOpen) {
+                    setData({
+                        title: '',
+                        amount: '',
+                        unit: '',
+                        rating: 'Neutral',
+                        focus: 'None',
+                        note: '',
+                        timestamp: new Date().toISOString(),
+                        ...initialData
+                    });
+                }
+            }, [isOpen, initialData]);
+
+            const handleSave = () => {
+                const entry: LogEntry = {
+                    id: data.timestamp || new Date().toISOString(),
+                    type: data.type || 'Activity',
+                    title: data.title || 'Untitled',
+                    timestamp: data.timestamp || new Date().toISOString(),
+                    amount: data.amount || '',
+                    unit: data.unit || '',
+                    rating: data.rating || 'Neutral',
+                    focus: data.focus || 'None',
+                    note: data.note || '',
+                    duration: data.duration,
+                    details: data.details
+                };
+                onSave(entry);
+                onClose();
+            };
+
+            return (
+                <Modal isOpen={isOpen} onClose={onClose} title="LOG ENTRY">
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Activity / Name</label>
+                            <input 
+                                type="text" 
+                                value={data.title || ''} 
+                                onChange={e => setData({...data, title: e.target.value})}
+                                className="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none"
+                            />
+                        </div>
+                        
+                        <div className="flex gap-2">
+                            <div className="flex-1">
+                                <label className="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Time</label>
+                                <input 
+                                    type="datetime-local" 
+                                    value={data.timestamp ? new Date(data.timestamp).toISOString().slice(0, 16) : ''}
+                                    onChange={e => setData({...data, timestamp: new Date(e.target.value).toISOString()})}
+                                    className="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none text-xs"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                            <div className="flex-1">
+                                <label className="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Amount</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="e.g. 10, 30:00"
+                                    value={data.amount || ''} 
+                                    onChange={e => setData({...data, amount: e.target.value})}
+                                    className="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none"
+                                />
+                            </div>
+                            <div className="flex-1">
+                                <label className="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Unit</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="mins, lbs, reps"
+                                    value={data.unit || ''} 
+                                    onChange={e => setData({...data, unit: e.target.value})}
+                                    className="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none"
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Rating</label>
+                            <div className="flex gap-2">
+                                {['Positive', 'Neutral', 'Negative'].map((r) => (
+                                    <button 
+                                        key={r}
+                                        onClick={() => setData({...data, rating: r as any})}
+                                        className={`flex-1 py-2 rounded text-xs uppercase font-bold border ${data.rating === r ? 'bg-wolf-accent border-wolf-accent text-white' : 'bg-transparent border-wolf-border text-wolf-muted hover:border-white'}`}
+                                    >
+                                        {r}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Focus Level</label>
+                            <div className="flex gap-2">
+                                {['High', 'Medium', 'Low', 'None'].map((f) => (
+                                    <button 
+                                        key={f}
+                                        onClick={() => setData({...data, focus: f as any})}
+                                        className={`flex-1 py-2 rounded text-[10px] uppercase font-bold border ${data.focus === f ? 'bg-wolf-surface border-white text-white' : 'bg-transparent border-wolf-border text-wolf-muted hover:border-wolf-muted'}`}
+                                    >
+                                        {f}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Notes</label>
+                            <textarea 
+                                rows={3} 
+                                value={data.note || ''}
+                                onChange={e => setData({...data, note: e.target.value})}
+                                className="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none"
+                            />
                         </div>
                     </div>
-                `;
-                list.appendChild(el);
-            });
+                    <Button onClick={handleSave} className="w-full py-4 text-xl mt-6">SAVE ENTRY</Button>
+                </Modal>
+            );
+        };
+
+        // -------------------------------------------------------------------------
+        // MAIN APP
+        // -------------------------------------------------------------------------
+
+        function App() {
+            const [screen, setScreen] = useState('menu');
+            const [routines, setRoutines] = useState(DEFAULT_ROUTINES);
+            const [logs, setLogs] = useState([]);
+            const [syncStatus, setSyncStatus] = useState('Checking...');
+            
+            // Activity Modal State
+            const [showActivityModal, setShowActivityModal] = useState(false);
+            const [activityModalData, setActivityModalData] = useState({});
+
+            // Voice State
+            const [isListening, setIsListening] = useState(false);
+
+            // Audio Ref
+            const audioCtxRef = useRef(null);
+
+            // Load Data
+            useEffect(() => {
+                const storedLogs = localStorage.getItem('wolf_logs');
+                if (storedLogs) setLogs(JSON.parse(storedLogs));
+                
+                const storedRoutines = localStorage.getItem('wolf_routines');
+                if (storedRoutines) setRoutines(JSON.parse(storedRoutines));
+
+                // Sync
+                if (HARDCODED_URL && HARDCODED_URL.startsWith('http')) {
+                    setSyncStatus('Syncing...');
+                    fetch(HARDCODED_URL)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.history) {
+                                setLogs(data.history.reverse());
+                                localStorage.setItem('wolf_logs', JSON.stringify(data.history));
+                            }
+                            if (data.routines) {
+                                setRoutines(data.routines);
+                                localStorage.setItem('wolf_routines', JSON.stringify(data.routines));
+                            }
+                            setSyncStatus('Cloud Connected');
+                        })
+                        .catch(() => setSyncStatus('Local Mode'));
+                } else {
+                    setSyncStatus('Local Mode');
+                }
+            }, []);
+
+            const saveLog = async (entry) => {
+                const newLogs = [entry, ...logs];
+                setLogs(newLogs);
+                localStorage.setItem('wolf_logs', JSON.stringify(newLogs));
+                
+                // Push to cloud
+                if (HARDCODED_URL && HARDCODED_URL.startsWith('http')) {
+                    try {
+                        await fetch(HARDCODED_URL, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(entry)
+                        });
+                    } catch (e) { console.error("Sync failed", e); }
+                }
+            };
+
+            const deleteLog = async (id) => {
+                if(!confirm("Delete this log?")) return;
+                const newLogs = logs.filter(l => l.id !== id);
+                setLogs(newLogs);
+                localStorage.setItem('wolf_logs', JSON.stringify(newLogs));
+                if (HARDCODED_URL && HARDCODED_URL.startsWith('http')) {
+                    try {
+                        await fetch(HARDCODED_URL, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'delete', date: id })
+                        });
+                    } catch (e) { console.error("Sync failed", e); }
+                }
+            };
+
+            const initAudio = () => {
+                if (!audioCtxRef.current) {
+                    audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtxRef.current.state === 'suspended') {
+                    audioCtxRef.current.resume();
+                }
+            };
+
+            const beep = (type) => {
+                if (!audioCtxRef.current) return;
+                const osc = audioCtxRef.current.createOscillator();
+                const gain = audioCtxRef.current.createGain();
+                const freqs = { 'Low': 150, 'Mid': 400, 'High': 800 };
+                osc.connect(gain);
+                gain.connect(audioCtxRef.current.destination);
+                osc.frequency.value = freqs[type];
+                osc.type = 'triangle';
+                gain.gain.setValueAtTime(0.1, audioCtxRef.current.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtxRef.current.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtxRef.current.currentTime + 0.3);
+            };
+
+            // Voice Handler
+            const startVoiceInput = () => {
+                if (!('webkitSpeechRecognition' in window)) {
+                    alert("Voice input not supported in this browser.");
+                    return;
+                }
+                const recognition = new window.webkitSpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+
+                recognition.onstart = () => setIsListening(true);
+                recognition.onend = () => setIsListening(false);
+                recognition.onerror = () => setIsListening(false);
+
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    const parsed = parseVoiceInput(transcript);
+                    setActivityModalData({ ...parsed, type: 'Activity' });
+                    setShowActivityModal(true);
+                };
+
+                recognition.start();
+            };
+
+            // --- Sub-Screens ---
+
+            const MenuScreen = () => (
+                <div className="flex flex-col items-center justify-center min-h-screen p-6 relative">
+                    <h1 className="font-heading text-6xl text-wolf-text tracking-tight mb-2">WOLF<span className="text-wolf-accent">ALPHA</span></h1>
+                    <p className="text-wolf-muted text-sm uppercase tracking-[0.3em] mb-12">Conquer Your Day</p>
+
+                    <div className="w-full max-w-sm space-y-4">
+                        <Button onClick={() => setScreen('protocols')} className="w-full py-4 text-xl shadow-lg shadow-orange-900/20">
+                            SAVED PROTOCOLS
+                        </Button>
+                    </div>
+
+                    <div className="w-full max-w-sm grid grid-cols-2 gap-3 mt-8 pt-8 border-t border-wolf-border">
+                        <Button variant="secondary" onClick={() => setScreen('tools')} className="py-3 text-[10px] tracking-widest">Tools</Button>
+                        <Button variant="secondary" onClick={() => setScreen('history')} className="py-3 text-[10px] tracking-widest">History</Button>
+                        <Button 
+                            variant="secondary" 
+                            onClick={() => {
+                                setActivityModalData({ type: 'Activity' });
+                                setShowActivityModal(true);
+                            }} 
+                            className="py-3 text-[10px] tracking-widest col-span-2 flex justify-center items-center gap-2 border-wolf-accent text-wolf-accent"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            Log Activity
+                        </Button>
+                        <Button 
+                            variant="secondary" 
+                            onClick={startVoiceInput} 
+                            className={`py-3 text-[10px] tracking-widest col-span-2 flex justify-center items-center gap-2 ${isListening ? 'bg-red-900 animate-pulse text-white' : ''}`}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
+                            {isListening ? "Listening..." : "Voice Input"}
+                        </Button>
+                    </div>
+                    
+                    <div className="mt-8 text-[10px] text-wolf-muted uppercase tracking-widest opacity-50">{syncStatus}</div>
+                </div>
+            );
+
+            const ProtocolsScreen = () => (
+                <div className="flex flex-col h-screen p-6 bg-wolf-bg">
+                    <div className="flex justify-between items-center mb-6 pb-4 border-b border-wolf-border">
+                        <h2 className="font-heading text-3xl text-wolf-text">PROTOCOLS</h2>
+                        <button onClick={() => setScreen('menu')} className="text-wolf-muted uppercase text-xs font-bold hover:text-white">Back</button>
+                    </div>
+                    <div className="flex-grow overflow-y-auto space-y-3 pb-20">
+                        {Object.keys(routines).map(key => (
+                            <Button key={key} onClick={() => startWorkout(key)} className="w-full py-4 text-lg">
+                                {key}
+                            </Button>
+                        ))}
+                    </div>
+                </div>
+            );
+
+            const HistoryScreen = () => (
+                <div className="flex flex-col h-screen p-6">
+                    <div className="flex justify-between items-center mb-6 pb-4 border-b border-wolf-border">
+                        <h2 className="font-heading text-3xl text-wolf-text">HISTORY</h2>
+                        <button onClick={() => setScreen('menu')} className="btn-secondary px-4 py-2 text-sm text-wolf-muted uppercase font-bold tracking-widest hover:text-white">Back</button>
+                    </div>
+                    <div className="flex-grow overflow-y-auto space-y-3 pb-20">
+                        {logs.length === 0 && <div className="text-center text-wolf-muted mt-10">No logs found.</div>}
+                        {logs.map((log) => (
+                            <div key={log.id} className="bg-wolf-surface border-l-4 border-wolf-accent p-4 flex justify-between items-center rounded-r shadow-sm">
+                                <div className="flex-grow">
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-white font-bold text-lg uppercase font-heading tracking-wide">{log.title}</p>
+                                        {log.type === 'Activity' && <span className="bg-wolf-border text-[8px] px-1 rounded uppercase">Activity</span>}
+                                    </div>
+                                    <p className="text-wolf-muted text-xs uppercase">{new Date(log.timestamp).toLocaleString()}</p>
+                                    
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                        {log.rating !== 'Neutral' && (
+                                            <span className={`text-[10px] px-2 py-0.5 rounded border ${log.rating === 'Positive' ? 'text-green-500 border-green-900 bg-green-900/10' : 'text-red-500 border-red-900 bg-red-900/10'}`}>{log.rating}</span>
+                                        )}
+                                        {log.focus !== 'None' && (
+                                            <span className="text-[10px] px-2 py-0.5 rounded border border-wolf-border text-wolf-muted">Focus: {log.focus}</span>
+                                        )}
+                                        {log.note && <span className="text-[10px] text-wolf-muted italic w-full block mt-1">"{log.note}"</span>}
+                                    </div>
+                                </div>
+                                <div className="flex flex-col items-end gap-2">
+                                    <div className="font-heading text-2xl text-wolf-text">
+                                        {log.amount || log.duration || '--'} 
+                                        <span className="text-sm text-wolf-muted ml-1">{log.unit}</span>
+                                    </div>
+                                    <button onClick={() => deleteLog(log.id)} className="text-[10px] text-red-900 uppercase hover:text-red-500 border border-wolf-border px-2 rounded">Del</button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+
+            // --- Workout Logic ---
+            const [activeRoutine, setActiveRoutine] = useState([]);
+            const [currentStepIndex, setCurrentStepIndex] = useState(0);
+            const [timeLeft, setTimeLeft] = useState(0);
+            const [isPaused, setIsPaused] = useState(false);
+            const [startTime, setStartTime] = useState(0);
+            const [elapsedTime, setElapsedTime] = useState(0);
+            const timerRef = useRef(null);
+
+            const startWorkout = (key) => {
+                initAudio();
+                const routine = routines[key];
+                const steps = Array.isArray(routine) ? routine : [];
+                if(key.includes("Garage") || key.includes("AMRAP")) {
+                    setActiveRoutine([{ type: 'amrap', name: key, duration: 1200, exercises: routine[0]?.exercises }]);
+                } else {
+                    setActiveRoutine([{ type: 'countdown', name: 'Get Ready', duration: 10 }, ...steps]);
+                }
+                
+                setCurrentStepIndex(0);
+                setScreen('workout');
+                setStartTime(Date.now());
+                setIsPaused(false);
+            };
+
+            useEffect(() => {
+                if (screen !== 'workout') return;
+                const step = activeRoutine[currentStepIndex];
+                if (!step) {
+                    finishWorkout();
+                    return;
+                }
+                if (step.type !== 'rep_work' && step.type !== 'amrap' && step.duration) {
+                    setTimeLeft(step.duration);
+                } else {
+                    setTimeLeft(0);
+                }
+            }, [currentStepIndex, screen]);
+
+            useEffect(() => {
+                if (screen !== 'workout' || isPaused) {
+                    if (timerRef.current) clearInterval(timerRef.current);
+                    return;
+                }
+
+                const step = activeRoutine[currentStepIndex];
+                if (step && (step.type === 'rep_work')) return; 
+
+                timerRef.current = setInterval(() => {
+                    setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+                    if (timeLeft > 0) {
+                        setTimeLeft(prev => {
+                            if (prev <= 1) {
+                                beep('High');
+                                nextStep();
+                                return 0;
+                            }
+                            if (prev <= 4) beep('Low');
+                            return prev - 1;
+                        });
+                    }
+                }, 1000);
+                return () => { if (timerRef.current) clearInterval(timerRef.current); };
+            }, [timeLeft, screen, isPaused, currentStepIndex]);
+
+            const nextStep = () => {
+                setCurrentStepIndex(prev => prev + 1);
+                beep('Mid');
+            };
+
+            const finishWorkout = () => {
+                setScreen('menu');
+                const totalDuration = formatTime(Math.floor((Date.now() - startTime) / 1000));
+                setActivityModalData({
+                    type: 'Workout',
+                    title: 'Completed Workout',
+                    amount: totalDuration,
+                    unit: 'time',
+                    rating: 'Neutral',
+                    focus: 'None',
+                    note: '',
+                    timestamp: new Date().toISOString()
+                });
+                setShowActivityModal(true);
+            };
+
+            const WorkoutScreen = () => {
+                const step = activeRoutine[currentStepIndex];
+                if(!step) return null;
+
+                return (
+                    <div className="flex flex-col h-screen bg-wolf-bg relative">
+                        <div className="absolute top-0 left-0 w-full p-6 flex justify-between z-20">
+                            <div>
+                                <span className="text-wolf-muted text-[10px] uppercase tracking-widest block">Elapsed</span>
+                                <span className="font-heading text-2xl text-wolf-text">{formatTime(elapsedTime)}</span>
+                            </div>
+                            <button onClick={() => setScreen('menu')} className="text-wolf-muted hover:text-white text-xs uppercase font-bold border border-wolf-muted px-2 rounded">Exit</button>
+                        </div>
+                        
+                        <div className="flex-grow flex flex-col items-center justify-center p-4 z-10 text-center">
+                            <p className="font-heading text-3xl text-wolf-accent uppercase tracking-widest mb-2 animate-pulse">{step.type === 'countdown' ? 'GET READY' : step.type}</p>
+                            <p className="text-4xl md:text-7xl font-bold text-white mb-8 leading-none">{step.name} {step.round ? `(${step.round})` : ''}</p>
+                            {step.type !== 'rep_work' ? (
+                                <div className="font-heading text-[8rem] text-wolf-text leading-none tabular-nums">{timeLeft > 59 ? formatTime(timeLeft) : timeLeft}</div>
+                            ) : (
+                                <div className="space-y-2 mb-8">
+                                    {step.exercises?.map((ex, i) => (
+                                        <div key={i} className="text-2xl text-white">{ex}</div>
+                                    ))}
+                                </div>
+                            )}
+                            {(step.type === 'rep_work' || step.type === 'amrap' || isPaused) && (
+                                <Button onClick={nextStep} className="px-10 py-4 text-xl mt-8">NEXT / COMPLETE</Button>
+                            )}
+                        </div>
+                        
+                        <div className="p-6 text-center">
+                            <span className="text-wolf-muted text-[10px] uppercase tracking-widest block mb-1">Up Next</span>
+                            <span className="text-wolf-text text-xl font-heading uppercase">{activeRoutine[currentStepIndex+1]?.name || 'COMPLETE'}</span>
+                        </div>
+                    </div>
+                );
+            };
+
+            // --- Tools (Full Implementation) ---
+            const ToolsScreen = () => {
+                const [activeTool, setActiveTool] = useState('stopwatch');
+                const [countdown, setCountdown] = useState(false); // 10s countdown checkbox
+
+                // Stopwatch State
+                const [swTime, setSwTime] = useState(0);
+                const [swRunning, setSwRunning] = useState(false);
+                const [swLaps, setSwLaps] = useState([]);
+                const [swPrep, setSwPrep] = useState(0); // Countdown state
+
+                // Timer State
+                const [tmDuration, setTmDuration] = useState({ h: 0, m: 0, s: 0 });
+                const [tmTimeLeft, setTmTimeLeft] = useState(0);
+                const [tmRunning, setTmRunning] = useState(false);
+                const [tmPrep, setTmPrep] = useState(0);
+                const [tmRounds, setTmRounds] = useState(0);
+                const [tmTrackRounds, setTmTrackRounds] = useState(false);
+                const [tmOrig, setTmOrig] = useState(0);
+
+                // Tabata State
+                const [tbConfig, setTbConfig] = useState({ work: 20, rest: 10, rounds: 8 });
+                const [tbState, setTbState] = useState('idle');
+                const [tbTimeLeft, setTbTimeLeft] = useState(0);
+                const [tbCurrentRound, setTbCurrentRound] = useState(1);
+
+                const toolInterval = useRef(null);
+
+                // Cleanup interval on unmount or switch
+                useEffect(() => {
+                    return () => { if(toolInterval.current) clearInterval(toolInterval.current); };
+                }, []);
+
+                // --- Stopwatch Logic ---
+                useEffect(() => {
+                    if (activeTool !== 'stopwatch') return;
+                    if (swRunning || swPrep > 0) {
+                        const start = Date.now() - swTime;
+                        toolInterval.current = setInterval(() => {
+                            if (swPrep > 0) {
+                                setSwPrep(p => {
+                                    if (p <= 1) { beep('High'); setSwRunning(true); return 0; }
+                                    if (p <= 4) beep('Low');
+                                    return p - 1;
+                                });
+                            } else if (swRunning) {
+                                setSwTime(Date.now() - start); // Drift-less timing
+                            }
+                        }, swPrep > 0 ? 1000 : 50);
+                    } else {
+                        if(toolInterval.current) clearInterval(toolInterval.current);
+                    }
+                    return () => { if(toolInterval.current) clearInterval(toolInterval.current); };
+                }, [swRunning, swPrep, activeTool]);
+
+                const toggleStopwatch = () => {
+                    initAudio();
+                    if (swRunning) { setSwRunning(false); }
+                    else if (swTime === 0 && countdown) { setSwPrep(10); }
+                    else { setSwRunning(true); }
+                };
+                const lapStopwatch = () => {
+                    if(!swRunning) return;
+                    setSwLaps([swTime, ...swLaps]);
+                };
+                const resetStopwatch = () => { setSwRunning(false); setSwTime(0); setSwLaps([]); setSwPrep(0); };
+
+                // --- Timer Logic ---
+                useEffect(() => {
+                    if (activeTool !== 'timer') return;
+                    if (tmRunning || tmPrep > 0) {
+                        toolInterval.current = setInterval(() => {
+                            if (tmPrep > 0) {
+                                setTmPrep(p => {
+                                    if (p <= 1) { beep('High'); setTmRunning(true); return 0; }
+                                    if (p <= 4) beep('Low');
+                                    return p - 1;
+                                });
+                            } else if (tmRunning) {
+                                setTmTimeLeft(prev => {
+                                    if (prev <= 1) {
+                                        beep('High');
+                                        setTmRunning(false);
+                                        setActivityModalData({
+                                            type: 'Activity',
+                                            title: 'Custom Timer',
+                                            amount: formatTime(tmOrig),
+                                            unit: 'time',
+                                            details: tmTrackRounds ? { roundsCompleted: tmRounds } : undefined
+                                        });
+                                        setShowActivityModal(true);
+                                        return 0;
+                                    }
+                                    if (prev <= 4) beep('Low');
+                                    return prev - 1;
+                                });
+                            }
+                        }, 1000);
+                    } else {
+                        if(toolInterval.current) clearInterval(toolInterval.current);
+                    }
+                    return () => { if(toolInterval.current) clearInterval(toolInterval.current); };
+                }, [tmRunning, tmPrep, activeTool, tmRounds, tmOrig]);
+
+                const toggleTimer = () => {
+                    initAudio();
+                    if (tmRunning) { setTmRunning(false); }
+                    else {
+                        if (tmTimeLeft === 0) {
+                            // Init
+                            const totalSec = (tmDuration.h * 3600) + (tmDuration.m * 60) + tmDuration.s;
+                            if(totalSec === 0) return;
+                            setTmTimeLeft(totalSec);
+                            setTmOrig(totalSec);
+                            if(countdown) setTmPrep(10);
+                            else setTmRunning(true);
+                            if(tmTrackRounds) setTmRounds(0);
+                        } else {
+                            // Resume
+                            setTmRunning(true);
+                        }
+                    }
+                };
+                const resetTimer = () => { setTmRunning(false); setTmTimeLeft(0); setTmPrep(0); setTmRounds(0); };
+
+                // --- Tabata Logic ---
+                useEffect(() => {
+                    if (activeTool !== 'tabata') return;
+                    if (tbState !== 'idle') {
+                        toolInterval.current = setInterval(() => {
+                            setTbTimeLeft(prev => {
+                                // Transition Logic
+                                if (prev <= 0) {
+                                    if (tbState === 'prep') {
+                                        beep('High');
+                                        setTbState('work');
+                                        return tbConfig.work;
+                                    }
+                                    if (tbState === 'work') {
+                                        beep('Mid');
+                                        if (tbCurrentRound >= tbConfig.rounds) {
+                                            // Finish
+                                            setTbState('idle');
+                                            alert("TABATA COMPLETE");
+                                            return 0;
+                                        }
+                                        setTbState('rest');
+                                        return tbConfig.rest;
+                                    }
+                                    if (tbState === 'rest') {
+                                        beep('High');
+                                        setTbCurrentRound(r => r + 1);
+                                        setTbState('work');
+                                        return tbConfig.work;
+                                    }
+                                }
+                                // Beeps
+                                if (prev <= 4 && prev > 1) beep('Low');
+                                return prev - 1;
+                            });
+                        }, 1000);
+                    } else {
+                        if(toolInterval.current) clearInterval(toolInterval.current);
+                    }
+                    return () => { if(toolInterval.current) clearInterval(toolInterval.current); };
+                }, [tbState, tbConfig, tbCurrentRound, activeTool]);
+
+                const toggleTabata = () => {
+                    initAudio();
+                    if (tbState !== 'idle') {
+                        setTbState('idle');
+                    } else {
+                        setTbCurrentRound(1);
+                        if (countdown) {
+                            setTbState('prep');
+                            setTbTimeLeft(10);
+                        } else {
+                            setTbState('work');
+                            setTbTimeLeft(tbConfig.work);
+                        }
+                    }
+                };
+
+                return (
+                    <div className="flex flex-col h-screen p-6 bg-wolf-bg">
+                        <div className="flex justify-between items-center mb-6 pb-4 border-b border-wolf-border">
+                            <h2 className="font-heading text-3xl text-wolf-text">TOOLS</h2>
+                            <button onClick={() => setScreen('menu')} className="text-wolf-muted uppercase text-xs font-bold hover:text-white">Exit</button>
+                        </div>
+                        
+                        <div className="flex gap-2 mb-6">
+                            {['stopwatch', 'timer', 'tabata'].map(t => (
+                                <button key={t} onClick={() => { setActiveTool(t); if(toolInterval.current) clearInterval(toolInterval.current); }} className={`flex-1 py-2 rounded text-xs uppercase font-bold transition-colors ${activeTool===t ? 'bg-wolf-accent text-white' : 'bg-wolf-surface text-wolf-muted'}`}>
+                                    {t}
+                                </button>
+                            ))}
+                        </div>
+                        
+                        <div className="flex-grow flex flex-col items-center justify-start text-center pt-4">
+                            
+                            {/* STOPWATCH UI */}
+                            {activeTool === 'stopwatch' && (
+                                <>
+                                    {swPrep > 0 && <div className="text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading animate-pulse">GET READY</div>}
+                                    <div className="font-heading text-7xl md:text-9xl text-white mb-4 tabular-nums">
+                                        {swPrep > 0 ? `00:${swPrep.toString().padStart(2,'0')}.0` : formatTimeTenths(swTime)}
+                                    </div>
+                                    <div className="flex gap-4 w-full max-w-md mb-6">
+                                        <Button onClick={toggleStopwatch} className={`flex-1 py-4 text-xl ${swRunning || swPrep > 0 ? 'bg-red-900 hover:bg-red-800' : ''}`}>
+                                            {swRunning || swPrep > 0 ? 'STOP' : 'START'}
+                                        </Button>
+                                        <Button variant="secondary" onClick={swRunning ? lapStopwatch : resetStopwatch} className="flex-1 py-4 text-xl">
+                                            {swRunning ? 'LAP' : 'RESET'}
+                                        </Button>
+                                    </div>
+                                    <div className="flex items-center gap-2 mb-8">
+                                        <input type="checkbox" checked={countdown} onChange={e => setCountdown(e.target.checked)} className="w-5 h-5 accent-wolf-accent cursor-pointer" />
+                                        <label className="text-xs uppercase text-wolf-muted font-bold cursor-pointer">10 Sec Countdown</label>
+                                    </div>
+                                    <div className="w-full max-w-md h-40 overflow-y-auto bg-wolf-surface border border-wolf-border rounded-lg p-2 text-sm space-y-1">
+                                        {swLaps.map((lap, i) => (
+                                            <div key={i} className="flex justify-between border-b border-wolf-border pb-1">
+                                                <span className="text-wolf-muted">Lap {swLaps.length - i}</span>
+                                                <span className="text-white font-bold">{formatTimeTenths(lap - (swLaps[i+1] || 0))} / {formatTimeTenths(lap)}</span>
+                                            </div>
+                                        ))}
+                                        {swLaps.length === 0 && <div className="text-wolf-muted text-center italic py-2">Laps will appear here</div>}
+                                    </div>
+                                </>
+                            )}
+
+                            {/* TIMER UI */}
+                            {activeTool === 'timer' && (
+                                <>
+                                    {tmTimeLeft === 0 && !tmRunning && tmPrep === 0 ? (
+                                        <div className="flex flex-col items-center animate-in fade-in">
+                                            <div className="flex gap-4 items-center mb-8">
+                                                {['h','m','s'].map((k) => (
+                                                    <div key={k} className="flex flex-col">
+                                                        <label className="text-[10px] uppercase text-wolf-muted mb-1 tracking-widest">{k === 'h' ? 'Hours' : k === 'm' ? 'Mins' : 'Secs'}</label>
+                                                        <input 
+                                                            type="number" 
+                                                            value={tmDuration[k] || ''} 
+                                                            onChange={e => setTmDuration({...tmDuration, [k]: parseInt(e.target.value)||0})}
+                                                            className="bg-transparent border-2 border-wolf-border color-white text-center font-heading rounded-lg w-20 text-4xl p-2 focus:border-wolf-accent outline-none text-white" 
+                                                            placeholder="00"
+                                                        />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <div className="flex items-center gap-3 mb-10 bg-wolf-surface px-4 py-2 rounded-lg border border-wolf-border">
+                                                <input type="checkbox" checked={tmTrackRounds} onChange={e => setTmTrackRounds(e.target.checked)} className="w-5 h-5 accent-wolf-accent cursor-pointer" />
+                                                <label className="text-sm uppercase font-bold text-wolf-muted cursor-pointer select-none">Track Rounds</label>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {tmPrep > 0 && <div className="text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading animate-pulse">GET READY</div>}
+                                            <div className="font-heading text-7xl md:text-9xl text-white mb-4 tabular-nums">
+                                                {tmPrep > 0 ? `00:${tmPrep.toString().padStart(2,'0')}` : formatTime(tmTimeLeft)}
+                                            </div>
+                                            {tmTrackRounds && (
+                                                <div className="mb-6 flex flex-col items-center">
+                                                    <p className="text-wolf-muted uppercase text-[10px] tracking-widest mb-2">Round Counter</p>
+                                                    <div className="flex items-center gap-6">
+                                                        <div className="font-heading text-5xl text-white">{tmRounds}</div>
+                                                        <Button variant="secondary" onClick={() => setTmRounds(r => r + 1)} className="px-4 py-2 text-lg border-wolf-accent text-wolf-accent">+ ROUND</Button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                    
+                                    <div className="flex gap-4 w-full max-w-md mb-6">
+                                        <Button onClick={toggleTimer} className={`flex-1 py-4 text-xl ${tmRunning || tmPrep > 0 ? 'bg-red-900 hover:bg-red-800' : ''}`}>
+                                            {tmRunning || tmPrep > 0 ? 'PAUSE' : tmTimeLeft > 0 ? 'RESUME' : 'START'}
+                                        </Button>
+                                        <Button variant="secondary" onClick={resetTimer} className="flex-1 py-4 text-xl">RESET</Button>
+                                    </div>
+
+                                    {tmTimeLeft === 0 && !tmRunning && (
+                                        <div className="flex items-center gap-2">
+                                            <input type="checkbox" checked={countdown} onChange={e => setCountdown(e.target.checked)} className="w-5 h-5 accent-wolf-accent cursor-pointer" />
+                                            <label className="text-xs uppercase text-wolf-muted font-bold cursor-pointer">10 Sec Countdown</label>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+
+                            {/* TABATA UI */}
+                            {activeTool === 'tabata' && (
+                                <>
+                                    {tbState === 'idle' ? (
+                                        <div className="w-full max-w-sm space-y-4 mb-8">
+                                            <div className="flex justify-between items-center">
+                                                <label className="text-wolf-muted uppercase text-sm font-bold">Work (Sec)</label>
+                                                <input type="number" value={tbConfig.work} onChange={e => setTbConfig({...tbConfig, work: parseInt(e.target.value)})} className="bg-transparent border-2 border-wolf-border text-white text-center font-heading rounded w-24 text-2xl p-1" />
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <label className="text-wolf-muted uppercase text-sm font-bold">Rest (Sec)</label>
+                                                <input type="number" value={tbConfig.rest} onChange={e => setTbConfig({...tbConfig, rest: parseInt(e.target.value)})} className="bg-transparent border-2 border-wolf-border text-white text-center font-heading rounded w-24 text-2xl p-1" />
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <label className="text-wolf-muted uppercase text-sm font-bold">Rounds</label>
+                                                <input type="number" value={tbConfig.rounds} onChange={e => setTbConfig({...tbConfig, rounds: parseInt(e.target.value)})} className="bg-transparent border-2 border-wolf-border text-white text-center font-heading rounded w-24 text-2xl p-1" />
+                                            </div>
+                                            <div className="flex items-center justify-center gap-2 mt-4 pt-4">
+                                                <input type="checkbox" checked={countdown} onChange={e => setCountdown(e.target.checked)} className="w-5 h-5 accent-wolf-accent cursor-pointer" />
+                                                <label className="text-xs uppercase text-wolf-muted font-bold cursor-pointer">10 Sec Countdown</label>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="animate-in zoom-in duration-300">
+                                            <p className={`${tbState === 'work' ? 'text-wolf-accent' : tbState === 'rest' ? 'text-green-500' : 'text-white'} uppercase tracking-widest text-2xl mb-2 font-heading animate-pulse`}>
+                                                {tbState === 'prep' ? 'GET READY' : tbState.toUpperCase()}
+                                            </p>
+                                            <div className="font-heading text-8xl md:text-9xl text-white mb-2 tabular-nums">
+                                                {tbState === 'prep' ? tbTimeLeft : tbTimeLeft}
+                                            </div>
+                                            <p className="text-wolf-muted uppercase tracking-widest text-2xl font-bold">Round {tbCurrentRound}/{tbConfig.rounds}</p>
+                                        </div>
+                                    )}
+                                    
+                                    <Button onClick={toggleTabata} className={`w-full max-w-sm py-4 text-xl mt-6 ${tbState !== 'idle' ? 'bg-red-900 hover:bg-red-800' : ''}`}>
+                                        {tbState !== 'idle' ? 'STOP TABATA' : 'START TABATA'}
+                                    </Button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                );
+            };
+
+            return (
+                <div className="h-screen w-full bg-wolf-bg text-wolf-text overflow-hidden selection:bg-wolf-accent selection:text-white">
+                    {screen === 'menu' && <MenuScreen />}
+                    {screen === 'history' && <HistoryScreen />}
+                    {screen === 'protocols' && <ProtocolsScreen />}
+                    {screen === 'workout' && <WorkoutScreen />}
+                    {screen === 'tools' && <ToolsScreen />}
+                    
+                    <ActivityModal 
+                        isOpen={showActivityModal} 
+                        onClose={() => setShowActivityModal(false)} 
+                        initialData={activityModalData}
+                        onSave={saveLog}
+                    />
+                </div>
+            );
         }
 
-        function switchScreen(name) { Object.values(screens).forEach(s => s.classList.remove('active')); screens[name].classList.add('active'); }
-        window.openModal = (id) => { document.getElementById(id).classList.remove('hidden'); };
-        window.closeModal = (id) => {
-            document.getElementById(id).classList.add('hidden');
-            if(id === 'record-details-modal') editingHistoryId = null; // Clear edit mode if closed
-        };
-        window.openApexConfig = () => openModal('apex-config-modal');
-        window.adjustRep = (delta) => { const input = document.getElementById('apex-max-reps'); let val = parseInt(input.value) || 1; val += delta; if(val < 1) val = 1; input.value = val; };
-        window.goToMenu = () => { clearInterval(timerInt); clearInterval(totalInt); switchScreen('menu'); };
-        function goToQuote() {
-            const quotes = [{q: "The wolf on the hill is not as hungry as the wolf climbing the hill.", a: "Arnold Schwarzenegger"}, {q: "I don't stop when I'm tired. I stop when I'm done.", a: "David Goggins"}, {q: "Pain is weakness leaving the body.", a: "USMC"}, {q: "Civilize the mind, but make savage the body.", a: "Mao"}];
-            const rnd = quotes[Math.floor(Math.random() * quotes.length)];
-            document.getElementById('quote-text').textContent = `"${rnd.q}"`;
-            document.getElementById('quote-author').textContent = rnd.a;
-            switchScreen('quote');
-        }
-        function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
-        function beep(type) { if (!audioCtx) return; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); const freqs = { 'Low': 150, 'Mid': 400, 'High': 800 }; osc.connect(gain); gain.connect(audioCtx.destination); osc.frequency.value = freqs[type]; osc.type = 'triangle'; gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3); }
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
