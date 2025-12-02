@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WOLF ALPHA</title>
+    <title>WOLF ALPHA 2.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,6 +26,9 @@
                             accent: '#b45309',  
                             accentHover: '#92400e',
                             muted: '#78716c',
+                            pos: '#15803d',
+                            neg: '#991b1b',
+                            mid: '#854d0e',
                         }
                     },
                     fontFamily: {
@@ -76,7 +79,6 @@
         .btn-secondary:hover { border-color: #78716c; color: white; }
         .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        /* Tool Inputs */
         .tool-input {
             background: transparent;
             border: 2px solid #44403c;
@@ -87,26 +89,54 @@
         }
         .tool-input:focus { border-color: #b45309; outline: none; }
 
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1em;
+        }
+
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #0c0a09; }
         ::-webkit-scrollbar-thumb { background: #44403c; border-radius: 3px; }
+        
+        #mic-wave {
+            display: none;
+        }
+        #mic-wave.listening {
+            display: flex;
+        }
+        .bar {
+            width: 4px;
+            height: 10px;
+            background: #b45309;
+            margin: 0 2px;
+            animation: wave 0.5s infinite ease-in-out alternate;
+        }
+        .bar:nth-child(2) { animation-delay: 0.1s; }
+        .bar:nth-child(3) { animation-delay: 0.2s; }
+        .bar:nth-child(4) { animation-delay: 0.3s; }
+        @keyframes wave { to { height: 25px; } }
+
     </style>
 </head>
 <body class="h-screen overflow-hidden selection:bg-wolf-accent selection:text-white">
 
+    <!-- SYNC MODAL -->
     <div id="sync-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl shadow-2xl">
             <h2 class="font-heading text-2xl text-wolf-accent mb-2 tracking-wide">CLOUD SYNC</h2>
             <p class="text-wolf-muted text-sm mb-4">
                 System status: <span id="modal-status" class="text-white font-bold">CHECKING...</span>
             </p>
-            <p class="text-[10px] text-wolf-muted">To change the URL, edit the HARDCODED_URL variable in the source code.</p>
             <div class="flex gap-3 mt-4">
                 <button onclick="closeModal('sync-modal')" class="flex-1 py-3 btn-secondary">Close</button>
             </div>
         </div>
     </div>
 
+    <!-- WEIGHT MODAL (RESTORED) -->
     <div id="weight-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-sm rounded-xl shadow-2xl text-center">
             <h2 class="font-heading text-3xl text-wolf-accent mb-6">WEIGHT CHECK</h2>
@@ -121,47 +151,68 @@
         </div>
     </div>
 
-    <div id="record-prompt-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-sm rounded-xl shadow-2xl text-center">
-            <h2 class="font-heading text-2xl text-white mb-2">WORKOUT COMPLETE</h2>
-            <p class="text-wolf-muted text-sm mb-6">Would you like to record this session?</p>
-            <div class="flex gap-3">
-                <button onclick="closeModal('record-prompt-modal')" class="flex-1 py-3 btn-secondary text-wolf-muted">No</button>
-                <button onclick="openRecordDetails()" class="flex-1 py-3 btn-primary">Yes</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="record-details-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto">
-            <h2 id="record-modal-title" class="font-heading text-2xl text-wolf-accent mb-6">RECORD SESSION</h2>
+    <!-- ACTIVITY LOG MODAL (UNIFIED) -->
+    <div id="activity-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-wolf-surface border border-wolf-border p-5 w-full max-w-md rounded-xl shadow-2xl flex flex-col max-h-[95vh] overflow-y-auto">
+            <h2 id="act-modal-title" class="font-heading text-2xl text-wolf-accent mb-4">LOG ACTIVITY</h2>
             
-            <div class="space-y-4">
+            <div class="space-y-3">
+                <!-- Activity Name -->
                 <div>
-                    <label class="block text-xs uppercase text-wolf-muted font-bold mb-1">Workout Name</label>
-                    <input type="text" id="rec-name" value="Custom Timer Workout" class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none">
+                    <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Activity</label>
+                    <input type="text" id="act-name" placeholder="e.g. Workout, Reading, Sleep" class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none">
                 </div>
-                <div class="flex gap-3">
+                
+                <!-- Time & Amount -->
+                <div class="flex gap-2">
                     <div class="flex-1">
-                        <label class="block text-xs uppercase text-wolf-muted font-bold mb-1">Duration</label>
-                        <input type="text" id="rec-duration" class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none">
+                        <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Time</label>
+                        <input type="datetime-local" id="act-time" class="w-full bg-wolf-bg border border-wolf-border text-white p-2 text-xs rounded focus:border-wolf-accent outline-none">
+                    </div>
+                    <div class="w-1/3">
+                        <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Amount</label>
+                        <input type="text" id="act-amount" placeholder="Qty" class="w-full bg-wolf-bg border border-wolf-border text-white p-2 rounded text-sm focus:border-wolf-accent outline-none">
+                    </div>
+                     <div class="w-1/4">
+                        <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Unit</label>
+                        <input type="text" id="act-unit" placeholder="mins" class="w-full bg-wolf-bg border border-wolf-border text-white p-2 rounded text-sm focus:border-wolf-accent outline-none">
+                    </div>
+                </div>
+
+                <!-- Rating & Focus -->
+                <div class="flex gap-2">
+                    <div class="flex-1">
+                        <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Rating</label>
+                        <select id="act-rating" class="w-full bg-wolf-bg border border-wolf-border text-white p-2 rounded text-sm form-select focus:border-wolf-accent outline-none">
+                            <option value="Neutral">Neutral</option>
+                            <option value="Positive">Positive</option>
+                            <option value="Negative">Negative</option>
+                        </select>
                     </div>
                     <div class="flex-1">
-                        <label class="block text-xs uppercase text-wolf-muted font-bold mb-1">Rounds</label>
-                        <input type="number" id="rec-rounds" class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none">
+                        <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Focus</label>
+                        <select id="act-focus" class="w-full bg-wolf-bg border border-wolf-border text-white p-2 rounded text-sm form-select focus:border-wolf-accent outline-none">
+                            <option value="None">None</option>
+                            <option value="High">High</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Low">Low</option>
+                        </select>
                     </div>
                 </div>
+
+                <!-- Notes -->
                 <div>
-                    <label class="block text-xs uppercase text-wolf-muted font-bold mb-1">Notes / Exercises</label>
-                    <textarea id="rec-notes" rows="4" placeholder="Enter exercises, weights, or details..." class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none"></textarea>
+                    <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Note</label>
+                    <textarea id="act-note" rows="3" placeholder="Details..." class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none"></textarea>
                 </div>
             </div>
 
-            <button onclick="saveCustomWorkout()" id="save-custom-btn" class="w-full btn-primary py-4 text-xl mt-6">SAVE TO HISTORY</button>
-            <button onclick="closeModal('record-details-modal')" class="mt-4 text-wolf-muted text-xs uppercase tracking-widest hover:text-white text-center">Cancel</button>
+            <button onclick="saveActivityLog()" id="save-act-btn" class="w-full btn-primary py-4 text-xl mt-6">CONFIRM LOG</button>
+            <button onclick="closeModal('activity-modal')" class="mt-4 text-wolf-muted text-xs uppercase tracking-widest hover:text-white text-center">Cancel</button>
         </div>
     </div>
 
+    <!-- TOOLS SCREEN -->
     <div id="tools-screen" class="screen h-full w-full flex-col bg-wolf-bg p-4">
         <div class="flex justify-between items-center mb-6 pb-4 border-b border-wolf-border">
             <h2 class="font-heading text-3xl text-wolf-text">TOOLS</h2>
@@ -174,27 +225,25 @@
             <button onclick="switchTool('tabata')" id="tab-tabata" class="flex-1 py-2 rounded text-xs uppercase font-bold bg-wolf-surface text-wolf-muted hover:text-white transition">Tabata</button>
         </div>
 
+        <!-- Stopwatch -->
         <div id="tool-stopwatch" class="flex-grow flex flex-col items-center justify-start text-center pt-10">
             <div id="sw-status" class="hidden text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading animate-pulse">GET READY</div>
             <div id="sw-display" class="font-heading text-7xl md:text-9xl text-white mb-4 tabular-nums">00:00.0</div>
-            
             <div class="flex gap-4 w-full max-w-md mb-6">
                 <button onclick="toggleStopwatch()" id="sw-btn" class="flex-1 btn-primary py-4 text-xl">START</button>
                 <button onclick="lapStopwatch()" id="sw-lap-btn" class="flex-1 btn-secondary py-4 text-xl disabled:opacity-50">LAP</button>
             </div>
-            
             <div class="flex items-center gap-2 mb-8">
                 <input type="checkbox" id="sw-countdown-check" class="w-5 h-5 accent-wolf-accent cursor-pointer">
                 <label for="sw-countdown-check" class="text-xs uppercase text-wolf-muted font-bold cursor-pointer">10 Sec Countdown</label>
             </div>
-            
             <div id="sw-laps" class="w-full max-w-md h-40 overflow-y-auto bg-wolf-surface border border-wolf-border rounded-lg p-2 text-sm space-y-1">
                 <div class="text-wolf-muted text-center italic py-2">Laps will appear here</div>
             </div>
-            
              <button onclick="resetStopwatch()" class="mt-4 text-wolf-muted text-xs uppercase tracking-widest hover:text-white">Reset All</button>
         </div>
 
+        <!-- Timer -->
         <div id="tool-timer" class="hidden flex-grow flex flex-col items-center justify-start text-center pt-10">
             <div id="tm-config-container" class="flex flex-col items-center">
                 <div class="flex gap-4 items-center mb-8">
@@ -242,6 +291,7 @@
             </div>
         </div>
 
+        <!-- Tabata -->
         <div id="tool-tabata" class="hidden flex-grow flex flex-col items-center justify-center text-center">
             <div id="tb-config" class="w-full max-w-sm space-y-4 mb-8">
                 <div class="flex justify-between items-center">
@@ -271,6 +321,7 @@
         </div>
     </div>
 
+    <!-- LIST SCREEN (PROTOCOLS) -->
     <div id="list-screen" class="screen h-full w-full flex-col bg-wolf-bg p-4">
         <div class="flex justify-between items-center mb-6 pb-4 border-b border-wolf-border">
             <h2 class="font-heading text-3xl text-wolf-text">PROTOCOLS</h2>
@@ -279,17 +330,15 @@
         <div id="workout-list-container" class="flex-grow overflow-y-auto space-y-3 pb-20"></div>
     </div>
 
+    <!-- EDITOR MODALS -->
     <div id="editor-select-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl flex flex-col max-h-[90vh]">
             <h2 class="font-heading text-2xl text-wolf-accent mb-6 tracking-wide text-center">MANAGE PROTOCOLS</h2>
-            
             <div class="flex gap-2 mb-6 border-b border-wolf-border pb-6">
                 <input type="text" id="new-workout-name" placeholder="New Protocol Name" class="flex-1 bg-wolf-bg border border-wolf-border text-white px-4 py-2 rounded text-sm focus:border-wolf-accent outline-none">
                 <button onclick="createNewWorkout()" class="btn-primary px-4 py-2 text-xl font-bold">+</button>
             </div>
-
             <div id="manager-list" class="flex-grow overflow-y-auto space-y-3 pr-1"></div>
-            
             <button onclick="closeModal('editor-select-modal')" class="mt-6 text-wolf-muted hover:text-white uppercase text-xs tracking-widest text-center">Close Manager</button>
         </div>
     </div>
@@ -308,6 +357,7 @@
         </div>
     </div>
 
+    <!-- MENU SCREEN -->
     <div id="menu-screen" class="screen active h-full w-full flex-col items-center justify-center p-6 relative">
         <button onclick="openModal('sync-modal')" class="absolute top-6 right-6 text-wolf-muted hover:text-wolf-accent transition">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -317,47 +367,35 @@
             <h1 class="font-heading text-6xl text-wolf-text tracking-tight mb-2">WOLF<span class="text-wolf-accent">ALPHA</span></h1>
             <p class="text-wolf-muted text-sm uppercase tracking-[0.3em] mb-8">Conquer Your Day</p>
 
-            <div class="w-full space-y-3 mb-8">
-                <div class="flex items-center justify-between bg-wolf-surface p-1 rounded-lg border border-wolf-border">
-                    <label class="flex-1 text-center cursor-pointer">
-                        <input type="radio" name="mode-toggle" value="auto" class="peer sr-only" checked onchange="toggleMode(false)">
-                        <span class="block py-2 rounded-md text-xs font-bold uppercase text-wolf-muted peer-checked:bg-wolf-bg peer-checked:text-white transition">Auto Timer</span>
-                    </label>
-                    <label class="flex-1 text-center cursor-pointer">
-                        <input type="radio" name="mode-toggle" value="manual" class="peer sr-only" onchange="toggleMode(true)">
-                        <span class="block py-2 rounded-md text-xs font-bold uppercase text-wolf-muted peer-checked:bg-wolf-accent peer-checked:text-white transition">Manual</span>
-                    </label>
-                </div>
-                <div class="flex items-center justify-between bg-wolf-surface p-1 rounded-lg border border-wolf-border">
-                    <label class="flex-1 text-center cursor-pointer">
-                        <input type="radio" name="track-toggle" value="on" class="peer sr-only" checked onchange="toggleTracking(true)">
-                        <span class="block py-2 rounded-md text-xs font-bold uppercase text-wolf-muted peer-checked:bg-wolf-bg peer-checked:text-white transition">Record Stats</span>
-                    </label>
-                    <label class="flex-1 text-center cursor-pointer">
-                        <input type="radio" name="track-toggle" value="off" class="peer sr-only" onchange="toggleTracking(false)">
-                        <span class="block py-2 rounded-md text-xs font-bold uppercase text-wolf-muted peer-checked:bg-gray-700 peer-checked:text-white transition">Incognito</span>
-                    </label>
-                </div>
+            <div class="w-full space-y-3 mb-6">
+                 <button onclick="switchScreen('list')" class="w-full btn-primary py-4 text-xl shadow-lg shadow-orange-900/20">WORKOUTS</button>
+                 <div class="flex gap-3">
+                    <button onclick="startVoiceInput()" class="w-1/4 btn-secondary py-4 flex items-center justify-center text-wolf-accent border-wolf-accent relative group overflow-hidden">
+                        <svg id="mic-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
+                        <div id="mic-wave" class="absolute inset-0 flex items-center justify-center opacity-50 z-0">
+                            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                        </div>
+                    </button>
+                    <button onclick="openActivityModal('manual')" class="flex-grow btn-secondary py-4 text-lg">LOG ACTIVITY</button>
+                 </div>
             </div>
 
-            <div class="w-full space-y-3">
-                 <button onclick="switchScreen('list')" class="w-full btn-primary py-4 text-xl shadow-lg shadow-orange-900/20">SAVED PROTOCOLS</button>
-            </div>
-
-            <div class="w-full space-y-3 mt-3 pt-3 border-t border-wolf-border">
-                 <button onclick="openApexConfig()" class="w-full btn-secondary py-4 text-lg border-wolf-accent text-wolf-accent hover:bg-wolf-accent hover:text-white">Apex</button>
+            <div class="w-full space-y-3 pt-3 border-t border-wolf-border">
                  <div class="grid grid-cols-2 gap-3 mt-2">
-                    <button onclick="openModal('weight-modal')" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted hover:text-white uppercase font-bold">Weight</button>
+                    <button onclick="openApexConfig()" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted hover:text-white uppercase font-bold">Apex</button>
                     <button onclick="showHistory()" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">History</button>
                     <button onclick="switchScreen('tools')" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">Tools</button>
                     <button onclick="openManager()" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">Edit Pgm</button>
                 </div>
+                 <!-- RESTORED WEIGHT BUTTON -->
+                 <button onclick="openModal('weight-modal')" class="w-full btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold mt-3">Log Weight</button>
             </div>
             
             <div id="sync-status" class="mt-6 text-[10px] text-wolf-muted uppercase tracking-widest opacity-50">Connecting...</div>
         </div>
     </div>
 
+    <!-- APEX CONFIG -->
     <div id="apex-config-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-wolf-surface border border-wolf-border p-8 w-full max-w-sm rounded-xl text-center shadow-2xl">
             <h2 class="font-heading text-4xl text-wolf-accent mb-6">APEX CONFIG</h2>
@@ -380,6 +418,7 @@
         </div>
     </div>
 
+    <!-- QUOTE SCREEN -->
     <div id="quote-screen" class="screen min-h-screen w-full flex-col items-center justify-center p-8 text-center bg-wolf-bg">
         <div class="z-10 max-w-2xl">
             <div class="w-16 h-1 bg-wolf-accent mx-auto mb-8 rounded-full"></div>
@@ -389,6 +428,7 @@
         <button id="start-btn" class="z-10 mt-16 btn-primary py-4 px-12 text-2xl shadow-xl shadow-orange-900/10">BEGIN</button>
     </div>
 
+    <!-- WORKOUT SCREEN -->
     <div id="workout-screen" class="screen h-full w-full flex-col relative bg-wolf-bg">
         <div class="absolute top-0 left-0 w-full p-6 flex justify-between items-start z-20">
             <div>
@@ -432,6 +472,7 @@
         </div>
     </div>
 
+    <!-- COMPLETION SCREEN -->
     <div id="completion-screen" class="screen min-h-screen w-full flex-col items-center justify-center p-6 text-center bg-wolf-bg">
         <h2 class="font-heading text-5xl md:text-8xl text-wolf-accent mb-2">COMPLETE</h2>
         <p class="text-wolf-muted uppercase tracking-widest mb-12 text-sm">Well Done</p>
@@ -442,9 +483,13 @@
             <div id="final-stats-extra" class="mt-6 pt-6 border-t border-wolf-border text-left hidden"></div>
         </div>
         
-        <button onclick="goToMenu()" class="btn-secondary px-12 py-4 text-lg">Back to Menu</button>
+        <div class="flex flex-col gap-3 w-full max-w-sm">
+             <button onclick="logWorkoutToActivity()" class="btn-primary w-full py-4 text-lg">LOG DETAILS</button>
+             <button onclick="goToMenu()" class="btn-secondary w-full py-4 text-lg">DISCARD & EXIT</button>
+        </div>
     </div>
 
+    <!-- HISTORY SCREEN -->
     <div id="history-screen" class="screen min-h-screen w-full flex-col p-6 bg-wolf-bg">
         <div class="max-w-2xl mx-auto w-full flex flex-col h-full">
             <div class="flex items-center justify-between mb-8 pb-4 border-b border-wolf-border">
@@ -453,15 +498,13 @@
             </div>
             <div id="history-loading" class="hidden text-center text-wolf-accent animate-pulse mt-10 text-sm tracking-widest uppercase">Syncing...</div>
             <div id="history-list" class="flex-grow overflow-y-auto space-y-3 pb-20"></div>
-            <div id="no-history-msg" class="hidden text-center text-wolf-muted mt-20 text-sm">No workouts recorded yet.</div>
+            <div id="no-history-msg" class="hidden text-center text-wolf-muted mt-20 text-sm">No activity recorded yet.</div>
         </div>
     </div>
 
     <script>
         // --------------------------------------------------------------
         // >>> ACTION REQUIRED: PASTE YOUR GOOGLE SCRIPT URL BELOW <<<
-        // Example: "https://script.google.com/macros/s/AKfycbx.../exec"
-        // --------------------------------------------------------------
         const HARDCODED_URL = "https://script.google.com/macros/s/AKfycbxx2iCp9PgKa2XcY_zZuhvCjN0BeCrthAa93OjHPNDpRr9zXgozhpKi9zZcoEfjGHl6/exec"; 
         // --------------------------------------------------------------
 
@@ -495,13 +538,7 @@
                 restTime: 30
             },
             'Garage Games': [
-                 { 
-                   type: "amrap", 
-                   name: "AMRAP 20", 
-                   duration: 1200, 
-                   round: "See List Below",
-                   exercises: ["10 Med Ball Cleans", "10 Pull-Ups", "40 Double Unders"]
-                 }
+                 { type: "amrap", name: "AMRAP 20", duration: 1200, round: "See List Below", exercises: ["10 Med Ball Cleans", "10 Pull-Ups", "40 Double Unders"] }
             ]
         };
 
@@ -550,31 +587,51 @@
         let timerInt = null;
         let totalInt = null;
         let startTime = null;
-        let isManual = false;
-        let isTracking = true;
         let audioCtx;
         let editingRoutineKey = null;
         let editingCopy = null;
         let manualRoundCount = 0;
+        let completedWorkoutStats = {};
 
         // Tool Vars
         let toolInt = null;
         let swTime = 0;
         let swLastLapTime = 0; 
         let tmTime = 0;
-        let tmOriginalTime = 0; // Capture original duration for logging
+        let tmOriginalTime = 0; 
         let tbState = { round: 1, isWork: false, timeLeft: 0, totalRounds: 8, workTime: 20, restTime: 10, active: false };
         let toolRoundCount = 0;
         let isPrep = false;
         
-        let editingHistoryId = null; // Store ID (date string), not index
+        let editingHistoryId = null;
+        let recognition;
 
         // --- INIT ---
         window.addEventListener('DOMContentLoaded', () => {
             initSync();
             renderMenuWorkouts();
             document.getElementById('start-btn').addEventListener('click', startWorkoutSession);
+            setupSpeechRecognition();
         });
+
+        function setupSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.lang = 'en-US';
+                recognition.interimResults = false;
+
+                recognition.onstart = () => { document.getElementById('mic-wave').classList.add('listening'); };
+                recognition.onend = () => { document.getElementById('mic-wave').classList.remove('listening'); };
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    parseVoiceInput(transcript);
+                };
+            } else {
+                document.getElementById('mic-icon').style.opacity = '0.3';
+            }
+        }
 
         // --- SYNC LOGIC ---
         function initSync() {
@@ -608,6 +665,262 @@
                 els.workoutList.appendChild(btn);
             });
         }
+
+        // --- ACTIVITY LOGIC ---
+        function startVoiceInput() {
+            if(!recognition) return alert("Speech recognition not supported.");
+            recognition.start();
+        }
+
+        function parseVoiceInput(text) {
+            // "activity [activity] time [time] amount [amount] [unit] rating [rating] focus [focus] note [note]"
+            const lc = text.toLowerCase();
+            const data = {
+                activity: "", time: "", amount: "", unit: "", rating: "Neutral", focus: "None", note: ""
+            };
+
+            // Helpers regex
+            const extract = (key, nextKeys) => {
+                const regex = new RegExp(`${key}\\s+(.*?)(?=\\s+(?:${nextKeys})|$)`, 'i');
+                const match = text.match(regex);
+                return match ? match[1].trim() : "";
+            };
+            
+            const keys = "activity|time|amount|unit|rating|focus|note";
+
+            data.activity = extract("activity", keys) || "Voice Activity";
+            data.note = extract("note", keys);
+            
+            // Rating
+            const rRaw = extract("rating", keys).toLowerCase();
+            if(rRaw.includes("pos")) data.rating = "Positive";
+            else if(rRaw.includes("neg")) data.rating = "Negative";
+
+            // Focus
+            const fRaw = extract("focus", keys).toLowerCase();
+            if(fRaw.includes("high")) data.focus = "High";
+            else if(fRaw.includes("med")) data.focus = "Medium";
+            else if(fRaw.includes("low")) data.focus = "Low";
+
+            // Amount/Unit
+            const amtRaw = extract("amount", keys);
+            if(amtRaw) {
+                 // Try to split number and text
+                 const num = amtRaw.match(/\d+/);
+                 if(num) {
+                    data.amount = num[0];
+                    // If unit wasn't explicitly said, check if it's in amount string
+                    data.unit = amtRaw.replace(num[0], '').trim();
+                 } else {
+                    data.amount = amtRaw;
+                 }
+            }
+            const unitRaw = extract("unit", keys);
+            if(unitRaw) data.unit = unitRaw;
+
+            // Time Parsing
+            const tRaw = extract("time", keys);
+            const now = new Date();
+            if(tRaw.includes("ago")) {
+                const val = parseInt(tRaw.match(/\d+/)?.[0] || 0);
+                if(tRaw.includes("hour")) now.setHours(now.getHours() - val);
+                else if(tRaw.includes("minute")) now.setMinutes(now.getMinutes() - val);
+            } else if (tRaw.includes(":")) {
+                // simple parser for 10:30
+                const parts = tRaw.match(/(\d+):(\d+)\s*(am|pm)?/i);
+                if(parts) {
+                    let h = parseInt(parts[1]);
+                    const m = parseInt(parts[2]);
+                    if(parts[3] && parts[3].toLowerCase() === 'pm' && h < 12) h += 12;
+                    if(parts[3] && parts[3].toLowerCase() === 'am' && h === 12) h = 0;
+                    now.setHours(h, m);
+                }
+            }
+            // Format for datetime-local: YYYY-MM-DDTHH:mm
+            const pad = (n) => n.toString().padStart(2,'0');
+            data.time = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+            openActivityModal('voice', data);
+        }
+
+        function openActivityModal(mode, data = {}) {
+            closeModal('editor-select-modal'); // ensure others closed
+            const modal = document.getElementById('activity-modal');
+            const title = document.getElementById('act-modal-title');
+            
+            // Reset fields
+            const now = new Date();
+            const pad = (n) => n.toString().padStart(2,'0');
+            const defaultTime = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+            
+            document.getElementById('act-name').value = "";
+            document.getElementById('act-time').value = defaultTime;
+            document.getElementById('act-amount').value = "";
+            document.getElementById('act-unit').value = "";
+            document.getElementById('act-rating').value = "Neutral";
+            document.getElementById('act-focus').value = "None";
+            document.getElementById('act-note').value = "";
+
+            editingHistoryId = null; // Default create mode
+
+            if(mode === 'voice') {
+                title.textContent = "REVIEW VOICE LOG";
+                document.getElementById('act-name').value = data.activity;
+                if(data.time) document.getElementById('act-time').value = data.time;
+                document.getElementById('act-amount').value = data.amount;
+                document.getElementById('act-unit').value = data.unit;
+                document.getElementById('act-rating').value = data.rating;
+                document.getElementById('act-focus').value = data.focus;
+                document.getElementById('act-note').value = data.note;
+            } else if (mode === 'manual') {
+                title.textContent = "LOG ACTIVITY";
+            } else if (mode === 'edit') {
+                title.textContent = "EDIT ACTIVITY";
+                editingHistoryId = data.id;
+                document.getElementById('act-name').value = data.activity;
+                document.getElementById('act-time').value = data.isoTime.substring(0, 16); // format for input
+                document.getElementById('act-amount').value = data.amount;
+                document.getElementById('act-unit').value = data.unit;
+                document.getElementById('act-rating').value = data.rating;
+                document.getElementById('act-focus').value = data.focus;
+                document.getElementById('act-note').value = data.note;
+            } else if (mode === 'workout_complete') {
+                title.textContent = "LOG WORKOUT";
+                document.getElementById('act-name').value = completedWorkoutStats.type;
+                document.getElementById('act-amount').value = completedWorkoutStats.duration;
+                document.getElementById('act-unit').value = "Time";
+                if(completedWorkoutStats.details && completedWorkoutStats.details.maxReps) {
+                     document.getElementById('act-note').value = `Peak: ${completedWorkoutStats.details.maxReps} Reps @ ${completedWorkoutStats.details.weight}`;
+                } else if (completedWorkoutStats.details && completedWorkoutStats.details.roundsCompleted) {
+                     document.getElementById('act-amount').value = completedWorkoutStats.details.roundsCompleted;
+                     document.getElementById('act-unit').value = "Rounds";
+                     document.getElementById('act-note').value = `Total Time: ${completedWorkoutStats.duration}`;
+                }
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        async function saveActivityLog() {
+            const btn = document.getElementById('save-act-btn');
+            if(btn) { btn.textContent = "SAVING..."; btn.disabled = true; }
+
+            const name = document.getElementById('act-name').value || "Activity";
+            let timeVal = document.getElementById('act-time').value; // YYYY-MM-DDTHH:mm
+            const amount = document.getElementById('act-amount').value;
+            const unit = document.getElementById('act-unit').value;
+            const rating = document.getElementById('act-rating').value;
+            const focus = document.getElementById('act-focus').value;
+            const note = document.getElementById('act-note').value;
+
+            // Date validation fallback
+            if(!timeVal) {
+                 const now = new Date();
+                 const pad = (n) => n.toString().padStart(2,'0');
+                 timeVal = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+            }
+
+            const dateObj = new Date(timeVal);
+            const isoDate = !isNaN(dateObj) ? dateObj.toISOString() : new Date().toISOString();
+
+            const entry = {
+                date: isoDate,
+                type: name,
+                duration: (amount + " " + unit).trim() || "---", // Corrected
+                details: {
+                    rating: rating,
+                    focus: focus,
+                    notes: note,
+                    amount: amount,
+                    unit: unit,
+                }
+            };
+            
+            // If editing, preserve non-overwritten details
+            if(editingHistoryId !== null) {
+                const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
+                const existing = h.find(x => x.date === editingHistoryId);
+                if(existing && existing.details) {
+                    entry.details = { ...existing.details, ...entry.details };
+                }
+            }
+
+            // --- CRITICAL FIX: Update Local Storage FIRST ---
+            let h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
+            if (editingHistoryId !== null) {
+                const index = h.findIndex(x => x.date === editingHistoryId);
+                if (index > -1) h[index] = entry;
+            } else {
+                h.push(entry);
+            }
+            localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
+            // ------------------------------------------------
+
+            // UI Feedback Immediate
+            if(btn) { btn.textContent = "CONFIRM LOG"; btn.disabled = false; }
+            closeModal('activity-modal');
+            if(document.getElementById('history-screen').classList.contains('active')) showHistory();
+            else if (document.getElementById('completion-screen').classList.contains('active')) goToMenu();
+            else alert("Logged locally! Syncing...");
+
+            // --- SYNC TO CLOUD ASYNC ---
+            if (editingHistoryId !== null) {
+                 await syncEntryToCloud(entry, 'edit', editingHistoryId);
+            } else {
+                 await syncEntryToCloud(entry, 'create');
+            }
+        }
+
+        async function syncEntryToCloud(entry, action, originalDate = null) {
+             const url = getApiUrl();
+             if(!url) return;
+             try {
+                const payload = {
+                    action: action === 'create' ? undefined : 'edit',
+                    date: action === 'create' ? entry.date : originalDate,
+                    type: entry.type,
+                    duration: entry.duration,
+                    details: entry.details
+                };
+                if(action === 'create') delete payload.action;
+
+                await fetch(url, { 
+                    method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify(payload) 
+                });
+             } catch(e) { console.error("Cloud Sync Error:", e); }
+        }
+
+        // --- NEW: Weight Logic Restored ---
+        async function saveWeightEntry() {
+            const weightVal = document.getElementById('weight-input').value;
+            if(!weightVal) { alert("Enter a valid weight."); return; }
+
+            const btn = document.getElementById('save-weight-btn');
+            if(btn) { btn.disabled = true; btn.textContent = "SAVING..."; btn.classList.add('opacity-50'); }
+
+            const entry = {
+                date: new Date().toISOString(),
+                type: "Weight Check-In",
+                duration: "---", // Corrected
+                details: { weight: weightVal + " lbs" }
+            };
+            
+            // Save Local
+            const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
+            h.push(entry);
+            localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
+
+            // Sync
+            await syncEntryToCloud(entry, 'create');
+            
+            closeModal('weight-modal');
+            document.getElementById('weight-input').value = "";
+            if(btn) { btn.disabled = false; btn.textContent = "LOG WEIGHT"; btn.classList.remove('opacity-50'); }
+            
+            alert("Weight Logged!");
+        }
+
 
         // --- WORKOUT MANAGER ---
         function openManager() { renderManagerList(); openModal('editor-select-modal'); }
@@ -661,8 +974,6 @@
         }
 
         // --- RUNTIME ---
-        window.toggleMode = (val) => { isManual = val; };
-        window.toggleTracking = (val) => { isTracking = val; };
         function selectWorkout(type) { currentWorkoutType = type; activeRoutine = routines[type]; goToQuote(); }
         function confirmApexStart() {
             const max = parseInt(document.getElementById('apex-max-reps').value) || 8;
@@ -677,7 +988,6 @@
         function startWorkoutSession() { initAudio(); stepIndex = 0; startTime = null; manualRoundCount = 0; els.totalTime.textContent = "--:--"; switchScreen('workout'); startCountdown(); }
         function startCountdown() { els.currEx.textContent = ""; els.nextEx.textContent = ""; runStep({ type: 'countdown', duration: 10, name: '' }); }
         function startMissionClock() {
-            if(!isTracking) return;
             startTime = Date.now();
             clearInterval(totalInt);
             totalInt = setInterval(() => { const s = Math.floor((Date.now() - startTime) / 1000); els.totalTime.textContent = formatTime(s); }, 1000);
@@ -704,26 +1014,20 @@
                 els.amrapContainer.classList.add('hidden');
             }
 
-            // Logic for AMRAP and Rep Work
             if (step.type === 'rep_work' || step.type === 'amrap') {
-                // If it's pure rep work, hide timer. If AMRAP, show BOTH.
                 if(step.type === 'rep_work') {
                     els.timed.classList.add('hidden'); 
                     els.rep.classList.remove('hidden'); 
                 } else {
-                    // AMRAP: Show Timer AND List
                     els.timed.classList.remove('hidden');
                     els.rep.classList.remove('hidden');
-                    document.getElementById('round-complete-btn').classList.add('hidden'); // Hide completion button for AMRAP
+                    document.getElementById('round-complete-btn').classList.add('hidden');
                 }
-
-                if(step.exercises) {
-                    els.apexList.innerHTML = step.exercises.map(e => `<div class="flex items-center"><span class="w-1.5 h-1.5 bg-wolf-accent mr-3 rounded-full"></span><span class="text-white">${e}</span></div>`).join('');
-                }
+                if(step.exercises) els.apexList.innerHTML = step.exercises.map(e => `<div class="flex items-center"><span class="w-1.5 h-1.5 bg-wolf-accent mr-3 rounded-full"></span><span class="text-white">${e}</span></div>`).join('');
             } 
             
             if (step.type !== 'rep_work' || step.type === 'amrap') {
-                if(step.type !== 'amrap') { // Standard timed work
+                if(step.type !== 'amrap') { 
                     els.timed.classList.remove('hidden'); 
                     els.rep.classList.add('hidden'); 
                 }
@@ -742,7 +1046,7 @@
                     if (timeLeft <= 3 && timeLeft > 0) { beep('Low'); els.timer.classList.add('text-wolf-accent'); }
                     if (timeLeft <= 0) {
                         clearInterval(timerInt); beep('High');
-                        if (step.type === 'countdown') { startMissionClock(); nextStep(); } else if (isManual && (step.type === 'work' || step.type === 'rest')) { els.timer.textContent = "0"; els.manualBtn.classList.remove('hidden'); } else { nextStep(); }
+                        if (step.type === 'countdown') { startMissionClock(); nextStep(); } else { nextStep(); }
                     }
                 }, 1000);
             }
@@ -760,12 +1064,18 @@
             let details = activeRoutine.details || {};
             if(manualRoundCount > 0) details.roundsCompleted = manualRoundCount;
 
-            if (isTracking && startTime) {
+            if (startTime) {
                 const s = Math.floor((Date.now() - startTime) / 1000);
                 timeStr = formatTime(s);
-                const entry = { date: new Date().toISOString(), type: currentWorkoutType, duration: timeStr, details: details };
-                saveHistoryLog(entry);
             }
+            
+            // Stash stats for logging
+            completedWorkoutStats = {
+                type: currentWorkoutType,
+                duration: timeStr,
+                details: details
+            };
+
             els.finalTime.textContent = timeStr;
             const extraDiv = document.getElementById('final-stats-extra');
             extraDiv.innerHTML = ''; 
@@ -780,6 +1090,10 @@
             
             switchScreen('completion');
         }
+        
+        function logWorkoutToActivity() {
+             openActivityModal('workout_complete');
+        }
 
         // --- TOOLS LOGIC ---
         function switchTool(tool) {
@@ -789,521 +1103,114 @@
             document.getElementById(`tool-${tool}`).classList.remove('hidden');
             document.getElementById(`tab-${tool}`).classList.add('bg-wolf-accent', 'text-white'); document.getElementById(`tab-${tool}`).classList.remove('bg-wolf-surface', 'text-wolf-muted');
         }
-        
         // Stopwatch
         function toggleStopwatch() {
             const btn = document.getElementById('sw-btn');
             const useCountdown = document.getElementById('sw-countdown-check').checked;
-            
-            if(toolInt) { // STOPPING
-                clearInterval(toolInt); toolInt = null; 
-                btn.textContent = "RESUME"; btn.classList.remove('bg-red-900'); btn.classList.add('btn-primary'); 
-                els.swStatus.classList.add('hidden');
-                isPrep = false; 
-            }
-            else { // STARTING
-                if(swTime === 0 && !isPrep) {
-                    if(useCountdown) {
-                        // Start Countdown
-                        isPrep = true;
-                        let prep = 10;
-                        els.swStatus.textContent = "GET READY"; els.swStatus.classList.remove('hidden');
-                        document.getElementById('sw-display').textContent = `00:${prep.toString().padStart(2, '0')}.0`;
-                        btn.textContent = "WAIT..."; btn.disabled = true;
-
-                        toolInt = setInterval(() => {
-                            prep--;
-                            if(prep >= 0) {
-                                document.getElementById('sw-display').textContent = `00:${prep.toString().padStart(2, '0')}.0`;
-                                if(prep<=3) beep('Low');
-                            } else {
-                                clearInterval(toolInt); beep('High');
-                                els.swStatus.classList.add('hidden');
-                                btn.disabled = false; btn.textContent = "STOP"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
-                                isPrep = false;
-                                startStopwatchClock();
-                            }
-                        }, 1000);
-                    } else {
-                        // Immediate Start
-                        startStopwatchClock();
-                        btn.textContent = "STOP"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
-                    }
-                } else {
-                    // RESUME
-                    startStopwatchClock();
-                    btn.textContent = "STOP"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
-                }
+            if(toolInt) { clearInterval(toolInt); toolInt = null; btn.textContent = "RESUME"; btn.classList.remove('bg-red-900'); btn.classList.add('btn-primary'); els.swStatus.classList.add('hidden'); isPrep = false; }
+            else { 
+                if(swTime === 0 && !isPrep && useCountdown) {
+                    isPrep = true; let prep = 10; els.swStatus.textContent = "GET READY"; els.swStatus.classList.remove('hidden'); document.getElementById('sw-display').textContent = `00:${prep.toString().padStart(2, '0')}.0`; btn.textContent = "WAIT..."; btn.disabled = true;
+                    toolInt = setInterval(() => { prep--; if(prep >= 0) { document.getElementById('sw-display').textContent = `00:${prep.toString().padStart(2, '0')}.0`; if(prep<=3) beep('Low'); } else { clearInterval(toolInt); beep('High'); els.swStatus.classList.add('hidden'); btn.disabled = false; btn.textContent = "STOP"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900'); isPrep = false; startStopwatchClock(); } }, 1000);
+                } else { startStopwatchClock(); btn.textContent = "STOP"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900'); }
             }
         }
-        function startStopwatchClock() {
-            const start = Date.now() - swTime;
-            toolInt = setInterval(() => { 
-                swTime = Date.now() - start; 
-                document.getElementById('sw-display').textContent = formatTimeTenths(swTime); 
-            }, 50);
-        }
-
-        function lapStopwatch() {
-            if(!toolInt || isPrep) return; 
-            const splitMs = swTime - swLastLapTime;
-            const splitTime = formatTimeTenths(splitMs);
-            const totalTime = formatTimeTenths(swTime);
-            swLastLapTime = swTime; 
-
-            const lapDiv = document.createElement('div');
-            lapDiv.className = "flex justify-between border-b border-wolf-border pb-1";
-            lapDiv.innerHTML = `<span class="text-wolf-muted">Lap ${els.swLaps.children.length}</span><span class="text-white font-bold">${splitTime} / ${totalTime}</span>`;
-            if(els.swLaps.children[0]?.classList.contains('italic')) els.swLaps.innerHTML = '';
-            els.swLaps.prepend(lapDiv);
-        }
-        function resetStopwatch() { 
-            clearInterval(toolInt); toolInt = null; swTime = 0; swLastLapTime = 0; isPrep = false;
-            document.getElementById('sw-display').textContent = "00:00.0"; 
-            document.getElementById('sw-btn').textContent = "START"; document.getElementById('sw-btn').className = "flex-1 btn-primary py-4 text-xl"; document.getElementById('sw-btn').disabled = false;
-            els.swLaps.innerHTML = '<div class="text-wolf-muted text-center italic py-2">Laps will appear here</div>';
-            els.swStatus.classList.add('hidden');
-        }
+        function startStopwatchClock() { const start = Date.now() - swTime; toolInt = setInterval(() => { swTime = Date.now() - start; document.getElementById('sw-display').textContent = formatTimeTenths(swTime); }, 50); }
+        function lapStopwatch() { if(!toolInt || isPrep) return; const splitMs = swTime - swLastLapTime; const splitTime = formatTimeTenths(splitMs); const totalTime = formatTimeTenths(swTime); swLastLapTime = swTime; const lapDiv = document.createElement('div'); lapDiv.className = "flex justify-between border-b border-wolf-border pb-1"; lapDiv.innerHTML = `<span class="text-wolf-muted">Lap ${els.swLaps.children.length}</span><span class="text-white font-bold">${splitTime} / ${totalTime}</span>`; if(els.swLaps.children[0]?.classList.contains('italic')) els.swLaps.innerHTML = ''; els.swLaps.prepend(lapDiv); }
+        function resetStopwatch() { clearInterval(toolInt); toolInt = null; swTime = 0; swLastLapTime = 0; isPrep = false; document.getElementById('sw-display').textContent = "00:00.0"; document.getElementById('sw-btn').textContent = "START"; document.getElementById('sw-btn').className = "flex-1 btn-primary py-4 text-xl"; document.getElementById('sw-btn').disabled = false; els.swLaps.innerHTML = '<div class="text-wolf-muted text-center italic py-2">Laps will appear here</div>'; els.swStatus.classList.add('hidden'); }
 
         // Timer
         function toggleTimer() {
-            const btn = document.getElementById('tm-btn');
-            const display = document.getElementById('tm-display');
-            const config = document.getElementById('tm-config-container');
-            const isRoundTrack = document.getElementById('tm-rounds-check').checked;
-            const useCountdown = document.getElementById('tm-countdown-check').checked;
-
-            if(toolInt) { // PAUSE
-                clearInterval(toolInt); toolInt = null; 
-                btn.textContent = "RESUME"; btn.classList.remove('bg-red-900'); btn.classList.add('btn-primary'); 
-                els.tmStatus.classList.add('hidden');
-            }
-            else { // START
+            const btn = document.getElementById('tm-btn'); const display = document.getElementById('tm-display'); const config = document.getElementById('tm-config-container'); const isRoundTrack = document.getElementById('tm-rounds-check').checked; const useCountdown = document.getElementById('tm-countdown-check').checked;
+            if(toolInt) { clearInterval(toolInt); toolInt = null; btn.textContent = "RESUME"; btn.classList.remove('bg-red-900'); btn.classList.add('btn-primary'); els.tmStatus.classList.add('hidden'); }
+            else { 
                 if(tmTime <= 0) {
-                    const h = parseInt(document.getElementById('tm-h').value) || 0;
-                    const m = parseInt(document.getElementById('tm-m').value) || 0;
-                    const s = parseInt(document.getElementById('tm-s').value) || 0;
-                    tmTime = (h*3600) + (m*60) + s;
-                    if(tmTime <= 0) return;
-                    tmOriginalTime = tmTime; // Store for recording
-                    
+                    const h = parseInt(document.getElementById('tm-h').value) || 0; const m = parseInt(document.getElementById('tm-m').value) || 0; const s = parseInt(document.getElementById('tm-s').value) || 0; tmTime = (h*3600) + (m*60) + s; if(tmTime <= 0) return; tmOriginalTime = tmTime;
                     config.classList.add('hidden'); display.classList.remove('hidden');
-                    if(isRoundTrack) { els.tmRoundTracker.classList.remove('hidden'); toolRoundCount = 0; els.tmRoundVal.textContent = "0"; } 
-                    else { els.tmRoundTracker.classList.add('hidden'); }
-
-                    if(useCountdown) {
-                        isPrep = true;
-                        let prep = 10;
-                        els.tmStatus.textContent = "GET READY"; els.tmStatus.classList.remove('hidden');
-                        display.textContent = formatTime(prep);
-                        btn.textContent = "WAIT..."; btn.disabled = true;
-
-                        toolInt = setInterval(() => {
-                            prep--;
-                            display.textContent = formatTime(prep);
-                            if(prep <= 3) beep('Low');
-                            if(prep <= 0) {
-                                clearInterval(toolInt); beep('High');
-                                isPrep = false; els.tmStatus.classList.add('hidden');
-                                btn.disabled = false; btn.textContent = "PAUSE"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
-                                startTimerClock();
-                            }
-                        }, 1000);
-                    } else {
-                        btn.textContent = "PAUSE"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
-                        startTimerClock();
-                    }
-                } else {
-                    // RESUME
-                    btn.textContent = "PAUSE"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
-                    startTimerClock();
-                }
+                    if(isRoundTrack) { els.tmRoundTracker.classList.remove('hidden'); toolRoundCount = 0; els.tmRoundVal.textContent = "0"; } else { els.tmRoundTracker.classList.add('hidden'); }
+                    if(useCountdown) { isPrep = true; let prep = 10; els.tmStatus.textContent = "GET READY"; els.tmStatus.classList.remove('hidden'); display.textContent = formatTime(prep); btn.textContent = "WAIT..."; btn.disabled = true; toolInt = setInterval(() => { prep--; display.textContent = formatTime(prep); if(prep <= 3) beep('Low'); if(prep <= 0) { clearInterval(toolInt); beep('High'); isPrep = false; els.tmStatus.classList.add('hidden'); btn.disabled = false; btn.textContent = "PAUSE"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900'); startTimerClock(); } }, 1000); } else { btn.textContent = "PAUSE"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900'); startTimerClock(); }
+                } else { btn.textContent = "PAUSE"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900'); startTimerClock(); }
             }
         }
-        function startTimerClock() {
-             const display = document.getElementById('tm-display');
-             const config = document.getElementById('tm-config-container');
-             display.textContent = formatTime(tmTime);
-             toolInt = setInterval(() => {
-                tmTime--; display.textContent = formatTime(tmTime);
-                if(tmTime <= 0) { 
-                    clearInterval(toolInt); toolInt = null; beep('High'); 
-                    document.getElementById('tm-btn').textContent = "START"; document.getElementById('tm-btn').className = "flex-1 btn-primary py-4 text-xl"; 
-                    config.classList.remove('hidden'); display.classList.add('hidden'); els.tmRoundTracker.classList.add('hidden');
-                    
-                    // Trigger Record Prompt
-                    openModal('record-prompt-modal');
-                }
-            }, 1000);
-        }
-        // Custom Record Logic
-        function openRecordDetails() {
-            closeModal('record-prompt-modal');
-            editingHistoryId = null; // Ensure we are in create mode
-            document.getElementById('record-modal-title').textContent = "RECORD SESSION";
-            document.getElementById('rec-name').value = "Custom Timer Workout";
-            document.getElementById('rec-duration').value = formatTime(tmOriginalTime);
-            document.getElementById('rec-rounds').value = toolRoundCount;
-            document.getElementById('rec-notes').value = "";
-            openModal('record-details-modal');
-        }
+        function startTimerClock() { const display = document.getElementById('tm-display'); const config = document.getElementById('tm-config-container'); display.textContent = formatTime(tmTime); toolInt = setInterval(() => { tmTime--; display.textContent = formatTime(tmTime); if(tmTime <= 0) { clearInterval(toolInt); toolInt = null; beep('High'); document.getElementById('tm-btn').textContent = "START"; document.getElementById('tm-btn').className = "flex-1 btn-primary py-4 text-xl"; config.classList.remove('hidden'); display.classList.add('hidden'); els.tmRoundTracker.classList.add('hidden'); 
+            // Log custom timer
+            completedWorkoutStats = { type: "Custom Timer", duration: formatTime(tmOriginalTime), details: { roundsCompleted: toolRoundCount } };
+            logWorkoutToActivity();
+        } }, 1000); }
+        
+        window.toolIncrementRound = () => { toolRoundCount++; els.tmRoundVal.textContent = toolRoundCount; beep('Mid'); };
+        function resetTimer() { clearInterval(toolInt); toolInt = null; tmTime = 0; isPrep = false; document.getElementById('tm-config-container').classList.remove('hidden'); document.getElementById('tm-display').classList.add('hidden'); document.getElementById('tm-btn').textContent = "START"; document.getElementById('tm-btn').disabled = false; document.getElementById('tm-btn').className = "flex-1 btn-primary py-4 text-xl"; els.tmStatus.classList.add('hidden'); els.tmRoundTracker.classList.add('hidden'); }
 
-        // EDIT LOGIC
+        // Tabata
+        function toggleTabata() { const btn = document.getElementById('tb-btn'); const useCountdown = document.getElementById('tb-countdown-check').checked; if(tbState.active) { clearInterval(toolInt); toolInt = null; tbState.active = false; resetTabataUI(); return; } tbState.workTime = parseInt(document.getElementById('tb-work').value) || 20; tbState.restTime = parseInt(document.getElementById('tb-rest').value) || 10; tbState.totalRounds = parseInt(document.getElementById('tb-rounds').value) || 8; tbState.round = 1; tbState.active = true; document.getElementById('tb-config').classList.add('hidden'); document.getElementById('tb-display-container').classList.remove('hidden'); btn.textContent = "STOP TABATA"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900'); document.getElementById('tb-countdown-container').classList.add('hidden'); if(useCountdown) { isPrep = true; tbState.timeLeft = 10; updateTabataUI("GET READY", tbState.timeLeft); startTabataClock(); } else { isPrep = false; tbState.isWork = true; tbState.timeLeft = tbState.workTime; updateTabataUI("WORK", tbState.timeLeft); startTabataClock(); } }
+        function startTabataClock() { toolInt = setInterval(() => { tbState.timeLeft--; if(tbState.timeLeft < 0) { if(isPrep) { isPrep = false; tbState.isWork = true; beep('High'); tbState.timeLeft = tbState.workTime; updateTabataUI("WORK", tbState.timeLeft); } else if(tbState.isWork) { beep('Mid'); if(tbState.round >= tbState.totalRounds) { finishTabata(); return; } tbState.isWork = false; tbState.timeLeft = tbState.restTime; updateTabataUI("REST", tbState.timeLeft); } else { beep('High'); tbState.round++; tbState.isWork = true; tbState.timeLeft = tbState.workTime; updateTabataUI("WORK", tbState.timeLeft); } } else { document.getElementById('tb-timer').textContent = tbState.timeLeft; if(tbState.timeLeft <= 3) beep('Low'); } }, 1000); }
+        function updateTabataUI(status, time) { const stEl = document.getElementById('tb-status'); stEl.textContent = status; stEl.className = (status === "WORK") ? "text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading" : "text-green-500 uppercase tracking-widest text-2xl mb-2 font-heading"; if(status === "GET READY") stEl.className = "text-white uppercase tracking-widest text-2xl mb-2 font-heading"; document.getElementById('tb-timer').textContent = time; document.getElementById('tb-round-counter').textContent = `Round ${tbState.round}/${tbState.totalRounds}`; }
+        function finishTabata() { clearInterval(toolInt); tbState.active = false; beep('High'); beep('High'); alert("TABATA COMPLETE"); resetTabataUI(); 
+            completedWorkoutStats = { type: "Tabata", duration: `${tbState.totalRounds} Rnds`, details: { } };
+            logWorkoutToActivity();
+        }
+        function resetTabataUI() { document.getElementById('tb-config').classList.remove('hidden'); document.getElementById('tb-display-container').classList.add('hidden'); document.getElementById('tb-countdown-container').classList.remove('hidden'); const btn = document.getElementById('tb-btn'); btn.textContent = "START TABATA"; btn.className = "w-full max-w-sm btn-primary py-4 text-xl mt-6"; }
+
+        // --- UTILS & EDITOR ---
+        function formatTime(s) { const min = Math.floor(s / 60).toString().padStart(2, '0'); const sec = (s % 60).toString().padStart(2, '0'); return `${min}:${sec}`; }
+        function formatTimeTenths(ms) { const m = Math.floor(ms/60000).toString().padStart(2,'0'); const s = Math.floor((ms%60000)/1000).toString().padStart(2,'0'); const ds = Math.floor((ms%1000)/100); return `${m}:${s}.${ds}`; }
+        function generateApexRoutine(config, maxReps) { const routine = []; const reps = []; for (let i = 1; i <= maxReps; i++) reps.push(i); for (let i = maxReps - 1; i >= 1; i--) reps.push(i); reps.forEach((repCount, idx) => { routine.push({ type: 'rep_work', name: `${repCount} Reps`, round: `${idx + 1}/${reps.length}`, exercises: config.exercises }); if (idx < reps.length - 1) routine.push({ type: 'rest', name: 'Rest', duration: config.restTime || 30, round: 'Recover' }); }); return routine; }
+        
+        function openEditor(key) { editingRoutineKey = key; closeModal('editor-select-modal'); if(key === 'apex') editingCopy = JSON.parse(JSON.stringify(routines.apex_config || defaultRoutines.apex_config)); else editingCopy = JSON.parse(JSON.stringify(routines[key])); renderEditor(); switchScreen('editor'); }
+        function renderEditor() {
+            const container = document.getElementById('editor-content'); const title = document.getElementById('editor-title'); container.innerHTML = '';
+            if(editingRoutineKey === 'apex') {
+                title.textContent = "EDIT APEX"; const restDiv = document.createElement('div'); restDiv.className = "bg-wolf-surface p-4 mb-4 rounded-lg border border-wolf-border"; restDiv.innerHTML = `<label class="text-xs text-wolf-muted uppercase font-bold">Ladder Rest Time (Seconds)</label><input type="number" onchange="updateApexRest(this.value)" value="${editingCopy.restTime}" class="w-full bg-wolf-bg text-white p-2 mt-2 rounded border border-wolf-border focus:border-wolf-accent outline-none">`; container.appendChild(restDiv);
+                editingCopy.exercises.forEach((ex, idx) => { const row = document.createElement('div'); row.className = "flex gap-2 mb-2 items-center"; row.innerHTML = `<span class="text-wolf-muted text-xs w-4">${idx+1}.</span><input type="text" value="${ex}" onchange="updateApexEx(${idx}, this.value)" class="flex-grow bg-wolf-surface text-white p-3 rounded border border-wolf-border text-sm focus:border-wolf-accent outline-none"><button onclick="insertStep(${idx})" class="text-wolf-accent hover:text-white p-2 text-lg font-bold">+</button><button onclick="deleteApexEx(${idx})" class="text-red-500 hover:text-red-400 p-2">✕</button>`; container.appendChild(row); });
+            } else {
+                title.textContent = editingRoutineKey.toUpperCase();
+                editingCopy.forEach((step, idx) => { const row = document.createElement('div'); row.className = "bg-wolf-surface p-3 rounded-lg border border-wolf-border mb-3"; let inputs = `<div class="flex gap-2 mb-2"><input type="text" value="${step.name}" onchange="updateStep(${idx}, 'name', this.value)" class="flex-grow bg-wolf-bg text-white font-medium p-2 rounded text-sm border border-wolf-border focus:border-wolf-accent outline-none"><select onchange="updateStep(${idx}, 'type', this.value)" class="bg-wolf-bg text-wolf-muted p-2 text-xs uppercase rounded border border-wolf-border outline-none"><option value="work" ${step.type==='work'?'selected':''}>Work</option><option value="rest" ${step.type==='rest'?'selected':''}>Rest</option><option value="rep_work" ${step.type==='rep_work'?'selected':''}>Reps</option><option value="cooldown" ${step.type==='cooldown'?'selected':''}>Cool</option><option value="amrap" ${step.type==='amrap'?'selected':''}>AMRAP</option></select></div>`; if(step.type === 'rep_work' || step.type === 'amrap') { inputs += `<div class="flex gap-2 items-center"><span class="text-xs text-wolf-muted">List</span><input type="text" value="${step.exercises ? step.exercises.join(', ') : ''}" onchange="updateStep(${idx}, 'exercises', this.value)" class="flex-grow bg-wolf-bg text-white p-2 text-xs rounded border border-wolf-border outline-none placeholder:text-wolf-muted/50" placeholder="Ex 1, Ex 2..."></div>`; } if(step.type !== 'rep_work') { inputs += `<div class="flex gap-2 items-center mt-2"><span class="text-xs text-wolf-muted">Secs</span><input type="number" value="${step.duration || 0}" onchange="updateStep(${idx}, 'duration', this.value)" class="w-20 bg-wolf-bg text-white p-2 text-sm text-center rounded border border-wolf-border outline-none"></div>`; } inputs += `<div class="mt-2 flex justify-between"><button onclick="insertStep(${idx})" class="text-[10px] text-wolf-accent uppercase font-bold tracking-wider hover:text-white">+ Insert Below</button><button onclick="deleteStep(${idx})" class="text-[10px] text-red-500 hover:text-white uppercase font-bold tracking-wider">Remove</button></div>`; row.innerHTML = inputs; container.appendChild(row); });
+            }
+        }
+        
+        window.updateApexRest = (val) => { editingCopy.restTime = parseInt(val); }; window.updateApexEx = (idx, val) => { editingCopy.exercises[idx] = val; }; window.deleteApexEx = (idx) => { editingCopy.exercises.splice(idx, 1); renderEditor(); }; window.addStepToEditor = () => { if(editingRoutineKey === 'apex') editingCopy.exercises.push("New Movement"); else editingCopy.push({ type: 'work', name: 'New Exercise', duration: 30 }); renderEditor(); }; window.updateStep = (idx, field, val) => { if(field === 'duration') editingCopy[idx].duration = parseInt(val); else if(field === 'name') editingCopy[idx].name = val; else if(field === 'type') { editingCopy[idx].type = val; if(val === 'rep_work' && !editingCopy[idx].exercises) editingCopy[idx].exercises = ['10 Reps']; if(val === 'amrap') { if(!editingCopy[idx].exercises) editingCopy[idx].exercises = ['List Exercises Here']; if(!editingCopy[idx].duration) editingCopy[idx].duration = 600; } renderEditor(); } else if(field === 'exercises') { editingCopy[idx].exercises = val.split(',').map(s => s.trim()).filter(s => s.length > 0); } }; window.deleteStep = (idx) => { editingCopy.splice(idx, 1); renderEditor(); }; window.insertStep = (idx) => { if(editingRoutineKey === 'apex') { editingCopy.exercises.splice(idx + 1, 0, "New Movement"); } else { editingCopy.splice(idx + 1, 0, { type: 'work', name: 'New Exercise', duration: 30 }); } renderEditor(); };
+        async function saveRoutineChanges() { if(editingRoutineKey === 'apex') routines.apex_config = editingCopy; else routines[editingRoutineKey] = editingCopy; await saveRoutinesToStorage(); renderMenuWorkouts(); switchScreen('menu'); }
+        async function syncRoutines(url) { const targetUrl = url || getApiUrl(); if(!targetUrl) return; try { const res = await fetch(targetUrl); const data = await res.json(); if(data.routines && Object.keys(data.routines).length > 0) { routines = data.routines; localStorage.setItem(STORAGE_KEY_ROUTINES, JSON.stringify(routines)); renderMenuWorkouts(); } } catch(e) {} }
+
+        // --- EDIT/DELETE HISTORY ---
         function editHistory(id) {
             const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
             const entry = h.find(x => x.date === id);
+            if (!entry) return alert("Entry not found.");
             
-            if (!entry) { alert("Error: Could not find entry to edit."); return; }
-            
-            editingHistoryId = id; // Store ID
-            
-            document.getElementById('record-modal-title').textContent = "EDIT ENTRY";
-            document.getElementById('rec-name').value = entry.type;
-            document.getElementById('rec-duration').value = entry.duration;
-            document.getElementById('rec-rounds').value = (entry.details && entry.details.roundsCompleted) ? entry.details.roundsCompleted : 0;
-            document.getElementById('rec-notes').value = (entry.details && entry.details.notes) ? entry.details.notes : "";
-            
-            openModal('record-details-modal');
+            // Format for activity modal
+            const data = {
+                id: entry.date,
+                isoTime: entry.date,
+                activity: entry.type,
+                amount: (entry.details && entry.details.amount) ? entry.details.amount : entry.duration,
+                unit: (entry.details && entry.details.unit) ? entry.details.unit : "",
+                rating: (entry.details && entry.details.rating) ? entry.details.rating : "Neutral",
+                focus: (entry.details && entry.details.focus) ? entry.details.focus : "None",
+                note: (entry.details && entry.details.notes) ? entry.details.notes : ""
+            };
+            openActivityModal('edit', data);
         }
 
-        // DELETE LOGIC
         async function deleteHistory(id) {
             if(!confirm("Are you sure you want to delete this log?")) return;
-            
             let h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
             const index = h.findIndex(x => x.date === id);
-            
             if (index > -1) {
                 h.splice(index, 1);
                 localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
                 showHistory(); 
-                
                 const url = getApiUrl();
                 if(url) {
                     try {
                         document.getElementById('history-loading').classList.remove('hidden');
-                        await fetch(url, { 
-                            method: 'POST', 
-                            mode: 'no-cors', 
-                            headers: {'Content-Type': 'application/json'}, 
-                            body: JSON.stringify({ action: 'delete', date: id }) 
-                        });
+                        await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'delete', date: id }) });
                         document.getElementById('history-loading').classList.add('hidden');
                     } catch(e) {}
                 }
             }
         }
 
-        async function saveCustomWorkout() {
-            const btn = document.getElementById('save-custom-btn');
-            if(btn) {
-                btn.disabled = true;
-                btn.textContent = "SAVING...";
-                btn.classList.add('opacity-50', 'cursor-not-allowed');
-            }
-
-            const name = document.getElementById('rec-name').value || "Custom Workout";
-            const duration = document.getElementById('rec-duration').value;
-            const rounds = document.getElementById('rec-rounds').value;
-            const notes = document.getElementById('rec-notes').value;
-            
-            const details = {
-                roundsCompleted: rounds,
-                notes: notes
-            };
-
-            let h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
-            const url = getApiUrl();
-
-            if (editingHistoryId !== null) {
-                // UPDATE
-                const index = h.findIndex(x => x.date === editingHistoryId);
-                if (index > -1) {
-                    const existing = h[index];
-                    existing.type = name;
-                    existing.duration = duration;
-                    existing.details = { ...existing.details, ...details }; 
-                    h[index] = existing;
-                    localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
-                    
-                    if(url) {
-                        try {
-                            await fetch(url, { 
-                                method: 'POST', 
-                                mode: 'no-cors', 
-                                headers: {'Content-Type': 'application/json'}, 
-                                body: JSON.stringify({ 
-                                    action: 'edit', 
-                                    date: editingHistoryId, 
-                                    type: name, 
-                                    duration: duration, 
-                                    details: existing.details 
-                                }) 
-                            });
-                        } catch(e) {}
-                    }
-                }
-            } else {
-                // CREATE NEW
-                const entry = {
-                    date: new Date().toISOString(),
-                    type: name,
-                    duration: duration,
-                    details: details
-                };
-                h.push(entry);
-                localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
-                
-                if(url) { try { await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(entry) }); } catch(e) {} }
-            }
-
-            closeModal('record-details-modal');
-            
-            // Reset
-            document.getElementById('rec-notes').value = '';
-            document.getElementById('rec-name').value = 'Custom Timer Workout';
-            editingHistoryId = null;
-            
-            if(btn) {
-                btn.disabled = false;
-                btn.textContent = "SAVE TO HISTORY";
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
-
-            if(document.getElementById('history-screen').classList.contains('active')) {
-                showHistory();
-            } else {
-                alert("Saved!");
-            }
-        }
-
-        // NEW: Weight Logic
-        async function saveWeightEntry() {
-            const weightVal = document.getElementById('weight-input').value;
-            if(!weightVal) { alert("Enter a valid weight."); return; }
-
-            const btn = document.getElementById('save-weight-btn');
-            if(btn) { btn.disabled = true; btn.textContent = "SAVING..."; btn.classList.add('opacity-50'); }
-
-            const entry = {
-                date: new Date().toISOString(),
-                type: "Weight Check-In",
-                duration: "", // No duration for weight
-                details: { weight: weightVal + " lbs" }
-            };
-
-            await saveHistoryLog(entry);
-            
-            closeModal('weight-modal');
-            document.getElementById('weight-input').value = "";
-            if(btn) { btn.disabled = false; btn.textContent = "LOG WEIGHT"; btn.classList.remove('opacity-50'); }
-            
-            alert("Weight Logged!");
-        }
-
-        // NEW: Insert Logic
-        window.insertStep = (idx) => {
-            if(editingRoutineKey === 'apex') {
-                editingCopy.exercises.splice(idx + 1, 0, "New Movement");
-            } else {
-                editingCopy.splice(idx + 1, 0, { type: 'work', name: 'New Exercise', duration: 30 });
-            }
-            renderEditor();
-        };
-
-        window.toolIncrementRound = () => { toolRoundCount++; els.tmRoundVal.textContent = toolRoundCount; beep('Mid'); };
-        function resetTimer() { 
-            clearInterval(toolInt); toolInt = null; tmTime = 0; isPrep = false;
-            document.getElementById('tm-config-container').classList.remove('hidden'); 
-            document.getElementById('tm-display').classList.add('hidden'); 
-            document.getElementById('tm-btn').textContent = "START"; document.getElementById('tm-btn').disabled = false; document.getElementById('tm-btn').className = "flex-1 btn-primary py-4 text-xl"; 
-            els.tmStatus.classList.add('hidden');
-            els.tmRoundTracker.classList.add('hidden');
-        }
-
-        // Tabata
-        function toggleTabata() {
-            const btn = document.getElementById('tb-btn');
-            const useCountdown = document.getElementById('tb-countdown-check').checked;
-
-            if(tbState.active) { clearInterval(toolInt); toolInt = null; tbState.active = false; resetTabataUI(); return; }
-            
-            // Start
-            tbState.workTime = parseInt(document.getElementById('tb-work').value) || 20;
-            tbState.restTime = parseInt(document.getElementById('tb-rest').value) || 10;
-            tbState.totalRounds = parseInt(document.getElementById('tb-rounds').value) || 8;
-            tbState.round = 1; 
-            tbState.active = true;
-
-            document.getElementById('tb-config').classList.add('hidden');
-            document.getElementById('tb-display-container').classList.remove('hidden');
-            btn.textContent = "STOP TABATA"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900');
-            document.getElementById('tb-countdown-container').classList.add('hidden'); // Hide checkbox while running
-
-            if(useCountdown) {
-                isPrep = true;
-                tbState.timeLeft = 10;
-                updateTabataUI("GET READY", tbState.timeLeft);
-                startTabataClock();
-            } else {
-                // Immediate Start -> Go straight to Work
-                isPrep = false;
-                tbState.isWork = true;
-                tbState.timeLeft = tbState.workTime;
-                updateTabataUI("WORK", tbState.timeLeft);
-                startTabataClock();
-            }
-        }
-        function startTabataClock() {
-            toolInt = setInterval(() => {
-                tbState.timeLeft--;
-                if(tbState.timeLeft < 0) {
-                    if(isPrep) {
-                        isPrep = false; tbState.isWork = true; 
-                        beep('High'); tbState.timeLeft = tbState.workTime;
-                        updateTabataUI("WORK", tbState.timeLeft);
-                    }
-                    else if(tbState.isWork) {
-                         beep('Mid');
-                         if(tbState.round >= tbState.totalRounds) { finishTabata(); return; }
-                         tbState.isWork = false; tbState.timeLeft = tbState.restTime;
-                         updateTabataUI("REST", tbState.timeLeft);
-                    } else {
-                        beep('High');
-                        tbState.round++; tbState.isWork = true; tbState.timeLeft = tbState.workTime;
-                        updateTabataUI("WORK", tbState.timeLeft);
-                    }
-                } else {
-                    document.getElementById('tb-timer').textContent = tbState.timeLeft;
-                    if(tbState.timeLeft <= 3) beep('Low');
-                }
-            }, 1000);
-        }
-        function updateTabataUI(status, time) {
-             const stEl = document.getElementById('tb-status');
-             stEl.textContent = status;
-             stEl.className = (status === "WORK") ? "text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading" : "text-green-500 uppercase tracking-widest text-2xl mb-2 font-heading";
-             if(status === "GET READY") stEl.className = "text-white uppercase tracking-widest text-2xl mb-2 font-heading";
-             document.getElementById('tb-timer').textContent = time;
-             document.getElementById('tb-round-counter').textContent = `Round ${tbState.round}/${tbState.totalRounds}`;
-        }
-        function finishTabata() {
-            clearInterval(toolInt); tbState.active = false; beep('High'); beep('High');
-            alert("TABATA COMPLETE"); resetTabataUI();
-        }
-        function resetTabataUI() {
-            document.getElementById('tb-config').classList.remove('hidden');
-            document.getElementById('tb-display-container').classList.add('hidden');
-            document.getElementById('tb-countdown-container').classList.remove('hidden');
-            const btn = document.getElementById('tb-btn'); btn.textContent = "START TABATA"; btn.className = "w-full max-w-sm btn-primary py-4 text-xl mt-6";
-        }
-
-        // --- UTILS & EDITOR ---
-        function formatTime(s) { const min = Math.floor(s / 60).toString().padStart(2, '0'); const sec = (s % 60).toString().padStart(2, '0'); return `${min}:${sec}`; }
-        function formatTimeTenths(ms) { 
-            const m = Math.floor(ms/60000).toString().padStart(2,'0'); 
-            const s = Math.floor((ms%60000)/1000).toString().padStart(2,'0'); 
-            const ds = Math.floor((ms%1000)/100); 
-            return `${m}:${s}.${ds}`; 
-        }
-
-        function generateApexRoutine(config, maxReps) { const routine = []; const reps = []; for (let i = 1; i <= maxReps; i++) reps.push(i); for (let i = maxReps - 1; i >= 1; i--) reps.push(i); reps.forEach((repCount, idx) => { routine.push({ type: 'rep_work', name: `${repCount} Reps`, round: `${idx + 1}/${reps.length}`, exercises: config.exercises }); if (idx < reps.length - 1) routine.push({ type: 'rest', name: 'Rest', duration: config.restTime || 30, round: 'Recover' }); }); return routine; }
-        function openEditor(key) { editingRoutineKey = key; closeModal('editor-select-modal'); if(key === 'apex') editingCopy = JSON.parse(JSON.stringify(routines.apex_config || defaultRoutines.apex_config)); else editingCopy = JSON.parse(JSON.stringify(routines[key])); renderEditor(); switchScreen('editor'); }
-        function renderEditor() {
-            const container = document.getElementById('editor-content');
-            const title = document.getElementById('editor-title');
-            container.innerHTML = '';
-            if(editingRoutineKey === 'apex') {
-                title.textContent = "EDIT APEX";
-                const restDiv = document.createElement('div');
-                restDiv.className = "bg-wolf-surface p-4 mb-4 rounded-lg border border-wolf-border";
-                restDiv.innerHTML = `<label class="text-xs text-wolf-muted uppercase font-bold">Ladder Rest Time (Seconds)</label><input type="number" onchange="updateApexRest(this.value)" value="${editingCopy.restTime}" class="w-full bg-wolf-bg text-white p-2 mt-2 rounded border border-wolf-border focus:border-wolf-accent outline-none">`;
-                container.appendChild(restDiv);
-                editingCopy.exercises.forEach((ex, idx) => {
-                    const row = document.createElement('div');
-                    row.className = "flex gap-2 mb-2 items-center";
-                    row.innerHTML = `<span class="text-wolf-muted text-xs w-4">${idx+1}.</span><input type="text" value="${ex}" onchange="updateApexEx(${idx}, this.value)" class="flex-grow bg-wolf-surface text-white p-3 rounded border border-wolf-border text-sm focus:border-wolf-accent outline-none">
-                    <button onclick="insertStep(${idx})" class="text-wolf-accent hover:text-white p-2 text-lg font-bold">+</button>
-                    <button onclick="deleteApexEx(${idx})" class="text-red-500 hover:text-red-400 p-2">✕</button>`;
-                    container.appendChild(row);
-                });
-            } else {
-                title.textContent = editingRoutineKey.toUpperCase();
-                editingCopy.forEach((step, idx) => {
-                    const row = document.createElement('div');
-                    row.className = "bg-wolf-surface p-3 rounded-lg border border-wolf-border mb-3";
-                    let inputs = `<div class="flex gap-2 mb-2"><input type="text" value="${step.name}" onchange="updateStep(${idx}, 'name', this.value)" class="flex-grow bg-wolf-bg text-white font-medium p-2 rounded text-sm border border-wolf-border focus:border-wolf-accent outline-none"><select onchange="updateStep(${idx}, 'type', this.value)" class="bg-wolf-bg text-wolf-muted p-2 text-xs uppercase rounded border border-wolf-border outline-none"><option value="work" ${step.type==='work'?'selected':''}>Work</option><option value="rest" ${step.type==='rest'?'selected':''}>Rest</option><option value="rep_work" ${step.type==='rep_work'?'selected':''}>Reps</option><option value="cooldown" ${step.type==='cooldown'?'selected':''}>Cool</option><option value="amrap" ${step.type==='amrap'?'selected':''}>AMRAP</option></select></div>`;
-                    
-                    if(step.type === 'rep_work' || step.type === 'amrap') {
-                        // AMRAP/Reps need Detail/Exercise list
-                        inputs += `<div class="flex gap-2 items-center"><span class="text-xs text-wolf-muted">List</span><input type="text" value="${step.exercises ? step.exercises.join(', ') : ''}" onchange="updateStep(${idx}, 'exercises', this.value)" class="flex-grow bg-wolf-bg text-white p-2 text-xs rounded border border-wolf-border outline-none placeholder:text-wolf-muted/50" placeholder="Ex 1, Ex 2..."></div>`;
-                    }
-                    
-                    if(step.type !== 'rep_work') {
-                        // Timer based types need Duration
-                        inputs += `<div class="flex gap-2 items-center mt-2"><span class="text-xs text-wolf-muted">Secs</span><input type="number" value="${step.duration || 0}" onchange="updateStep(${idx}, 'duration', this.value)" class="w-20 bg-wolf-bg text-white p-2 text-sm text-center rounded border border-wolf-border outline-none"></div>`;
-                    }
-
-                    inputs += `<div class="mt-2 flex justify-between">
-                        <button onclick="insertStep(${idx})" class="text-[10px] text-wolf-accent uppercase font-bold tracking-wider hover:text-white">+ Insert Below</button>
-                        <button onclick="deleteStep(${idx})" class="text-[10px] text-red-500 hover:text-white uppercase font-bold tracking-wider">Remove</button>
-                    </div>`;
-                    row.innerHTML = inputs;
-                    container.appendChild(row);
-                });
-            }
-        }
-        window.updateApexRest = (val) => { editingCopy.restTime = parseInt(val); };
-        window.updateApexEx = (idx, val) => { editingCopy.exercises[idx] = val; };
-        window.deleteApexEx = (idx) => { editingCopy.exercises.splice(idx, 1); renderEditor(); };
-        window.addStepToEditor = () => { if(editingRoutineKey === 'apex') editingCopy.exercises.push("New Movement"); else editingCopy.push({ type: 'work', name: 'New Exercise', duration: 30 }); renderEditor(); };
-        
-        window.updateStep = (idx, field, val) => { 
-            if(field === 'duration') editingCopy[idx].duration = parseInt(val); 
-            else if(field === 'name') editingCopy[idx].name = val; 
-            else if(field === 'type') { 
-                editingCopy[idx].type = val; 
-                // Default props for new type
-                if(val === 'rep_work' && !editingCopy[idx].exercises) editingCopy[idx].exercises = ['10 Reps']; 
-                if(val === 'amrap') { 
-                    if(!editingCopy[idx].exercises) editingCopy[idx].exercises = ['List Exercises Here'];
-                    if(!editingCopy[idx].duration) editingCopy[idx].duration = 600;
-                }
-                renderEditor(); 
-            } 
-            else if(field === 'exercises') {
-                // Split comma separated string into array
-                editingCopy[idx].exercises = val.split(',').map(s => s.trim()).filter(s => s.length > 0);
-            }
-        };
-        
-        window.deleteStep = (idx) => { editingCopy.splice(idx, 1); renderEditor(); };
-        async function saveRoutineChanges() {
-            if(editingRoutineKey === 'apex') routines.apex_config = editingCopy; else routines[editingRoutineKey] = editingCopy;
-            await saveRoutinesToStorage();
-            renderMenuWorkouts();
-            switchScreen('menu');
-        }
-        async function syncRoutines(url) {
-            const targetUrl = url || getApiUrl();
-            if(!targetUrl) return;
-            try {
-                const res = await fetch(targetUrl);
-                const data = await res.json();
-                if(data.routines && Object.keys(data.routines).length > 0) {
-                    routines = data.routines;
-                    localStorage.setItem(STORAGE_KEY_ROUTINES, JSON.stringify(routines));
-                    renderMenuWorkouts();
-                }
-            } catch(e) {}
-        }
-        async function saveHistoryLog(entry) {
-            const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
-            h.push(entry);
-            localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
-            const url = getApiUrl();
-            if(url) { try { await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(entry) }); } catch(e) {} }
-        }
         async function showHistory() {
             switchScreen('history');
             const list = document.getElementById('history-list');
@@ -1317,43 +1224,35 @@
             if(history.length === 0) { document.getElementById('no-history-msg').classList.remove('hidden'); return; }
             document.getElementById('no-history-msg').classList.add('hidden');
             
-            history.forEach((log, index) => {
+            history.forEach((log) => {
                 const dateObj = new Date(log.date);
-                let dateDisplay = "Unknown Date";
-                if(!isNaN(dateObj.getTime())) {
-                     // Check if date is reasonable (e.g. not 1899)
-                     if(dateObj.getFullYear() < 2000) {
-                        dateDisplay = "---";
-                     } else {
-                        // Use readable format: Mon, Nov 26, 2025
-                        dateDisplay = dateObj.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
-                     }
-                }
+                let dateDisplay = isNaN(dateObj.getTime()) ? "---" : dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+
+                const details = log.details || {};
+                const rating = details.rating || "Neutral";
+                const focus = details.focus || "None";
+                const ratingColor = rating === 'Positive' ? 'text-wolf-pos' : (rating === 'Negative' ? 'text-wolf-neg' : 'text-wolf-muted');
+                
+                let detailText = "";
+                if(details.notes) detailText = `<p class="text-[10px] text-wolf-muted italic mt-1 truncate max-w-[200px]">${details.notes}</p>`;
 
                 const el = document.createElement('div');
-                el.className = 'bg-wolf-surface border-l-4 border-wolf-accent p-4 flex justify-between items-center rounded-r shadow-sm';
-                let detailsHtml = '';
-                let mainValue = log.duration;
+                el.className = 'bg-wolf-surface border-l-4 border-wolf-border p-4 flex justify-between items-center rounded-r shadow-sm';
+                if(rating === 'Positive') el.classList.add('border-l-wolf-pos');
+                if(rating === 'Negative') el.classList.add('border-l-wolf-neg');
 
-                if(log.type === "Weight Check-In" && log.details && log.details.weight) {
-                    mainValue = log.details.weight;
-                } else if(log.details) {
-                    if(log.details.maxReps) detailsHtml = `<span class="inline-block mt-1 bg-wolf-bg px-2 py-0.5 rounded text-[10px] text-wolf-accent border border-wolf-border">MAX: ${log.details.maxReps} | ${log.details.weight}</span>`;
-                    else if(log.details.roundsCompleted) detailsHtml = `<span class="inline-block mt-1 bg-wolf-bg px-2 py-0.5 rounded text-[10px] text-wolf-accent border border-wolf-border">ROUNDS: ${log.details.roundsCompleted}</span>`;
-                    
-                    // Show custom timer notes if they exist
-                    if(log.details.notes) detailsHtml += `<div class="mt-2 text-[10px] text-wolf-muted italic border-t border-wolf-border pt-1 truncate max-w-[150px]">${log.details.notes}</div>`;
-                }
-                
-                // IMPORTANT FIX: Passing the ID (log.date) instead of index
                 el.innerHTML = `
                     <div class="flex-grow">
-                        <p class="text-white font-bold text-lg uppercase font-heading tracking-wide">${log.type.replace('_', ' ')}</p>
+                        <p class="text-white font-bold text-lg uppercase font-heading tracking-wide">${log.type}</p>
                         <p class="text-wolf-muted text-xs uppercase">${dateDisplay}</p>
-                        ${detailsHtml}
+                        <div class="flex gap-2 mt-1">
+                             ${focus !== 'None' ? `<span class="text-[9px] uppercase border border-wolf-border px-1 rounded text-wolf-accent">Focus: ${focus}</span>` : ''}
+                             <span class="text-[9px] uppercase border border-wolf-border px-1 rounded ${ratingColor}">${rating}</span>
+                        </div>
+                        ${detailText}
                     </div>
                     <div class="flex flex-col items-end gap-2">
-                        <div class="font-heading text-2xl text-wolf-text">${mainValue}</div>
+                        <div class="font-heading text-xl text-wolf-text">${log.duration}</div>
                         <div class="flex gap-2">
                             <button onclick="editHistory('${log.date}')" class="text-[10px] text-wolf-muted uppercase hover:text-white border border-wolf-border px-2 rounded">Edit</button>
                             <button onclick="deleteHistory('${log.date}')" class="text-[10px] text-red-900 uppercase hover:text-red-500 border border-wolf-border px-2 rounded">Del</button>
@@ -1366,20 +1265,11 @@
 
         function switchScreen(name) { Object.values(screens).forEach(s => s.classList.remove('active')); screens[name].classList.add('active'); }
         window.openModal = (id) => { document.getElementById(id).classList.remove('hidden'); };
-        window.closeModal = (id) => {
-            document.getElementById(id).classList.add('hidden');
-            if(id === 'record-details-modal') editingHistoryId = null; // Clear edit mode if closed
-        };
+        window.closeModal = (id) => { document.getElementById(id).classList.add('hidden'); };
         window.openApexConfig = () => openModal('apex-config-modal');
         window.adjustRep = (delta) => { const input = document.getElementById('apex-max-reps'); let val = parseInt(input.value) || 1; val += delta; if(val < 1) val = 1; input.value = val; };
         window.goToMenu = () => { clearInterval(timerInt); clearInterval(totalInt); switchScreen('menu'); };
-        function goToQuote() {
-            const quotes = [{q: "The wolf on the hill is not as hungry as the wolf climbing the hill.", a: "Arnold Schwarzenegger"}, {q: "I don't stop when I'm tired. I stop when I'm done.", a: "David Goggins"}, {q: "Pain is weakness leaving the body.", a: "USMC"}, {q: "Civilize the mind, but make savage the body.", a: "Mao"}];
-            const rnd = quotes[Math.floor(Math.random() * quotes.length)];
-            document.getElementById('quote-text').textContent = `"${rnd.q}"`;
-            document.getElementById('quote-author').textContent = rnd.a;
-            switchScreen('quote');
-        }
+        function goToQuote() { const quotes = [{q: "The wolf on the hill is not as hungry as the wolf climbing the hill.", a: "Arnold Schwarzenegger"}, {q: "I don't stop when I'm tired. I stop when I'm done.", a: "David Goggins"}, {q: "Pain is weakness leaving the body.", a: "USMC"}, {q: "Civilize the mind, but make savage the body.", a: "Mao"}]; const rnd = quotes[Math.floor(Math.random() * quotes.length)]; document.getElementById('quote-text').textContent = `"${rnd.q}"`; document.getElementById('quote-author').textContent = rnd.a; switchScreen('quote'); }
         function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
         function beep(type) { if (!audioCtx) return; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); const freqs = { 'Low': 150, 'Mid': 400, 'High': 800 }; osc.connect(gain); gain.connect(audioCtx.destination); osc.frequency.value = freqs[type]; osc.type = 'triangle'; gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3); }
     </script>
