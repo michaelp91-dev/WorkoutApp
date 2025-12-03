@@ -625,17 +625,31 @@
                 recognition.interimResults = false;
 
                 recognition.onstart = () => { 
-                    isRecording = true;
+                    // Engine started
                     document.getElementById('mic-wave').classList.add('listening'); 
                 };
                 
                 recognition.onend = () => { 
-                    isRecording = false;
-                    document.getElementById('mic-wave').classList.remove('listening');
-                    if(finalTranscript.trim()) {
-                        parseVoiceInput(finalTranscript);
+                    // Engine stopped
+                    if (isRecording) {
+                        // User didn't stop it, so browser timed out. Restart.
+                        try {
+                            recognition.start();
+                        } catch(e) {
+                            console.error("Restart error", e);
+                            // If restart fails, treat as stop
+                            isRecording = false;
+                            document.getElementById('mic-wave').classList.remove('listening');
+                            if(finalTranscript.trim()) parseVoiceInput(finalTranscript);
+                        }
+                    } else {
+                        // User stopped it manually
+                        document.getElementById('mic-wave').classList.remove('listening');
+                        if(finalTranscript.trim()) {
+                            parseVoiceInput(finalTranscript);
+                        }
+                        finalTranscript = ""; // Reset
                     }
-                    finalTranscript = ""; // Reset
                 };
                 
                 recognition.onresult = (event) => {
@@ -690,11 +704,18 @@
             
             if (isRecording) {
                 // STOPPING
+                isRecording = false; // Flag Stop
                 recognition.stop();
             } else {
                 // STARTING
+                isRecording = true; // Flag Start
                 finalTranscript = "";
-                recognition.start();
+                try {
+                    recognition.start();
+                } catch(e) {
+                    console.error("Start error", e);
+                    isRecording = false;
+                }
             }
         }
 
