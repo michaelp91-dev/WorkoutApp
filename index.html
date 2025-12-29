@@ -123,6 +123,7 @@
 </head>
 <body class="h-screen overflow-hidden selection:bg-wolf-accent selection:text-white">
 
+    <!-- SYNC MODAL -->
     <div id="sync-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl shadow-2xl">
             <h2 class="font-heading text-2xl text-wolf-accent mb-2 tracking-wide">CLOUD SYNC</h2>
@@ -135,6 +136,7 @@
         </div>
     </div>
 
+    <!-- WEIGHT MODAL (RESTORED) -->
     <div id="weight-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-sm rounded-xl shadow-2xl text-center">
             <h2 class="font-heading text-3xl text-wolf-accent mb-6">WEIGHT CHECK</h2>
@@ -149,38 +151,19 @@
         </div>
     </div>
 
-    <div id="checkin-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl shadow-2xl">
-            <h2 class="font-heading text-3xl text-wolf-accent mb-6 text-center">END OF DAY CHECK</h2>
-            <div id="checkin-questions-container" class="space-y-4 mb-8">
-                </div>
-            <button onclick="saveDailyCheckin()" class="w-full btn-primary py-4 text-xl">CONFIRM CHECK-IN</button>
-            <button onclick="closeModal('checkin-modal')" class="mt-4 w-full text-wolf-muted text-xs uppercase tracking-widest hover:text-white text-center">Cancel</button>
-        </div>
-    </div>
-
-    <div id="checkin-manager-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl flex flex-col max-h-[90vh]">
-            <h2 class="font-heading text-2xl text-wolf-accent mb-6 tracking-wide text-center">MANAGE DAILY TASKS</h2>
-            <div class="flex gap-2 mb-6 border-b border-wolf-border pb-6">
-                <input type="text" id="new-checkin-item" placeholder="Add new task..." class="flex-1 bg-wolf-bg border border-wolf-border text-white px-4 py-2 rounded text-sm focus:border-wolf-accent outline-none">
-                <button onclick="addCheckinItem()" class="btn-primary px-4 py-2 text-xl font-bold">+</button>
-            </div>
-            <div id="checkin-manager-list" class="flex-grow overflow-y-auto space-y-3 pr-1"></div>
-            <button onclick="closeModal('checkin-manager-modal')" class="mt-6 text-wolf-muted hover:text-white uppercase text-xs tracking-widest text-center">Close</button>
-        </div>
-    </div>
-
+    <!-- ACTIVITY LOG MODAL (UNIFIED) -->
     <div id="activity-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-wolf-surface border border-wolf-border p-5 w-full max-w-md rounded-xl shadow-2xl flex flex-col max-h-[95vh] overflow-y-auto">
             <h2 id="act-modal-title" class="font-heading text-2xl text-wolf-accent mb-4">LOG ACTIVITY</h2>
             
             <div class="space-y-3">
+                <!-- Activity Name -->
                 <div>
                     <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Activity</label>
                     <input type="text" id="act-name" placeholder="e.g. Workout, Reading, Sleep" class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none">
                 </div>
                 
+                <!-- Time & Amount -->
                 <div class="flex gap-2">
                     <div class="flex-1">
                         <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Time</label>
@@ -196,6 +179,7 @@
                     </div>
                 </div>
 
+                <!-- Rating & Focus -->
                 <div class="flex gap-2">
                     <div class="flex-1">
                         <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Rating</label>
@@ -216,6 +200,7 @@
                     </div>
                 </div>
 
+                <!-- Notes -->
                 <div>
                     <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Note</label>
                     <textarea id="act-note" rows="3" placeholder="Details..." class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none"></textarea>
@@ -227,6 +212,7 @@
         </div>
     </div>
 
+    <!-- TOOLS SCREEN -->
     <div id="tools-screen" class="screen h-full w-full flex-col bg-wolf-bg p-4">
         <div class="flex justify-between items-center mb-6 pb-4 border-b border-wolf-border">
             <h2 class="font-heading text-3xl text-wolf-text">TOOLS</h2>
@@ -239,6 +225,7 @@
             <button onclick="switchTool('tabata')" id="tab-tabata" class="flex-1 py-2 rounded text-xs uppercase font-bold bg-wolf-surface text-wolf-muted hover:text-white transition">Tabata</button>
         </div>
 
+        <!-- Stopwatch -->
         <div id="tool-stopwatch" class="flex-grow flex flex-col items-center justify-start text-center pt-10">
             <div id="sw-status" class="hidden text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading animate-pulse">GET READY</div>
             <div id="sw-display" class="font-heading text-7xl md:text-9xl text-white mb-4 tabular-nums">00:00.0</div>
@@ -256,6 +243,7 @@
              <button onclick="resetStopwatch()" class="mt-4 text-wolf-muted text-xs uppercase tracking-widest hover:text-white">Reset All</button>
         </div>
 
+        <!-- Timer -->
         <div id="tool-timer" class="hidden flex-grow flex flex-col items-center justify-start text-center pt-10">
             <div id="tm-config-container" class="flex flex-col items-center">
                 <div class="flex gap-4 items-center mb-8">
@@ -303,6 +291,7 @@
             </div>
         </div>
 
+        <!-- Tabata -->
         <div id="tool-tabata" class="hidden flex-grow flex flex-col items-center justify-center text-center">
             <div id="tb-config" class="w-full max-w-sm space-y-4 mb-8">
                 <div class="flex justify-between items-center">
@@ -332,6 +321,7 @@
         </div>
     </div>
 
+    <!-- LIST SCREEN (PROTOCOLS) -->
     <div id="list-screen" class="screen h-full w-full flex-col bg-wolf-bg p-4">
         <div class="flex justify-between items-center mb-6 pb-4 border-b border-wolf-border">
             <h2 class="font-heading text-3xl text-wolf-text">PROTOCOLS</h2>
@@ -340,6 +330,7 @@
         <div id="workout-list-container" class="flex-grow overflow-y-auto space-y-3 pb-20"></div>
     </div>
 
+    <!-- EDITOR MODALS -->
     <div id="editor-select-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl flex flex-col max-h-[90vh]">
             <h2 class="font-heading text-2xl text-wolf-accent mb-6 tracking-wide text-center">MANAGE PROTOCOLS</h2>
@@ -366,6 +357,7 @@
         </div>
     </div>
 
+    <!-- MENU SCREEN -->
     <div id="menu-screen" class="screen active h-full w-full flex-col items-center justify-center p-6 relative">
         <button onclick="openModal('sync-modal')" class="absolute top-6 right-6 text-wolf-muted hover:text-wolf-accent transition">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -377,8 +369,6 @@
 
             <div class="w-full space-y-3 mb-6">
                  <button onclick="switchScreen('list')" class="w-full btn-primary py-4 text-xl shadow-lg shadow-orange-900/20">WORKOUTS</button>
-                 <button onclick="openCheckinModal()" class="w-full btn-primary py-4 text-xl shadow-lg shadow-orange-900/10 border border-wolf-accent/30">DAILY CHECK-IN</button>
-                 
                  <div class="flex gap-3">
                     <button onclick="toggleVoiceInput()" class="w-1/4 btn-secondary py-4 flex items-center justify-center text-wolf-accent border-wolf-accent relative group overflow-hidden">
                         <svg id="mic-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
@@ -396,15 +386,16 @@
                     <button onclick="showHistory()" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">History</button>
                     <button onclick="switchScreen('tools')" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">Tools</button>
                     <button onclick="openManager()" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">Edit Pgm</button>
-                    <button onclick="openCheckinManager()" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">Edit Tasks</button>
-                    <button onclick="openModal('weight-modal')" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">Log Weight</button>
                 </div>
+                 <!-- RESTORED WEIGHT BUTTON -->
+                 <button onclick="openModal('weight-modal')" class="w-full btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold mt-3">Log Weight</button>
             </div>
             
             <div id="sync-status" class="mt-6 text-[10px] text-wolf-muted uppercase tracking-widest opacity-50">Connecting...</div>
         </div>
     </div>
 
+    <!-- APEX CONFIG -->
     <div id="apex-config-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-wolf-surface border border-wolf-border p-8 w-full max-w-sm rounded-xl text-center shadow-2xl">
             <h2 class="font-heading text-4xl text-wolf-accent mb-6">APEX CONFIG</h2>
@@ -427,6 +418,7 @@
         </div>
     </div>
 
+    <!-- QUOTE SCREEN -->
     <div id="quote-screen" class="screen min-h-screen w-full flex-col items-center justify-center p-8 text-center bg-wolf-bg">
         <div class="z-10 max-w-2xl">
             <div class="w-16 h-1 bg-wolf-accent mx-auto mb-8 rounded-full"></div>
@@ -436,6 +428,7 @@
         <button id="start-btn" class="z-10 mt-16 btn-primary py-4 px-12 text-2xl shadow-xl shadow-orange-900/10">BEGIN</button>
     </div>
 
+    <!-- WORKOUT SCREEN -->
     <div id="workout-screen" class="screen h-full w-full flex-col relative bg-wolf-bg">
         <div class="absolute top-0 left-0 w-full p-6 flex justify-between items-start z-20">
             <div>
@@ -479,6 +472,7 @@
         </div>
     </div>
 
+    <!-- COMPLETION SCREEN -->
     <div id="completion-screen" class="screen min-h-screen w-full flex-col items-center justify-center p-6 text-center bg-wolf-bg">
         <h2 class="font-heading text-5xl md:text-8xl text-wolf-accent mb-2">COMPLETE</h2>
         <p class="text-wolf-muted uppercase tracking-widest mb-12 text-sm">Well Done</p>
@@ -495,6 +489,7 @@
         </div>
     </div>
 
+    <!-- HISTORY SCREEN -->
     <div id="history-screen" class="screen min-h-screen w-full flex-col p-6 bg-wolf-bg">
         <div class="max-w-2xl mx-auto w-full flex flex-col h-full">
             <div class="flex items-center justify-between mb-8 pb-4 border-b border-wolf-border">
@@ -515,7 +510,6 @@
 
         const STORAGE_KEY_HIST = 'wolf_history';
         const STORAGE_KEY_ROUTINES = 'wolf_routines';
-        const STORAGE_KEY_CHECKINS = 'wolf_daily_items';
         
         // DEFAULT DATA
         const defaultRoutines = {
@@ -549,7 +543,6 @@
         };
 
         let routines = JSON.parse(localStorage.getItem(STORAGE_KEY_ROUTINES)) || JSON.parse(JSON.stringify(defaultRoutines));
-        let checkinItems = JSON.parse(localStorage.getItem(STORAGE_KEY_CHECKINS)) || ["Read Bible", "Bed by 2200"];
 
         const screens = {
             menu: document.getElementById('menu-screen'),
@@ -612,8 +605,8 @@
         
         let editingHistoryId = null;
         let recognition;
-        let isRecording = false; 
-        let finalTranscript = ""; 
+        let isRecording = false; // New global
+        let finalTranscript = ""; // Accumulate text
 
         // --- INIT ---
         window.addEventListener('DOMContentLoaded', () => {
@@ -627,28 +620,69 @@
             if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                 recognition = new SpeechRecognition();
-                recognition.continuous = true; 
+                recognition.continuous = true; // CHANGED: Keep listening even if user pauses
                 recognition.lang = 'en-US';
                 recognition.interimResults = false;
 
-                recognition.onstart = () => { document.getElementById('mic-wave').classList.add('listening'); };
-                recognition.onend = () => { 
-                    if (isRecording) { try { recognition.start(); } catch(e) { isRecording = false; document.getElementById('mic-wave').classList.remove('listening'); if(finalTranscript.trim()) parseVoiceInput(finalTranscript); } } 
-                    else { document.getElementById('mic-wave').classList.remove('listening'); if(finalTranscript.trim()) { parseVoiceInput(finalTranscript); } finalTranscript = ""; }
+                recognition.onstart = () => { 
+                    // Engine started
+                    document.getElementById('mic-wave').classList.add('listening'); 
                 };
-                recognition.onresult = (event) => { for (let i = event.resultIndex; i < event.results.length; ++i) { if (event.results[i].isFinal) { finalTranscript += event.results[i][0].transcript + " "; } } };
-            } else { document.getElementById('mic-icon').style.opacity = '0.3'; }
+                
+                recognition.onend = () => { 
+                    // Engine stopped
+                    if (isRecording) {
+                        // User didn't stop it, so browser timed out. Restart.
+                        try {
+                            recognition.start();
+                        } catch(e) {
+                            console.error("Restart error", e);
+                            // If restart fails, treat as stop
+                            isRecording = false;
+                            document.getElementById('mic-wave').classList.remove('listening');
+                            if(finalTranscript.trim()) parseVoiceInput(finalTranscript);
+                        }
+                    } else {
+                        // User stopped it manually
+                        document.getElementById('mic-wave').classList.remove('listening');
+                        if(finalTranscript.trim()) {
+                            parseVoiceInput(finalTranscript);
+                        }
+                        finalTranscript = ""; // Reset
+                    }
+                };
+                
+                recognition.onresult = (event) => {
+                    // Accumulate results as they come in
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript + " ";
+                        }
+                    }
+                };
+            } else {
+                document.getElementById('mic-icon').style.opacity = '0.3';
+            }
         }
 
         // --- SYNC LOGIC ---
         function initSync() {
             if(HARDCODED_URL && HARDCODED_URL.startsWith('http')) {
-                els.syncStatus.textContent = "CLOUD ACTIVE"; els.syncStatus.classList.add('text-wolf-accent');
-                els.modalStatus.textContent = "CONNECTED"; els.modalStatus.classList.add('text-green-500');
+                els.syncStatus.textContent = "CLOUD ACTIVE";
+                els.syncStatus.classList.add('text-wolf-accent');
+                els.modalStatus.textContent = "CONNECTED";
+                els.modalStatus.classList.add('text-green-500');
                 syncRoutines();
-            } else { els.syncStatus.textContent = "LOCAL MODE"; els.modalStatus.textContent = "NOT CONNECTED"; els.modalStatus.classList.add('text-red-500'); }
+            } else {
+                els.syncStatus.textContent = "LOCAL MODE";
+                els.modalStatus.textContent = "NOT CONNECTED";
+                els.modalStatus.classList.add('text-red-500');
+            }
         }
-        function getApiUrl() { return (HARDCODED_URL && HARDCODED_URL.startsWith('http')) ? HARDCODED_URL : null; }
+
+        function getApiUrl() {
+            return (HARDCODED_URL && HARDCODED_URL.startsWith('http')) ? HARDCODED_URL : null;
+        }
 
         // --- DYNAMIC MENU ---
         function renderMenuWorkouts() {
@@ -664,177 +698,627 @@
             });
         }
 
-        // --- DAILY CHECK-IN LOGIC (NEW) ---
-        function openCheckinModal() {
-            const container = document.getElementById('checkin-questions-container');
-            container.innerHTML = '';
-            checkinItems.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = "bg-wolf-bg p-4 rounded-lg border border-wolf-border flex justify-between items-center";
-                div.innerHTML = `
-                    <span class="text-white text-sm font-bold uppercase tracking-wide">${item}?</span>
-                    <div class="flex gap-2">
-                        <input type="radio" name="check-${index}" id="yes-${index}" value="Yes" class="hidden peer/yes" checked>
-                        <label for="yes-${index}" class="px-4 py-2 border border-wolf-border rounded text-[10px] font-bold peer-checked/yes:bg-wolf-pos peer-checked/yes:border-wolf-pos cursor-pointer transition">YES</label>
-                        <input type="radio" name="check-${index}" id="no-${index}" value="No" class="hidden peer/no">
-                        <label for="no-${index}" class="px-4 py-2 border border-wolf-border rounded text-[10px] font-bold peer-checked/no:bg-wolf-neg peer-checked/no:border-wolf-neg cursor-pointer transition">NO</label>
-                    </div>
-                `;
-                container.appendChild(div);
-            });
-            openModal('checkin-modal');
-        }
-
-        async function saveDailyCheckin() {
-            const results = [];
-            checkinItems.forEach((item, index) => {
-                const val = document.querySelector(`input[name="check-${index}"]:checked`).value;
-                results.push(`${item}: ${val}`);
-            });
-            const entry = {
-                date: new Date().toISOString(), type: "Daily Check-In", duration: "Check-in",
-                details: { notes: results.join(' | '), rating: "Positive" }
-            };
-            const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
-            h.push(entry);
-            localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
-            await syncEntryToCloud(entry, 'create');
-            closeModal('checkin-modal'); alert("Log recorded.");
-            if(screens.history.classList.contains('active')) showHistory();
-        }
-
-        function openCheckinManager() {
-            const list = document.getElementById('checkin-manager-list');
-            list.innerHTML = '';
-            checkinItems.forEach((item, idx) => {
-                const div = document.createElement('div');
-                div.className = "flex justify-between items-center bg-wolf-bg p-3 rounded border border-wolf-border";
-                div.innerHTML = `<span class="text-white font-bold text-sm">${item}</span><div class="flex gap-2"><button onclick="editCheckinItem(${idx})" class="text-wolf-muted text-[10px] uppercase font-bold hover:text-white">Edit</button><button onclick="deleteCheckinItem(${idx})" class="text-red-900 text-[10px] uppercase font-bold hover:text-red-500">Del</button></div>`;
-                list.appendChild(div);
-            });
-            openModal('checkin-manager-modal');
-        }
-
-        function addCheckinItem() {
-            const val = document.getElementById('new-checkin-item').value.trim();
-            if(!val) return;
-            checkinItems.push(val); localStorage.setItem(STORAGE_KEY_CHECKINS, JSON.stringify(checkinItems));
-            document.getElementById('new-checkin-item').value = ''; openCheckinManager();
-        }
-        function deleteCheckinItem(idx) { checkinItems.splice(idx,1); localStorage.setItem(STORAGE_KEY_CHECKINS, JSON.stringify(checkinItems)); openCheckinManager(); }
-        function editCheckinItem(idx) { const v = prompt("Edit Task:", checkinItems[idx]); if(v) { checkinItems[idx] = v; localStorage.setItem(STORAGE_KEY_CHECKINS, JSON.stringify(checkinItems)); openCheckinManager(); } }
-
-        // --- RESTORED ORIGINAL APP LOGIC ---
+        // --- ACTIVITY LOGIC ---
         function toggleVoiceInput() {
             if(!recognition) return alert("Speech recognition not supported.");
-            if (isRecording) { isRecording = false; recognition.stop(); } 
-            else { isRecording = true; finalTranscript = ""; try { recognition.start(); } catch(e) { isRecording = false; } }
+            
+            if (isRecording) {
+                // STOPPING
+                isRecording = false; // Flag Stop
+                recognition.stop();
+            } else {
+                // STARTING
+                isRecording = true; // Flag Start
+                finalTranscript = "";
+                try {
+                    recognition.start();
+                } catch(e) {
+                    console.error("Start error", e);
+                    isRecording = false;
+                }
+            }
         }
+
         function parseVoiceInput(text) {
+            // "activity [activity] time [time] amount [amount] [unit] rating [rating] focus [focus] note [note]"
+            const lc = text.toLowerCase();
+            const data = {
+                activity: "", time: "", amount: "", unit: "", rating: "Neutral", focus: "None", note: ""
+            };
+
+            // Helpers regex
+            const extract = (key, nextKeys) => {
+                const regex = new RegExp(`${key}\\s+(.*?)(?=\\s+(?:${nextKeys})|$)`, 'i');
+                const match = text.match(regex);
+                return match ? match[1].trim() : "";
+            };
+            
             const keys = "activity|time|amount|unit|rating|focus|note";
-            const extract = (key) => { const regex = new RegExp(`${key}\\s+(.*?)(?=\\s+(?:${keys})|$)`, 'i'); const m = text.match(regex); return m ? m[1].trim() : ""; };
-            const data = { activity: extract("activity") || "Voice Log", note: extract("note"), rating: "Neutral", focus: "None", amount: extract("amount"), unit: extract("unit") };
-            const now = new Date(); const pad = (n) => n.toString().padStart(2,'0');
+
+            data.activity = extract("activity", keys) || "Voice Activity";
+            data.note = extract("note", keys);
+            
+            // Rating
+            const rRaw = extract("rating", keys).toLowerCase();
+            if(rRaw.includes("pos")) data.rating = "Positive";
+            else if(rRaw.includes("neg")) data.rating = "Negative";
+
+            // Focus
+            const fRaw = extract("focus", keys).toLowerCase();
+            if(fRaw.includes("high")) data.focus = "High";
+            else if(fRaw.includes("med")) data.focus = "Medium";
+            else if(fRaw.includes("low")) data.focus = "Low";
+
+            // Amount/Unit
+            const amtRaw = extract("amount", keys);
+            if(amtRaw) {
+                 // Try to split number and text
+                 const num = amtRaw.match(/\d+/);
+                 if(num) {
+                    data.amount = num[0];
+                    // If unit wasn't explicitly said, check if it's in amount string
+                    data.unit = amtRaw.replace(num[0], '').trim();
+                 } else {
+                    data.amount = amtRaw;
+                 }
+            }
+            const unitRaw = extract("unit", keys);
+            if(unitRaw) data.unit = unitRaw;
+
+            // Time Parsing
+            const tRaw = extract("time", keys);
+            const now = new Date();
+            if(tRaw.includes("ago")) {
+                const val = parseInt(tRaw.match(/\d+/)?.[0] || 0);
+                if(tRaw.includes("hour")) now.setHours(now.getHours() - val);
+                else if(tRaw.includes("minute")) now.setMinutes(now.getMinutes() - val);
+            } else if (tRaw.includes(":")) {
+                // simple parser for 10:30
+                const parts = tRaw.match(/(\d+):(\d+)\s*(am|pm)?/i);
+                if(parts) {
+                    let h = parseInt(parts[1]);
+                    const m = parseInt(parts[2]);
+                    if(parts[3] && parts[3].toLowerCase() === 'pm' && h < 12) h += 12;
+                    if(parts[3] && parts[3].toLowerCase() === 'am' && h === 12) h = 0;
+                    now.setHours(h, m);
+                }
+            }
+            // Format for datetime-local: YYYY-MM-DDTHH:mm
+            const pad = (n) => n.toString().padStart(2,'0');
             data.time = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
             openActivityModal('voice', data);
         }
 
         function openActivityModal(mode, data = {}) {
-            closeModal('editor-select-modal'); const modal = document.getElementById('activity-modal'); const title = document.getElementById('act-modal-title');
-            const now = new Date(); const pad = (n) => n.toString().padStart(2,'0'); const defaultTime = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
-            document.getElementById('act-name').value = data.activity || ""; document.getElementById('act-time').value = defaultTime;
-            document.getElementById('act-amount').value = data.amount || ""; document.getElementById('act-unit').value = data.unit || "";
-            document.getElementById('act-rating').value = data.rating || "Neutral"; document.getElementById('act-focus').value = data.focus || "None";
-            document.getElementById('act-note').value = data.note || ""; editingHistoryId = (mode === 'edit') ? data.id : null;
+            closeModal('editor-select-modal'); // ensure others closed
+            const modal = document.getElementById('activity-modal');
+            const title = document.getElementById('act-modal-title');
+            
+            // Reset fields
+            const now = new Date();
+            const pad = (n) => n.toString().padStart(2,'0');
+            const defaultTime = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+            
+            document.getElementById('act-name').value = "";
+            document.getElementById('act-time').value = defaultTime;
+            document.getElementById('act-amount').value = "";
+            document.getElementById('act-unit').value = "";
+            document.getElementById('act-rating').value = "Neutral";
+            document.getElementById('act-focus').value = "None";
+            document.getElementById('act-note').value = "";
+
+            editingHistoryId = null; // Default create mode
+
+            if(mode === 'voice') {
+                title.textContent = "REVIEW VOICE LOG";
+                document.getElementById('act-name').value = data.activity;
+                if(data.time) document.getElementById('act-time').value = data.time;
+                document.getElementById('act-amount').value = data.amount;
+                document.getElementById('act-unit').value = data.unit;
+                document.getElementById('act-rating').value = data.rating;
+                document.getElementById('act-focus').value = data.focus;
+                document.getElementById('act-note').value = data.note;
+            } else if (mode === 'manual') {
+                title.textContent = "LOG ACTIVITY";
+            } else if (mode === 'edit') {
+                title.textContent = "EDIT ACTIVITY";
+                editingHistoryId = data.id;
+                document.getElementById('act-name').value = data.activity;
+                document.getElementById('act-time').value = data.isoTime.substring(0, 16); // format for input
+                document.getElementById('act-amount').value = data.amount;
+                document.getElementById('act-unit').value = data.unit;
+                document.getElementById('act-rating').value = data.rating;
+                document.getElementById('act-focus').value = data.focus;
+                document.getElementById('act-note').value = data.note;
+            } else if (mode === 'workout_complete') {
+                title.textContent = "LOG WORKOUT";
+                document.getElementById('act-name').value = completedWorkoutStats.type;
+                document.getElementById('act-amount').value = completedWorkoutStats.duration;
+                document.getElementById('act-unit').value = "Time";
+                if(completedWorkoutStats.details && completedWorkoutStats.details.maxReps) {
+                     document.getElementById('act-note').value = `Peak: ${completedWorkoutStats.details.maxReps} Reps @ ${completedWorkoutStats.details.weight}`;
+                } else if (completedWorkoutStats.details && completedWorkoutStats.details.roundsCompleted) {
+                     document.getElementById('act-amount').value = completedWorkoutStats.details.roundsCompleted;
+                     document.getElementById('act-unit').value = "Rounds";
+                     document.getElementById('act-note').value = `Total Time: ${completedWorkoutStats.duration}`;
+                }
+            }
+
             modal.classList.remove('hidden');
         }
 
         async function saveActivityLog() {
+            const btn = document.getElementById('save-act-btn');
+            if(btn) { btn.textContent = "SAVING..."; btn.disabled = true; }
+
+            const name = document.getElementById('act-name').value || "Activity";
+            let timeVal = document.getElementById('act-time').value; // YYYY-MM-DDTHH:mm
+            const amount = document.getElementById('act-amount').value;
+            const unit = document.getElementById('act-unit').value;
+            const rating = document.getElementById('act-rating').value;
+            const focus = document.getElementById('act-focus').value;
+            const note = document.getElementById('act-note').value;
+
+            // Date validation fallback
+            if(!timeVal) {
+                 const now = new Date();
+                 const pad = (n) => n.toString().padStart(2,'0');
+                 timeVal = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+            }
+
+            const dateObj = new Date(timeVal);
+            const isoDate = !isNaN(dateObj) ? dateObj.toISOString() : new Date().toISOString();
+
             const entry = {
-                date: new Date(document.getElementById('act-time').value).toISOString(), type: document.getElementById('act-name').value || "Activity",
-                duration: `${document.getElementById('act-amount').value} ${document.getElementById('act-unit').value}`.trim() || "---",
-                details: { rating: document.getElementById('act-rating').value, focus: document.getElementById('act-focus').value, notes: document.getElementById('act-note').value }
+                date: isoDate,
+                type: name,
+                duration: (amount + " " + unit).trim() || "---", // Corrected
+                details: {
+                    rating: rating,
+                    focus: focus,
+                    notes: note,
+                    amount: amount,
+                    unit: unit,
+                }
             };
+            
+            // If editing, preserve non-overwritten details
+            if(editingHistoryId !== null) {
+                const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
+                const existing = h.find(x => x.date === editingHistoryId);
+                if(existing && existing.details) {
+                    entry.details = { ...existing.details, ...entry.details };
+                }
+            }
+
+            // --- CRITICAL FIX: Update Local Storage FIRST ---
             let h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
-            if (editingHistoryId) { const i = h.findIndex(x => x.date === editingHistoryId); if (i > -1) h[i] = entry; } else { h.push(entry); }
-            localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h)); closeModal('activity-modal');
-            await syncEntryToCloud(entry, editingHistoryId ? 'edit' : 'create', editingHistoryId);
-            if(screens.history.classList.contains('active')) showHistory(); else if (screens.completion.classList.contains('active')) goToMenu();
+            if (editingHistoryId !== null) {
+                const index = h.findIndex(x => x.date === editingHistoryId);
+                if (index > -1) h[index] = entry;
+            } else {
+                h.push(entry);
+            }
+            localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
+            // ------------------------------------------------
+
+            // UI Feedback Immediate
+            if(btn) { btn.textContent = "CONFIRM LOG"; btn.disabled = false; }
+            closeModal('activity-modal');
+            if(document.getElementById('history-screen').classList.contains('active')) showHistory();
+            else if (document.getElementById('completion-screen').classList.contains('active')) goToMenu();
+            else alert("Logged locally! Syncing...");
+
+            // --- SYNC TO CLOUD ASYNC ---
+            if (editingHistoryId !== null) {
+                 await syncEntryToCloud(entry, 'edit', editingHistoryId);
+            } else {
+                 await syncEntryToCloud(entry, 'create');
+            }
         }
 
         async function syncEntryToCloud(entry, action, originalDate = null) {
-            const url = getApiUrl(); if(!url) return;
-            try { await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: action === 'create' ? undefined : 'edit', date: action === 'create' ? entry.date : originalDate, type: entry.type, duration: entry.duration, details: entry.details }) }); } catch(e) {}
+             const url = getApiUrl();
+             if(!url) return;
+             try {
+                const payload = {
+                    action: action === 'create' ? undefined : 'edit',
+                    date: action === 'create' ? entry.date : originalDate,
+                    type: entry.type,
+                    duration: entry.duration,
+                    details: entry.details
+                };
+                if(action === 'create') delete payload.action;
+
+                await fetch(url, { 
+                    method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify(payload) 
+                });
+             } catch(e) { console.error("Cloud Sync Error:", e); }
         }
 
+        // --- NEW: Weight Logic Restored ---
         async function saveWeightEntry() {
-            const w = document.getElementById('weight-input').value; if(!w) return;
-            const entry = { date: new Date().toISOString(), type: "Weight Check-In", duration: "---", details: { weight: w + " lbs" } };
-            const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || []; h.push(entry); localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
-            await syncEntryToCloud(entry, 'create'); closeModal('weight-modal'); document.getElementById('weight-input').value = ""; alert("Weight Logged.");
+            const weightVal = document.getElementById('weight-input').value;
+            if(!weightVal) { alert("Enter a valid weight."); return; }
+
+            const btn = document.getElementById('save-weight-btn');
+            if(btn) { btn.disabled = true; btn.textContent = "SAVING..."; btn.classList.add('opacity-50'); }
+
+            const entry = {
+                date: new Date().toISOString(),
+                type: "Weight Check-In",
+                duration: "---", // Corrected
+                details: { weight: weightVal + " lbs" }
+            };
+            
+            // Save Local
+            const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
+            h.push(entry);
+            localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
+
+            // Sync
+            await syncEntryToCloud(entry, 'create');
+            
+            closeModal('weight-modal');
+            document.getElementById('weight-input').value = "";
+            if(btn) { btn.disabled = false; btn.textContent = "LOG WEIGHT"; btn.classList.remove('opacity-50'); }
+            
+            alert("Weight Logged!");
         }
 
+
+        // --- WORKOUT MANAGER ---
         function openManager() { renderManagerList(); openModal('editor-select-modal'); }
         function renderManagerList() {
             els.managerList.innerHTML = '';
+            const apexItem = document.createElement('div');
+            apexItem.className = "flex justify-between items-center bg-wolf-bg p-3 rounded border border-wolf-border";
+            apexItem.innerHTML = `<span class="text-wolf-text font-bold">APEX PROTOCOL</span><button onclick="openEditor('apex')" class="text-wolf-accent text-sm font-bold uppercase hover:text-white">Edit</button>`;
+            els.managerList.appendChild(apexItem);
             Object.keys(routines).forEach(key => {
-                if(key === 'apex_config') {
-                    const d = document.createElement('div'); d.className = "flex justify-between items-center bg-wolf-bg p-3 rounded border border-wolf-border";
-                    d.innerHTML = `<span class="text-wolf-text font-bold">APEX</span><button onclick="openEditor('apex')" class="text-wolf-accent text-sm font-bold uppercase">Edit</button>`;
-                    els.managerList.appendChild(d); return;
-                }
-                const div = document.createElement('div'); div.className = "flex flex-col bg-wolf-bg p-3 rounded border border-wolf-border gap-2";
-                div.innerHTML = `<div class="flex justify-between items-center"><span class="text-wolf-text truncate font-bold">${key}</span></div><div class="flex gap-2 justify-end"><button onclick="renameWorkout('${key}')" class="text-wolf-muted text-xs uppercase">Rename</button><button onclick="openEditor('${key}')" class="text-wolf-muted text-xs uppercase">Edit</button><button onclick="deleteWorkout('${key}')" class="text-red-900 text-xs uppercase">Del</button></div>`;
-                els.managerList.appendChild(div);
+                if(key === 'apex_config') return;
+                const item = document.createElement('div');
+                item.className = "flex flex-col bg-wolf-bg p-3 rounded border border-wolf-border gap-2";
+                item.innerHTML = `<div class="flex justify-between items-center"><span class="text-wolf-text truncate font-bold">${key}</span></div><div class="flex gap-2 justify-end mt-1"><button onclick="renameWorkout('${key}')" class="text-wolf-muted text-xs font-bold uppercase hover:text-white px-2 py-1 border border-wolf-border rounded">Rename</button><button onclick="openEditor('${key}')" class="text-wolf-muted text-xs font-bold uppercase hover:text-white px-2 py-1 border border-wolf-border rounded">Edit</button><button onclick="deleteWorkout('${key}')" class="text-red-900 text-xs font-bold uppercase hover:text-red-500 px-2 py-1 border border-red-900/30 rounded">Delete</button></div>`;
+                els.managerList.appendChild(item);
             });
         }
-        async function createNewWorkout() { const n = els.newWorkoutName.value.trim(); if(!n || routines[n]) return; routines[n] = [{type:'work', name:'Exercise', duration:30}]; await saveRoutinesToStorage(); els.newWorkoutName.value=''; renderManagerList(); renderMenuWorkouts(); }
-        async function saveRoutinesToStorage() { localStorage.setItem(STORAGE_KEY_ROUTINES, JSON.stringify(routines)); const url = getApiUrl(); if(url) try { await fetch(url, { method:'POST', mode:'no-cors', body: JSON.stringify({action:'save_routine', data:routines}) }); } catch(e){} }
-
-        function selectWorkout(type) { currentWorkoutType = type; activeRoutine = routines[type]; goToQuote(); }
-        function confirmApexStart() {
-            const m = parseInt(document.getElementById('apex-max-reps').value) || 8; const w = document.getElementById('apex-weight').value || "Bodyweight";
-            activeRoutine = generateApexRoutine(routines.apex_config, m); activeRoutine.details = { maxReps: m, weight: w }; currentWorkoutType = 'apex';
-            closeModal('apex-config-modal'); goToQuote();
+        async function createNewWorkout() {
+            const name = els.newWorkoutName.value.trim();
+            if(!name) return alert("Enter a name first.");
+            if(routines[name]) return alert("Name already exists.");
+            routines[name] = [{ type: 'work', name: 'First Exercise', duration: 30 }, { type: 'rest', name: 'Rest', duration: 30 }];
+            await saveRoutinesToStorage();
+            els.newWorkoutName.value = '';
+            renderManagerList();
+            renderMenuWorkouts();
         }
-        function startWorkoutSession() { initAudio(); stepIndex = 0; startTime = null; manualRoundCount = 0; switchScreen('workout'); runStep({ type: 'countdown', duration: 10, name: '' }); }
-        function runStep(step) {
-            clearInterval(timerInt); els.bar.style.width = `${(stepIndex/activeRoutine.length)*100}%`; els.status.textContent = step.type.toUpperCase();
-            if (step.type !== 'countdown') { els.currEx.textContent = step.name + (step.round?` (${step.round})`:''); els.nextEx.textContent = activeRoutine[stepIndex+1] ? activeRoutine[stepIndex+1].name : 'FINISH'; }
-            if (step.type === 'rep_work' || step.type === 'amrap') {
-                els.timed.classList.toggle('hidden', step.type === 'rep_work'); els.rep.classList.remove('hidden');
-                if(step.exercises) els.apexList.innerHTML = step.exercises.map(e => `<div class="flex items-center"><span class="w-1.5 h-1.5 bg-wolf-accent mr-3 rounded-full"></span><span class="text-white">${e}</span></div>`).join('');
-                if(step.type === 'amrap') { els.amrapContainer.classList.remove('hidden'); els.amrapRounds.textContent = manualRoundCount; }
-            } else { els.timed.classList.remove('hidden'); els.rep.classList.add('hidden'); els.amrapContainer.classList.add('hidden'); }
-            if (step.type !== 'rep_work' || step.type === 'amrap') {
-                let t = step.duration; els.timer.textContent = formatTime(t);
-                timerInt = setInterval(() => { t--; els.timer.textContent = formatTime(t); if(t<=3 && t>0) beep('Low'); if(t<=0) { clearInterval(timerInt); beep('High'); if(step.type==='countdown'){ startTime=Date.now(); totalInt=setInterval(()=>els.totalTime.textContent=formatTime(Math.floor((Date.now()-startTime)/1000)),1000); nextStep(); } else nextStep(); } },1000);
+        async function renameWorkout(oldKey) {
+            const newName = prompt("Enter new protocol name:", oldKey);
+            if(!newName || newName === oldKey) return;
+            if(routines[newName]) return alert("That name is already taken.");
+            routines[newName] = routines[oldKey];
+            delete routines[oldKey];
+            await saveRoutinesToStorage();
+            renderManagerList();
+            renderMenuWorkouts();
+        }
+        async function deleteWorkout(key) {
+            if(!confirm(`Delete ${key} permanently?`)) return;
+            delete routines[key];
+            await saveRoutinesToStorage();
+            renderManagerList();
+            renderMenuWorkouts();
+        }
+        async function saveRoutinesToStorage() {
+            localStorage.setItem(STORAGE_KEY_ROUTINES, JSON.stringify(routines));
+            const url = getApiUrl();
+            if(url) {
+                try { await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'save_routine', data: routines }) }); } catch(e) {}
             }
         }
-        function nextStep() { if(els.status.textContent !== 'GET READY') stepIndex++; if (stepIndex >= activeRoutine.length) { clearInterval(totalInt); switchScreen('completion'); els.finalTime.textContent = els.totalTime.textContent; return; } runStep(activeRoutine[stepIndex]); }
+
+        // --- RUNTIME ---
+        function selectWorkout(type) { currentWorkoutType = type; activeRoutine = routines[type]; goToQuote(); }
+        function confirmApexStart() {
+            const max = parseInt(document.getElementById('apex-max-reps').value) || 8;
+            const weight = document.getElementById('apex-weight').value || "Bodyweight";
+            currentWorkoutType = 'apex';
+            const config = routines.apex_config || defaultRoutines.apex_config;
+            activeRoutine = generateApexRoutine(config, max);
+            activeRoutine.details = { maxReps: max, weight: weight };
+            closeModal('apex-config-modal');
+            goToQuote();
+        }
+        function startWorkoutSession() { initAudio(); stepIndex = 0; startTime = null; manualRoundCount = 0; els.totalTime.textContent = "--:--"; switchScreen('workout'); startCountdown(); }
+        function startCountdown() { els.currEx.textContent = ""; els.nextEx.textContent = ""; runStep({ type: 'countdown', duration: 10, name: '' }); }
+        function startMissionClock() {
+            startTime = Date.now();
+            clearInterval(totalInt);
+            totalInt = setInterval(() => { const s = Math.floor((Date.now() - startTime) / 1000); els.totalTime.textContent = formatTime(s); }, 1000);
+            els.totalTime.textContent = "00:00"; 
+        }
+        
+        function runStep(step) {
+            clearInterval(timerInt);
+            const pct = (stepIndex / activeRoutine.length) * 100;
+            els.bar.style.width = `${pct}%`;
+            els.status.textContent = step.type === 'countdown' ? 'GET READY' : step.type.toUpperCase();
+            
+            if (step.type !== 'countdown') {
+                els.currEx.textContent = step.name + (step.round ? ` (${step.round})` : '');
+                const next = activeRoutine[stepIndex + 1];
+                els.nextEx.textContent = next ? next.name : 'COMPLETE';
+            }
+
+            const isAmrap = currentWorkoutType.includes("Garage") || currentWorkoutType.includes("AMRAP") || (step.name && step.name.includes("AMRAP")) || (step.type === 'amrap');
+            if(isAmrap && step.type !== 'countdown') {
+                els.amrapContainer.classList.remove('hidden');
+                els.amrapRounds.textContent = manualRoundCount;
+            } else {
+                els.amrapContainer.classList.add('hidden');
+            }
+
+            if (step.type === 'rep_work' || step.type === 'amrap') {
+                if(step.type === 'rep_work') {
+                    els.timed.classList.add('hidden'); 
+                    els.rep.classList.remove('hidden'); 
+                } else {
+                    els.timed.classList.remove('hidden');
+                    els.rep.classList.remove('hidden');
+                    document.getElementById('round-complete-btn').classList.add('hidden');
+                }
+                if(step.exercises) els.apexList.innerHTML = step.exercises.map(e => `<div class="flex items-center"><span class="w-1.5 h-1.5 bg-wolf-accent mr-3 rounded-full"></span><span class="text-white">${e}</span></div>`).join('');
+            } 
+            
+            if (step.type !== 'rep_work' || step.type === 'amrap') {
+                if(step.type !== 'amrap') { 
+                    els.timed.classList.remove('hidden'); 
+                    els.rep.classList.add('hidden'); 
+                }
+                els.manualBtn.classList.add('hidden'); 
+                
+                let timeLeft = step.duration;
+                els.timer.textContent = (timeLeft > 59) ? formatTime(timeLeft) : timeLeft; 
+                els.timer.style.fontSize = (timeLeft > 99) ? "8rem" : ""; 
+
+                els.timer.classList.remove('text-wolf-accent');
+                
+                timerInt = setInterval(() => {
+                    timeLeft--; 
+                    els.timer.textContent = (timeLeft > 59) ? formatTime(timeLeft) : timeLeft;
+                    
+                    if (timeLeft <= 3 && timeLeft > 0) { beep('Low'); els.timer.classList.add('text-wolf-accent'); }
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInt); beep('High');
+                        if (step.type === 'countdown') { startMissionClock(); nextStep(); } else { nextStep(); }
+                    }
+                }, 1000);
+            }
+        }
+        function nextStep() { if(els.status.textContent !== 'GET READY') stepIndex++; if (stepIndex >= activeRoutine.length) { finishWorkout(); return; } runStep(activeRoutine[stepIndex]); }
+        
         window.incrementRound = () => { manualRoundCount++; els.amrapRounds.textContent = manualRoundCount; beep('Mid'); };
 
-        function switchTool(tool) { initAudio(); clearInterval(toolInt); document.querySelectorAll('[id^="tool-"]').forEach(el => el.classList.add('hidden')); document.getElementById(`tool-${tool}`).classList.remove('hidden'); }
-        function toggleStopwatch() { if(toolInt) { clearInterval(toolInt); toolInt = null; } else { const s = Date.now() - swTime; toolInt = setInterval(() => { swTime = Date.now() - s; document.getElementById('sw-display').textContent = formatTimeTenths(swTime); }, 50); } }
-        function formatTime(s) { const m = Math.floor(s/60).toString().padStart(2,'0'); const sc = (s%60).toString().padStart(2,'0'); return `${m}:${sc}`; }
+        els.manualBtn.addEventListener('click', () => { beep('Mid'); nextStep(); });
+        document.getElementById('round-complete-btn').addEventListener('click', () => { beep('Mid'); nextStep(); });
+        
+        function finishWorkout() {
+            clearInterval(totalInt); beep('High');
+            let timeStr = "--:--";
+            let details = activeRoutine.details || {};
+            if(manualRoundCount > 0) details.roundsCompleted = manualRoundCount;
+
+            if (startTime) {
+                const s = Math.floor((Date.now() - startTime) / 1000);
+                timeStr = formatTime(s);
+            }
+            
+            // Stash stats for logging
+            completedWorkoutStats = {
+                type: currentWorkoutType,
+                duration: timeStr,
+                details: details
+            };
+
+            els.finalTime.textContent = timeStr;
+            const extraDiv = document.getElementById('final-stats-extra');
+            extraDiv.innerHTML = ''; 
+            
+            if (currentWorkoutType === 'apex') { 
+                extraDiv.innerHTML = `<div class="grid grid-cols-2 gap-4"><div><p class="text-wolf-muted uppercase text-[10px] tracking-widest">Peak</p><p class="text-2xl text-wolf-accent font-heading">${details.maxReps}</p></div><div><p class="text-wolf-muted uppercase text-[10px] tracking-widest">Load</p><p class="text-2xl text-white font-heading">${details.weight}</p></div></div>`; 
+                extraDiv.classList.remove('hidden'); 
+            } else if (manualRoundCount > 0) {
+                 extraDiv.innerHTML = `<div><p class="text-wolf-muted uppercase text-[10px] tracking-widest">Rounds Completed</p><p class="text-4xl text-wolf-accent font-heading">${manualRoundCount}</p></div>`;
+                 extraDiv.classList.remove('hidden');
+            } else { extraDiv.classList.add('hidden'); }
+            
+            switchScreen('completion');
+        }
+        
+        function logWorkoutToActivity() {
+             openActivityModal('workout_complete');
+        }
+
+        // --- TOOLS LOGIC ---
+        function switchTool(tool) {
+            initAudio(); clearInterval(toolInt);
+            document.querySelectorAll('[id^="tool-"]').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('[id^="tab-"]').forEach(el => { el.classList.remove('bg-wolf-accent', 'text-white'); el.classList.add('bg-wolf-surface', 'text-wolf-muted'); });
+            document.getElementById(`tool-${tool}`).classList.remove('hidden');
+            document.getElementById(`tab-${tool}`).classList.add('bg-wolf-accent', 'text-white'); document.getElementById(`tab-${tool}`).classList.remove('bg-wolf-surface', 'text-wolf-muted');
+        }
+        // Stopwatch
+        function toggleStopwatch() {
+            const btn = document.getElementById('sw-btn');
+            const useCountdown = document.getElementById('sw-countdown-check').checked;
+            if(toolInt) { clearInterval(toolInt); toolInt = null; btn.textContent = "RESUME"; btn.classList.remove('bg-red-900'); btn.classList.add('btn-primary'); els.swStatus.classList.add('hidden'); isPrep = false; }
+            else { 
+                if(swTime === 0 && !isPrep && useCountdown) {
+                    isPrep = true; let prep = 10; els.swStatus.textContent = "GET READY"; els.swStatus.classList.remove('hidden'); document.getElementById('sw-display').textContent = `00:${prep.toString().padStart(2, '0')}.0`; btn.textContent = "WAIT..."; btn.disabled = true;
+                    toolInt = setInterval(() => { prep--; if(prep >= 0) { document.getElementById('sw-display').textContent = `00:${prep.toString().padStart(2, '0')}.0`; if(prep<=3) beep('Low'); } else { clearInterval(toolInt); beep('High'); els.swStatus.classList.add('hidden'); btn.disabled = false; btn.textContent = "STOP"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900'); isPrep = false; startStopwatchClock(); } }, 1000);
+                } else { startStopwatchClock(); btn.textContent = "STOP"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900'); }
+            }
+        }
+        function startStopwatchClock() { const start = Date.now() - swTime; toolInt = setInterval(() => { swTime = Date.now() - start; document.getElementById('sw-display').textContent = formatTimeTenths(swTime); }, 50); }
+        function lapStopwatch() { if(!toolInt || isPrep) return; const splitMs = swTime - swLastLapTime; const splitTime = formatTimeTenths(splitMs); const totalTime = formatTimeTenths(swTime); swLastLapTime = swTime; const lapDiv = document.createElement('div'); lapDiv.className = "flex justify-between border-b border-wolf-border pb-1"; lapDiv.innerHTML = `<span class="text-wolf-muted">Lap ${els.swLaps.children.length}</span><span class="text-white font-bold">${splitTime} / ${totalTime}</span>`; if(els.swLaps.children[0]?.classList.contains('italic')) els.swLaps.innerHTML = ''; els.swLaps.prepend(lapDiv); }
+        function resetStopwatch() { clearInterval(toolInt); toolInt = null; swTime = 0; swLastLapTime = 0; isPrep = false; document.getElementById('sw-display').textContent = "00:00.0"; document.getElementById('sw-btn').textContent = "START"; document.getElementById('sw-btn').className = "flex-1 btn-primary py-4 text-xl"; document.getElementById('sw-btn').disabled = false; els.swLaps.innerHTML = '<div class="text-wolf-muted text-center italic py-2">Laps will appear here</div>'; els.swStatus.classList.add('hidden'); }
+
+        // Timer
+        function toggleTimer() {
+            const btn = document.getElementById('tm-btn'); const display = document.getElementById('tm-display'); const config = document.getElementById('tm-config-container'); const isRoundTrack = document.getElementById('tm-rounds-check').checked; const useCountdown = document.getElementById('tm-countdown-check').checked;
+            if(toolInt) { clearInterval(toolInt); toolInt = null; btn.textContent = "RESUME"; btn.classList.remove('bg-red-900'); btn.classList.add('btn-primary'); els.tmStatus.classList.add('hidden'); }
+            else { 
+                if(tmTime <= 0) {
+                    const h = parseInt(document.getElementById('tm-h').value) || 0; const m = parseInt(document.getElementById('tm-m').value) || 0; const s = parseInt(document.getElementById('tm-s').value) || 0; tmTime = (h*3600) + (m*60) + s; if(tmTime <= 0) return; tmOriginalTime = tmTime;
+                    config.classList.add('hidden'); display.classList.remove('hidden');
+                    if(isRoundTrack) { els.tmRoundTracker.classList.remove('hidden'); toolRoundCount = 0; els.tmRoundVal.textContent = "0"; } else { els.tmRoundTracker.classList.add('hidden'); }
+                    if(useCountdown) { isPrep = true; let prep = 10; els.tmStatus.textContent = "GET READY"; els.tmStatus.classList.remove('hidden'); display.textContent = formatTime(prep); btn.textContent = "WAIT..."; btn.disabled = true; toolInt = setInterval(() => { prep--; display.textContent = formatTime(prep); if(prep <= 3) beep('Low'); if(prep <= 0) { clearInterval(toolInt); beep('High'); isPrep = false; els.tmStatus.classList.add('hidden'); btn.disabled = false; btn.textContent = "PAUSE"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900'); startTimerClock(); } }, 1000); } else { btn.textContent = "PAUSE"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900'); startTimerClock(); }
+                } else { btn.textContent = "PAUSE"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900'); startTimerClock(); }
+            }
+        }
+        function startTimerClock() { const display = document.getElementById('tm-display'); const config = document.getElementById('tm-config-container'); display.textContent = formatTime(tmTime); toolInt = setInterval(() => { tmTime--; display.textContent = formatTime(tmTime); if(tmTime <= 0) { clearInterval(toolInt); toolInt = null; beep('High'); document.getElementById('tm-btn').textContent = "START"; document.getElementById('tm-btn').className = "flex-1 btn-primary py-4 text-xl"; config.classList.remove('hidden'); display.classList.add('hidden'); els.tmRoundTracker.classList.add('hidden'); 
+            // Log custom timer
+            completedWorkoutStats = { type: "Custom Timer", duration: formatTime(tmOriginalTime), details: { roundsCompleted: toolRoundCount } };
+            logWorkoutToActivity();
+        } }, 1000); }
+        
+        window.toolIncrementRound = () => { toolRoundCount++; els.tmRoundVal.textContent = toolRoundCount; beep('Mid'); };
+        function resetTimer() { clearInterval(toolInt); toolInt = null; tmTime = 0; isPrep = false; document.getElementById('tm-config-container').classList.remove('hidden'); document.getElementById('tm-display').classList.add('hidden'); document.getElementById('tm-btn').textContent = "START"; document.getElementById('tm-btn').disabled = false; document.getElementById('tm-btn').className = "flex-1 btn-primary py-4 text-xl"; els.tmStatus.classList.add('hidden'); els.tmRoundTracker.classList.add('hidden'); }
+
+        // Tabata
+        function toggleTabata() { const btn = document.getElementById('tb-btn'); const useCountdown = document.getElementById('tb-countdown-check').checked; if(tbState.active) { clearInterval(toolInt); toolInt = null; tbState.active = false; resetTabataUI(); return; } tbState.workTime = parseInt(document.getElementById('tb-work').value) || 20; tbState.restTime = parseInt(document.getElementById('tb-rest').value) || 10; tbState.totalRounds = parseInt(document.getElementById('tb-rounds').value) || 8; tbState.round = 1; tbState.active = true; document.getElementById('tb-config').classList.add('hidden'); document.getElementById('tb-display-container').classList.remove('hidden'); btn.textContent = "STOP TABATA"; btn.classList.remove('btn-primary'); btn.classList.add('bg-red-900'); document.getElementById('tb-countdown-container').classList.add('hidden'); if(useCountdown) { isPrep = true; tbState.timeLeft = 10; updateTabataUI("GET READY", tbState.timeLeft); startTabataClock(); } else { isPrep = false; tbState.isWork = true; tbState.timeLeft = tbState.workTime; updateTabataUI("WORK", tbState.timeLeft); startTabataClock(); } }
+        function startTabataClock() { toolInt = setInterval(() => { tbState.timeLeft--; if(tbState.timeLeft < 0) { if(isPrep) { isPrep = false; tbState.isWork = true; beep('High'); tbState.timeLeft = tbState.workTime; updateTabataUI("WORK", tbState.timeLeft); } else if(tbState.isWork) { beep('Mid'); if(tbState.round >= tbState.totalRounds) { finishTabata(); return; } tbState.isWork = false; tbState.timeLeft = tbState.restTime; updateTabataUI("REST", tbState.timeLeft); } else { beep('High'); tbState.round++; tbState.isWork = true; tbState.timeLeft = tbState.workTime; updateTabataUI("WORK", tbState.timeLeft); } } else { document.getElementById('tb-timer').textContent = tbState.timeLeft; if(tbState.timeLeft <= 3) beep('Low'); } }, 1000); }
+        function updateTabataUI(status, time) { const stEl = document.getElementById('tb-status'); stEl.textContent = status; stEl.className = (status === "WORK") ? "text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading" : "text-green-500 uppercase tracking-widest text-2xl mb-2 font-heading"; if(status === "GET READY") stEl.className = "text-white uppercase tracking-widest text-2xl mb-2 font-heading"; document.getElementById('tb-timer').textContent = time; document.getElementById('tb-round-counter').textContent = `Round ${tbState.round}/${tbState.totalRounds}`; }
+        function finishTabata() { clearInterval(toolInt); tbState.active = false; beep('High'); beep('High'); alert("TABATA COMPLETE"); resetTabataUI(); 
+            completedWorkoutStats = { type: "Tabata", duration: `${tbState.totalRounds} Rnds`, details: { } };
+            logWorkoutToActivity();
+        }
+        function resetTabataUI() { document.getElementById('tb-config').classList.remove('hidden'); document.getElementById('tb-display-container').classList.add('hidden'); document.getElementById('tb-countdown-container').classList.remove('hidden'); const btn = document.getElementById('tb-btn'); btn.textContent = "START TABATA"; btn.className = "w-full max-w-sm btn-primary py-4 text-xl mt-6"; }
+
+        // --- UTILS & EDITOR ---
+        function formatTime(s) { const min = Math.floor(s / 60).toString().padStart(2, '0'); const sec = (s % 60).toString().padStart(2, '0'); return `${min}:${sec}`; }
         function formatTimeTenths(ms) { const m = Math.floor(ms/60000).toString().padStart(2,'0'); const s = Math.floor((ms%60000)/1000).toString().padStart(2,'0'); const ds = Math.floor((ms%1000)/100); return `${m}:${s}.${ds}`; }
-        function generateApexRoutine(c, m) { const r = []; const reps = []; for(let i=1;i<=m;i++) reps.push(i); for(let i=m-1;i>=1;i--) reps.push(i); reps.forEach((cnt, idx) => { r.push({type:'rep_work', name:`${cnt} Reps`, exercises: c.exercises}); if(idx<reps.length-1) r.push({type:'rest', name:'Rest', duration: c.restTime}); }); return r; }
-        function showHistory() {
-            switchScreen('history'); const list = document.getElementById('history-list'); list.innerHTML = '';
-            let h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || []; h.sort((a,b)=>new Date(b.date)-new Date(a.date));
-            h.forEach(log => {
-                const div = document.createElement('div'); div.className = 'bg-wolf-surface border-l-4 border-wolf-border p-4 flex justify-between items-center rounded';
-                div.innerHTML = `<div><p class="text-white font-bold uppercase">${log.type}</p><p class="text-wolf-muted text-[10px]">${new Date(log.date).toLocaleString()}</p><p class="text-[10px] text-wolf-accent mt-1">${log.details.notes||''}</p></div><div class="text-xl text-wolf-text font-heading">${log.duration}</div>`;
-                list.appendChild(div);
+        function generateApexRoutine(config, maxReps) { const routine = []; const reps = []; for (let i = 1; i <= maxReps; i++) reps.push(i); for (let i = maxReps - 1; i >= 1; i--) reps.push(i); reps.forEach((repCount, idx) => { routine.push({ type: 'rep_work', name: `${repCount} Reps`, round: `${idx + 1}/${reps.length}`, exercises: config.exercises }); if (idx < reps.length - 1) routine.push({ type: 'rest', name: 'Rest', duration: config.restTime || 30, round: 'Recover' }); }); return routine; }
+        
+        function openEditor(key) { editingRoutineKey = key; closeModal('editor-select-modal'); if(key === 'apex') editingCopy = JSON.parse(JSON.stringify(routines.apex_config || defaultRoutines.apex_config)); else editingCopy = JSON.parse(JSON.stringify(routines[key])); renderEditor(); switchScreen('editor'); }
+        function renderEditor() {
+            const container = document.getElementById('editor-content'); const title = document.getElementById('editor-title'); container.innerHTML = '';
+            if(editingRoutineKey === 'apex') {
+                title.textContent = "EDIT APEX"; const restDiv = document.createElement('div'); restDiv.className = "bg-wolf-surface p-4 mb-4 rounded-lg border border-wolf-border"; restDiv.innerHTML = `<label class="text-xs text-wolf-muted uppercase font-bold">Ladder Rest Time (Seconds)</label><input type="number" onchange="updateApexRest(this.value)" value="${editingCopy.restTime}" class="w-full bg-wolf-bg text-white p-2 mt-2 rounded border border-wolf-border focus:border-wolf-accent outline-none">`; container.appendChild(restDiv);
+                editingCopy.exercises.forEach((ex, idx) => { const row = document.createElement('div'); row.className = "flex gap-2 mb-2 items-center"; row.innerHTML = `<span class="text-wolf-muted text-xs w-4">${idx+1}.</span><input type="text" value="${ex}" onchange="updateApexEx(${idx}, this.value)" class="flex-grow bg-wolf-surface text-white p-3 rounded border border-wolf-border text-sm focus:border-wolf-accent outline-none"><button onclick="insertStep(${idx})" class="text-wolf-accent hover:text-white p-2 text-lg font-bold">+</button><button onclick="deleteApexEx(${idx})" class="text-red-500 hover:text-red-400 p-2">✕</button>`; container.appendChild(row); });
+            } else {
+                title.textContent = editingRoutineKey.toUpperCase();
+                editingCopy.forEach((step, idx) => { const row = document.createElement('div'); row.className = "bg-wolf-surface p-3 rounded-lg border border-wolf-border mb-3"; let inputs = `<div class="flex gap-2 mb-2"><input type="text" value="${step.name}" onchange="updateStep(${idx}, 'name', this.value)" class="flex-grow bg-wolf-bg text-white font-medium p-2 rounded text-sm border border-wolf-border focus:border-wolf-accent outline-none"><select onchange="updateStep(${idx}, 'type', this.value)" class="bg-wolf-bg text-wolf-muted p-2 text-xs uppercase rounded border border-wolf-border outline-none"><option value="work" ${step.type==='work'?'selected':''}>Work</option><option value="rest" ${step.type==='rest'?'selected':''}>Rest</option><option value="rep_work" ${step.type==='rep_work'?'selected':''}>Reps</option><option value="cooldown" ${step.type==='cooldown'?'selected':''}>Cool</option><option value="amrap" ${step.type==='amrap'?'selected':''}>AMRAP</option></select></div>`; if(step.type === 'rep_work' || step.type === 'amrap') { inputs += `<div class="flex gap-2 items-center"><span class="text-xs text-wolf-muted">List</span><input type="text" value="${step.exercises ? step.exercises.join(', ') : ''}" onchange="updateStep(${idx}, 'exercises', this.value)" class="flex-grow bg-wolf-bg text-white p-2 text-xs rounded border border-wolf-border outline-none placeholder:text-wolf-muted/50" placeholder="Ex 1, Ex 2..."></div>`; } if(step.type !== 'rep_work') { inputs += `<div class="flex gap-2 items-center mt-2"><span class="text-xs text-wolf-muted">Secs</span><input type="number" value="${step.duration || 0}" onchange="updateStep(${idx}, 'duration', this.value)" class="w-20 bg-wolf-bg text-white p-2 text-sm text-center rounded border border-wolf-border outline-none"></div>`; } inputs += `<div class="mt-2 flex justify-between"><button onclick="insertStep(${idx})" class="text-[10px] text-wolf-accent uppercase font-bold tracking-wider hover:text-white">+ Insert Below</button><button onclick="deleteStep(${idx})" class="text-[10px] text-red-500 hover:text-white uppercase font-bold tracking-wider">Remove</button></div>`; row.innerHTML = inputs; container.appendChild(row); });
+            }
+        }
+        
+        window.updateApexRest = (val) => { editingCopy.restTime = parseInt(val); }; window.updateApexEx = (idx, val) => { editingCopy.exercises[idx] = val; }; window.deleteApexEx = (idx) => { editingCopy.exercises.splice(idx, 1); renderEditor(); }; window.addStepToEditor = () => { if(editingRoutineKey === 'apex') editingCopy.exercises.push("New Movement"); else editingCopy.push({ type: 'work', name: 'New Exercise', duration: 30 }); renderEditor(); }; window.updateStep = (idx, field, val) => { if(field === 'duration') editingCopy[idx].duration = parseInt(val); else if(field === 'name') editingCopy[idx].name = val; else if(field === 'type') { editingCopy[idx].type = val; if(val === 'rep_work' && !editingCopy[idx].exercises) editingCopy[idx].exercises = ['10 Reps']; if(val === 'amrap') { if(!editingCopy[idx].exercises) editingCopy[idx].exercises = ['List Exercises Here']; if(!editingCopy[idx].duration) editingCopy[idx].duration = 600; } renderEditor(); } else if(field === 'exercises') { editingCopy[idx].exercises = val.split(',').map(s => s.trim()).filter(s => s.length > 0); } }; window.deleteStep = (idx) => { editingCopy.splice(idx, 1); renderEditor(); }; window.insertStep = (idx) => { if(editingRoutineKey === 'apex') { editingCopy.exercises.splice(idx + 1, 0, "New Movement"); } else { editingCopy.splice(idx + 1, 0, { type: 'work', name: 'New Exercise', duration: 30 }); } renderEditor(); };
+        async function saveRoutineChanges() { if(editingRoutineKey === 'apex') routines.apex_config = editingCopy; else routines[editingRoutineKey] = editingCopy; await saveRoutinesToStorage(); renderMenuWorkouts(); switchScreen('menu'); }
+        async function syncRoutines(url) { const targetUrl = url || getApiUrl(); if(!targetUrl) return; try { const res = await fetch(targetUrl); const data = await res.json(); if(data.routines && Object.keys(data.routines).length > 0) { routines = data.routines; localStorage.setItem(STORAGE_KEY_ROUTINES, JSON.stringify(routines)); renderMenuWorkouts(); } } catch(e) {} }
+
+        // --- EDIT/DELETE HISTORY ---
+        function editHistory(id) {
+            const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
+            const entry = h.find(x => x.date === id);
+            if (!entry) return alert("Entry not found.");
+            
+            // Format for activity modal
+            const data = {
+                id: entry.date,
+                isoTime: entry.date,
+                activity: entry.type,
+                amount: (entry.details && entry.details.amount) ? entry.details.amount : entry.duration,
+                unit: (entry.details && entry.details.unit) ? entry.details.unit : "",
+                rating: (entry.details && entry.details.rating) ? entry.details.rating : "Neutral",
+                focus: (entry.details && entry.details.focus) ? entry.details.focus : "None",
+                note: (entry.details && entry.details.notes) ? entry.details.notes : ""
+            };
+            openActivityModal('edit', data);
+        }
+
+        async function deleteHistory(id) {
+            if(!confirm("Are you sure you want to delete this log?")) return;
+            let h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
+            const index = h.findIndex(x => x.date === id);
+            if (index > -1) {
+                h.splice(index, 1);
+                localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
+                showHistory(); 
+                const url = getApiUrl();
+                if(url) {
+                    try {
+                        document.getElementById('history-loading').classList.remove('hidden');
+                        await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'delete', date: id }) });
+                        document.getElementById('history-loading').classList.add('hidden');
+                    } catch(e) {}
+                }
+            }
+        }
+
+        async function showHistory() {
+            switchScreen('history');
+            const list = document.getElementById('history-list');
+            const loading = document.getElementById('history-loading');
+            list.innerHTML = '';
+            loading.classList.remove('hidden');
+            const url = getApiUrl();
+            let history = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
+            if(url) { try { const res = await fetch(url); const data = await res.json(); if(data.history) history = data.history.reverse(); } catch(e) {} } else { history.sort((a,b) => new Date(b.date) - new Date(a.date)); }
+            loading.classList.add('hidden');
+            if(history.length === 0) { document.getElementById('no-history-msg').classList.remove('hidden'); return; }
+            document.getElementById('no-history-msg').classList.add('hidden');
+            
+            history.forEach((log) => {
+                const dateObj = new Date(log.date);
+                let dateDisplay = isNaN(dateObj.getTime()) ? "---" : dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+
+                const details = log.details || {};
+                const rating = details.rating || "Neutral";
+                const focus = details.focus || "None";
+                const ratingColor = rating === 'Positive' ? 'text-wolf-pos' : (rating === 'Negative' ? 'text-wolf-neg' : 'text-wolf-muted');
+                
+                let detailText = "";
+                if(details.notes) detailText = `<p class="text-[10px] text-wolf-muted italic mt-1 truncate max-w-[200px]">${details.notes}</p>`;
+
+                const el = document.createElement('div');
+                el.className = 'bg-wolf-surface border-l-4 border-wolf-border p-4 flex justify-between items-center rounded-r shadow-sm';
+                if(rating === 'Positive') el.classList.add('border-l-wolf-pos');
+                if(rating === 'Negative') el.classList.add('border-l-wolf-neg');
+
+                el.innerHTML = `
+                    <div class="flex-grow">
+                        <p class="text-white font-bold text-lg uppercase font-heading tracking-wide">${log.type}</p>
+                        <p class="text-wolf-muted text-xs uppercase">${dateDisplay}</p>
+                        <div class="flex gap-2 mt-1">
+                             ${focus !== 'None' ? `<span class="text-[9px] uppercase border border-wolf-border px-1 rounded text-wolf-accent">Focus: ${focus}</span>` : ''}
+                             <span class="text-[9px] uppercase border border-wolf-border px-1 rounded ${ratingColor}">${rating}</span>
+                        </div>
+                        ${detailText}
+                    </div>
+                    <div class="flex flex-col items-end gap-2">
+                        <div class="font-heading text-xl text-wolf-text">${log.duration}</div>
+                        <div class="flex gap-2">
+                            <button onclick="editHistory('${log.date}')" class="text-[10px] text-wolf-muted uppercase hover:text-white border border-wolf-border px-2 rounded">Edit</button>
+                            <button onclick="deleteHistory('${log.date}')" class="text-[10px] text-red-900 uppercase hover:text-red-500 border border-wolf-border px-2 rounded">Del</button>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(el);
             });
         }
+
         function switchScreen(name) { Object.values(screens).forEach(s => s.classList.remove('active')); screens[name].classList.add('active'); }
         window.openModal = (id) => { document.getElementById(id).classList.remove('hidden'); };
         window.closeModal = (id) => { document.getElementById(id).classList.add('hidden'); };
+        window.openApexConfig = () => openModal('apex-config-modal');
+        window.adjustRep = (delta) => { const input = document.getElementById('apex-max-reps'); let val = parseInt(input.value) || 1; val += delta; if(val < 1) val = 1; input.value = val; };
         window.goToMenu = () => { clearInterval(timerInt); clearInterval(totalInt); switchScreen('menu'); };
-        function goToQuote() { const qs = [{q: "Pain is weakness leaving the body.", a: "USMC"}, {q: "I don't stop when I'm tired.", a: "Goggins"}]; const r = qs[Math.floor(Math.random()*qs.length)]; document.getElementById('quote-text').textContent = `"${r.q}"`; document.getElementById('quote-author').textContent = r.a; switchScreen('quote'); }
-        function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-        function beep(t) { if (!audioCtx) return; const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value = t==='High'?800:200; o.start(); o.stop(audioCtx.currentTime+0.1); }
+        function goToQuote() { const quotes = [{q: "The wolf on the hill is not as hungry as the wolf climbing the hill.", a: "Arnold Schwarzenegger"}, {q: "I don't stop when I'm tired. I stop when I'm done.", a: "David Goggins"}, {q: "Pain is weakness leaving the body.", a: "USMC"}, {q: "Civilize the mind, but make savage the body.", a: "Mao"}]; const rnd = quotes[Math.floor(Math.random() * quotes.length)]; document.getElementById('quote-text').textContent = `"${rnd.q}"`; document.getElementById('quote-author').textContent = rnd.a; switchScreen('quote'); }
+        function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
+        function beep(type) { if (!audioCtx) return; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); const freqs = { 'Low': 150, 'Mid': 400, 'High': 800 }; osc.connect(gain); gain.connect(audioCtx.destination); osc.frequency.value = freqs[type]; osc.type = 'triangle'; gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3); }
     </script>
 </body>
 </html>
