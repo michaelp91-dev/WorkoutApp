@@ -119,20 +119,6 @@
         .bar:nth-child(4) { animation-delay: 0.3s; }
         @keyframes wave { to { height: 25px; } }
 
-        /* Custom toggle for check-in */
-        .check-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #1c1917;
-            padding: 1rem;
-            border: 1px solid #44403c;
-            border-radius: 0.75rem;
-        }
-        .check-toggle input:checked + label {
-            background-color: #b45309;
-            border-color: #b45309;
-        }
     </style>
 </head>
 <body class="h-screen overflow-hidden selection:bg-wolf-accent selection:text-white">
@@ -164,20 +150,20 @@
     </div>
 
     <div id="checkin-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-sm rounded-xl shadow-2xl">
-            <h2 class="font-heading text-3xl text-wolf-accent mb-6 text-center tracking-tight">DAILY CHECK-IN</h2>
-            <div id="checkin-questions-container" class="space-y-3 mb-8">
+        <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl shadow-2xl">
+            <h2 class="font-heading text-3xl text-wolf-accent mb-6 text-center">END OF DAY CHECK</h2>
+            <div id="checkin-questions-container" class="space-y-4 mb-8">
                 </div>
-            <button onclick="saveDailyCheckin()" class="w-full btn-primary py-4 text-xl">FINISH CHECK-IN</button>
+            <button onclick="saveDailyCheckin()" class="w-full btn-primary py-4 text-xl">CONFIRM CHECK-IN</button>
             <button onclick="closeModal('checkin-modal')" class="mt-4 w-full text-wolf-muted text-xs uppercase tracking-widest hover:text-white text-center">Cancel</button>
         </div>
     </div>
 
     <div id="checkin-manager-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl flex flex-col max-h-[90vh]">
-            <h2 class="font-heading text-2xl text-wolf-accent mb-6 tracking-wide text-center">MANAGE TRACKING</h2>
+            <h2 class="font-heading text-2xl text-wolf-accent mb-6 tracking-wide text-center">MANAGE DAILY TASKS</h2>
             <div class="flex gap-2 mb-6 border-b border-wolf-border pb-6">
-                <input type="text" id="new-checkin-item" placeholder="e.g. Read Bible" class="flex-1 bg-wolf-bg border border-wolf-border text-white px-4 py-2 rounded text-sm focus:border-wolf-accent outline-none">
+                <input type="text" id="new-checkin-item" placeholder="Add new task..." class="flex-1 bg-wolf-bg border border-wolf-border text-white px-4 py-2 rounded text-sm focus:border-wolf-accent outline-none">
                 <button onclick="addCheckinItem()" class="btn-primary px-4 py-2 text-xl font-bold">+</button>
             </div>
             <div id="checkin-manager-list" class="flex-grow overflow-y-auto space-y-3 pr-1"></div>
@@ -410,7 +396,7 @@
                     <button onclick="showHistory()" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">History</button>
                     <button onclick="switchScreen('tools')" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">Tools</button>
                     <button onclick="openManager()" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">Edit Pgm</button>
-                    <button onclick="openCheckinManager()" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">Edit Check-in</button>
+                    <button onclick="openCheckinManager()" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">Edit Tasks</button>
                     <button onclick="openModal('weight-modal')" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">Log Weight</button>
                 </div>
             </div>
@@ -420,7 +406,7 @@
     </div>
 
     <div id="apex-config-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-wolf-surface border border-wolf-border p-8 w-full max-sm rounded-xl text-center shadow-2xl">
+        <div class="bg-wolf-surface border border-wolf-border p-8 w-full max-w-sm rounded-xl text-center shadow-2xl">
             <h2 class="font-heading text-4xl text-wolf-accent mb-6">APEX CONFIG</h2>
             <div class="mb-6 text-left">
                 <label class="block text-wolf-muted text-xs font-bold mb-2 uppercase tracking-wide">Ladder Peak (Reps)</label>
@@ -529,7 +515,7 @@
 
         const STORAGE_KEY_HIST = 'wolf_history';
         const STORAGE_KEY_ROUTINES = 'wolf_routines';
-        const STORAGE_KEY_CHECKINS = 'wolf_checkin_items';
+        const STORAGE_KEY_CHECKINS = 'wolf_daily_items';
         
         // DEFAULT DATA
         const defaultRoutines = {
@@ -563,7 +549,7 @@
         };
 
         let routines = JSON.parse(localStorage.getItem(STORAGE_KEY_ROUTINES)) || JSON.parse(JSON.stringify(defaultRoutines));
-        let checkinItems = JSON.parse(localStorage.getItem(STORAGE_KEY_CHECKINS)) || ["Read Bible", "In bed by 2200"];
+        let checkinItems = JSON.parse(localStorage.getItem(STORAGE_KEY_CHECKINS)) || ["Read Bible", "Bed by 2200"];
 
         const screens = {
             menu: document.getElementById('menu-screen'),
@@ -646,40 +632,22 @@
                 recognition.interimResults = false;
 
                 recognition.onstart = () => { document.getElementById('mic-wave').classList.add('listening'); };
-                
                 recognition.onend = () => { 
-                    if (isRecording) {
-                        try { recognition.start(); } catch(e) { isRecording = false; document.getElementById('mic-wave').classList.remove('listening'); if(finalTranscript.trim()) parseVoiceInput(finalTranscript); }
-                    } else {
-                        document.getElementById('mic-wave').classList.remove('listening');
-                        if(finalTranscript.trim()) parseVoiceInput(finalTranscript);
-                        finalTranscript = "";
-                    }
+                    if (isRecording) { try { recognition.start(); } catch(e) { isRecording = false; document.getElementById('mic-wave').classList.remove('listening'); if(finalTranscript.trim()) parseVoiceInput(finalTranscript); } } 
+                    else { document.getElementById('mic-wave').classList.remove('listening'); if(finalTranscript.trim()) { parseVoiceInput(finalTranscript); } finalTranscript = ""; }
                 };
-                
-                recognition.onresult = (event) => {
-                    for (let i = event.resultIndex; i < event.results.length; ++i) {
-                        if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript + " ";
-                    }
-                };
+                recognition.onresult = (event) => { for (let i = event.resultIndex; i < event.results.length; ++i) { if (event.results[i].isFinal) { finalTranscript += event.results[i][0].transcript + " "; } } };
             } else { document.getElementById('mic-icon').style.opacity = '0.3'; }
         }
 
         // --- SYNC LOGIC ---
         function initSync() {
             if(HARDCODED_URL && HARDCODED_URL.startsWith('http')) {
-                els.syncStatus.textContent = "CLOUD ACTIVE";
-                els.syncStatus.classList.add('text-wolf-accent');
-                els.modalStatus.textContent = "CONNECTED";
-                els.modalStatus.classList.add('text-green-500');
+                els.syncStatus.textContent = "CLOUD ACTIVE"; els.syncStatus.classList.add('text-wolf-accent');
+                els.modalStatus.textContent = "CONNECTED"; els.modalStatus.classList.add('text-green-500');
                 syncRoutines();
-            } else {
-                els.syncStatus.textContent = "LOCAL MODE";
-                els.modalStatus.textContent = "NOT CONNECTED";
-                els.modalStatus.classList.add('text-red-500');
-            }
+            } else { els.syncStatus.textContent = "LOCAL MODE"; els.modalStatus.textContent = "NOT CONNECTED"; els.modalStatus.classList.add('text-red-500'); }
         }
-
         function getApiUrl() { return (HARDCODED_URL && HARDCODED_URL.startsWith('http')) ? HARDCODED_URL : null; }
 
         // --- DYNAMIC MENU ---
@@ -696,22 +664,20 @@
             });
         }
 
-        // --- DAILY CHECKIN LOGIC ---
+        // --- DAILY CHECK-IN LOGIC (NEW) ---
         function openCheckinModal() {
             const container = document.getElementById('checkin-questions-container');
             container.innerHTML = '';
-            
             checkinItems.forEach((item, index) => {
                 const div = document.createElement('div');
-                div.className = "flex items-center justify-between bg-wolf-surface p-4 border border-wolf-border rounded-lg";
+                div.className = "bg-wolf-bg p-4 rounded-lg border border-wolf-border flex justify-between items-center";
                 div.innerHTML = `
-                    <span class="text-white text-sm font-bold uppercase tracking-tight">${item}?</span>
+                    <span class="text-white text-sm font-bold uppercase tracking-wide">${item}?</span>
                     <div class="flex gap-2">
                         <input type="radio" name="check-${index}" id="yes-${index}" value="Yes" class="hidden peer/yes" checked>
-                        <label for="yes-${index}" class="px-4 py-2 border border-wolf-border rounded text-[10px] font-bold peer-checked/yes:bg-wolf-pos peer-checked/yes:border-wolf-pos cursor-pointer uppercase transition">Yes</label>
-                        
+                        <label for="yes-${index}" class="px-4 py-2 border border-wolf-border rounded text-[10px] font-bold peer-checked/yes:bg-wolf-pos peer-checked/yes:border-wolf-pos cursor-pointer transition">YES</label>
                         <input type="radio" name="check-${index}" id="no-${index}" value="No" class="hidden peer/no">
-                        <label for="no-${index}" class="px-4 py-2 border border-wolf-border rounded text-[10px] font-bold peer-checked/no:bg-wolf-neg peer-checked/no:border-wolf-neg cursor-pointer uppercase transition">No</label>
+                        <label for="no-${index}" class="px-4 py-2 border border-wolf-border rounded text-[10px] font-bold peer-checked/no:bg-wolf-neg peer-checked/no:border-wolf-neg cursor-pointer transition">NO</label>
                     </div>
                 `;
                 container.appendChild(div);
@@ -725,378 +691,150 @@
                 const val = document.querySelector(`input[name="check-${index}"]:checked`).value;
                 results.push(`${item}: ${val}`);
             });
-
             const entry = {
-                date: new Date().toISOString(),
-                type: "Daily Check-In",
-                duration: "Completed",
+                date: new Date().toISOString(), type: "Daily Check-In", duration: "Check-in",
                 details: { notes: results.join(' | '), rating: "Positive" }
             };
-
-            // Save Local
             const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
             h.push(entry);
             localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
-
-            // Sync
             await syncEntryToCloud(entry, 'create');
-            
-            closeModal('checkin-modal');
-            alert("Check-in Logged!");
+            closeModal('checkin-modal'); alert("Log recorded.");
             if(screens.history.classList.contains('active')) showHistory();
         }
 
-        // Checkin Manager
         function openCheckinManager() {
-            renderCheckinManager();
+            const list = document.getElementById('checkin-manager-list');
+            list.innerHTML = '';
+            checkinItems.forEach((item, idx) => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center bg-wolf-bg p-3 rounded border border-wolf-border";
+                div.innerHTML = `<span class="text-white font-bold text-sm">${item}</span><div class="flex gap-2"><button onclick="editCheckinItem(${idx})" class="text-wolf-muted text-[10px] uppercase font-bold hover:text-white">Edit</button><button onclick="deleteCheckinItem(${idx})" class="text-red-900 text-[10px] uppercase font-bold hover:text-red-500">Del</button></div>`;
+                list.appendChild(div);
+            });
             openModal('checkin-manager-modal');
         }
 
-        function renderCheckinManager() {
-            const list = document.getElementById('checkin-manager-list');
-            list.innerHTML = '';
-            checkinItems.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = "flex justify-between items-center bg-wolf-bg p-3 rounded border border-wolf-border";
-                div.innerHTML = `
-                    <span class="text-white font-medium">${item}</span>
-                    <div class="flex gap-2">
-                        <button onclick="editCheckinItem(${index})" class="text-wolf-muted text-[10px] font-bold uppercase hover:text-white border border-wolf-border px-2 py-1 rounded">Edit</button>
-                        <button onclick="deleteCheckinItem(${index})" class="text-red-900 text-[10px] font-bold uppercase hover:text-red-500 border border-wolf-border px-2 py-1 rounded">Del</button>
-                    </div>
-                `;
-                list.appendChild(div);
-            });
-        }
-
         function addCheckinItem() {
-            const input = document.getElementById('new-checkin-item');
-            const val = input.value.trim();
+            const val = document.getElementById('new-checkin-item').value.trim();
             if(!val) return;
-            checkinItems.push(val);
-            saveCheckinItems();
-            input.value = '';
-            renderCheckinManager();
+            checkinItems.push(val); localStorage.setItem(STORAGE_KEY_CHECKINS, JSON.stringify(checkinItems));
+            document.getElementById('new-checkin-item').value = ''; openCheckinManager();
         }
+        function deleteCheckinItem(idx) { checkinItems.splice(idx,1); localStorage.setItem(STORAGE_KEY_CHECKINS, JSON.stringify(checkinItems)); openCheckinManager(); }
+        function editCheckinItem(idx) { const v = prompt("Edit Task:", checkinItems[idx]); if(v) { checkinItems[idx] = v; localStorage.setItem(STORAGE_KEY_CHECKINS, JSON.stringify(checkinItems)); openCheckinManager(); } }
 
-        function deleteCheckinItem(index) {
-            if(!confirm("Remove this item?")) return;
-            checkinItems.splice(index, 1);
-            saveCheckinItems();
-            renderCheckinManager();
-        }
-
-        function editCheckinItem(index) {
-            const newVal = prompt("Edit tracking item:", checkinItems[index]);
-            if(newVal) {
-                checkinItems[index] = newVal;
-                saveCheckinItems();
-                renderCheckinManager();
-            }
-        }
-
-        function saveCheckinItems() {
-            localStorage.setItem(STORAGE_KEY_CHECKINS, JSON.stringify(checkinItems));
-        }
-
-        // --- ACTIVITY LOGIC ---
+        // --- RESTORED ORIGINAL APP LOGIC ---
         function toggleVoiceInput() {
             if(!recognition) return alert("Speech recognition not supported.");
             if (isRecording) { isRecording = false; recognition.stop(); } 
             else { isRecording = true; finalTranscript = ""; try { recognition.start(); } catch(e) { isRecording = false; } }
         }
-
         function parseVoiceInput(text) {
             const keys = "activity|time|amount|unit|rating|focus|note";
-            const extract = (key) => {
-                const regex = new RegExp(`${key}\\s+(.*?)(?=\\s+(?:${keys})|$)`, 'i');
-                const match = text.match(regex);
-                return match ? match[1].trim() : "";
-            };
-            
-            const data = { activity: extract("activity") || "Voice Activity", note: extract("note"), rating: "Neutral", focus: "None", amount: "", unit: "" };
-            
-            const rRaw = extract("rating").toLowerCase();
-            if(rRaw.includes("pos")) data.rating = "Positive"; else if(rRaw.includes("neg")) data.rating = "Negative";
-
-            const fRaw = extract("focus").toLowerCase();
-            if(fRaw.includes("high")) data.focus = "High"; else if(fRaw.includes("med")) data.focus = "Medium"; else if(fRaw.includes("low")) data.focus = "Low";
-
-            const amtRaw = extract("amount");
-            if(amtRaw) {
-                 const num = amtRaw.match(/\d+/);
-                 if(num) { data.amount = num[0]; data.unit = amtRaw.replace(num[0], '').trim(); } else { data.amount = amtRaw; }
-            }
-            const unitRaw = extract("unit"); if(unitRaw) data.unit = unitRaw;
-
-            const tRaw = extract("time");
-            const now = new Date();
-            if(tRaw.includes("ago")) {
-                const val = parseInt(tRaw.match(/\d+/)?.[0] || 0);
-                if(tRaw.includes("hour")) now.setHours(now.getHours() - val); else if(tRaw.includes("minute")) now.setMinutes(now.getMinutes() - val);
-            }
-            const pad = (n) => n.toString().padStart(2,'0');
+            const extract = (key) => { const regex = new RegExp(`${key}\\s+(.*?)(?=\\s+(?:${keys})|$)`, 'i'); const m = text.match(regex); return m ? m[1].trim() : ""; };
+            const data = { activity: extract("activity") || "Voice Log", note: extract("note"), rating: "Neutral", focus: "None", amount: extract("amount"), unit: extract("unit") };
+            const now = new Date(); const pad = (n) => n.toString().padStart(2,'0');
             data.time = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
-
             openActivityModal('voice', data);
         }
 
         function openActivityModal(mode, data = {}) {
-            closeModal('editor-select-modal');
-            const modal = document.getElementById('activity-modal');
-            const title = document.getElementById('act-modal-title');
-            
-            const now = new Date();
-            const pad = (n) => n.toString().padStart(2,'0');
-            const defaultTime = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
-            
-            document.getElementById('act-name').value = "";
-            document.getElementById('act-time').value = defaultTime;
-            document.getElementById('act-amount').value = "";
-            document.getElementById('act-unit').value = "";
-            document.getElementById('act-rating').value = "Neutral";
-            document.getElementById('act-focus').value = "None";
-            document.getElementById('act-note').value = "";
-
-            editingHistoryId = null;
-
-            if(mode === 'voice') {
-                title.textContent = "REVIEW VOICE LOG";
-                document.getElementById('act-name').value = data.activity;
-                if(data.time) document.getElementById('act-time').value = data.time;
-                document.getElementById('act-amount').value = data.amount;
-                document.getElementById('act-unit').value = data.unit;
-                document.getElementById('act-rating').value = data.rating;
-                document.getElementById('act-focus').value = data.focus;
-                document.getElementById('act-note').value = data.note;
-            } else if (mode === 'manual') {
-                title.textContent = "LOG ACTIVITY";
-            } else if (mode === 'edit') {
-                title.textContent = "EDIT ACTIVITY";
-                editingHistoryId = data.id;
-                document.getElementById('act-name').value = data.activity;
-                document.getElementById('act-time').value = data.isoTime.substring(0, 16);
-                document.getElementById('act-amount').value = data.amount;
-                document.getElementById('act-unit').value = data.unit;
-                document.getElementById('act-rating').value = data.rating;
-                document.getElementById('act-focus').value = data.focus;
-                document.getElementById('act-note').value = data.note;
-            } else if (mode === 'workout_complete') {
-                title.textContent = "LOG WORKOUT";
-                document.getElementById('act-name').value = completedWorkoutStats.type;
-                document.getElementById('act-amount').value = completedWorkoutStats.duration;
-                document.getElementById('act-unit').value = "Time";
-                if(completedWorkoutStats.details && completedWorkoutStats.details.maxReps) {
-                     document.getElementById('act-note').value = `Peak: ${completedWorkoutStats.details.maxReps} Reps @ ${completedWorkoutStats.details.weight}`;
-                } else if (completedWorkoutStats.details && completedWorkoutStats.details.roundsCompleted) {
-                     document.getElementById('act-amount').value = completedWorkoutStats.details.roundsCompleted;
-                     document.getElementById('act-unit').value = "Rounds";
-                     document.getElementById('act-note').value = `Total Time: ${completedWorkoutStats.duration}`;
-                }
-            }
-
+            closeModal('editor-select-modal'); const modal = document.getElementById('activity-modal'); const title = document.getElementById('act-modal-title');
+            const now = new Date(); const pad = (n) => n.toString().padStart(2,'0'); const defaultTime = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+            document.getElementById('act-name').value = data.activity || ""; document.getElementById('act-time').value = defaultTime;
+            document.getElementById('act-amount').value = data.amount || ""; document.getElementById('act-unit').value = data.unit || "";
+            document.getElementById('act-rating').value = data.rating || "Neutral"; document.getElementById('act-focus').value = data.focus || "None";
+            document.getElementById('act-note').value = data.note || ""; editingHistoryId = (mode === 'edit') ? data.id : null;
             modal.classList.remove('hidden');
         }
 
         async function saveActivityLog() {
-            const btn = document.getElementById('save-act-btn');
-            if(btn) { btn.textContent = "SAVING..."; btn.disabled = true; }
-
-            const name = document.getElementById('act-name').value || "Activity";
-            let timeVal = document.getElementById('act-time').value;
-            const amount = document.getElementById('act-amount').value;
-            const unit = document.getElementById('act-unit').value;
-            const rating = document.getElementById('act-rating').value;
-            const focus = document.getElementById('act-focus').value;
-            const note = document.getElementById('act-note').value;
-
-            const dateObj = new Date(timeVal);
-            const isoDate = !isNaN(dateObj) ? dateObj.toISOString() : new Date().toISOString();
-
             const entry = {
-                date: isoDate,
-                type: name,
-                duration: (amount + " " + unit).trim() || "---",
-                details: { rating, focus, notes: note, amount, unit }
+                date: new Date(document.getElementById('act-time').value).toISOString(), type: document.getElementById('act-name').value || "Activity",
+                duration: `${document.getElementById('act-amount').value} ${document.getElementById('act-unit').value}`.trim() || "---",
+                details: { rating: document.getElementById('act-rating').value, focus: document.getElementById('act-focus').value, notes: document.getElementById('act-note').value }
             };
-            
             let h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
-            if (editingHistoryId !== null) {
-                const index = h.findIndex(x => x.date === editingHistoryId);
-                if (index > -1) h[index] = entry;
-            } else { h.push(entry); }
-            localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
-
-            if(btn) { btn.textContent = "CONFIRM LOG"; btn.disabled = false; }
-            closeModal('activity-modal');
-            if(screens.history.classList.contains('active')) showHistory();
-            else if (screens.completion.classList.contains('active')) goToMenu();
-
-            if (editingHistoryId !== null) await syncEntryToCloud(entry, 'edit', editingHistoryId);
-            else await syncEntryToCloud(entry, 'create');
+            if (editingHistoryId) { const i = h.findIndex(x => x.date === editingHistoryId); if (i > -1) h[i] = entry; } else { h.push(entry); }
+            localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h)); closeModal('activity-modal');
+            await syncEntryToCloud(entry, editingHistoryId ? 'edit' : 'create', editingHistoryId);
+            if(screens.history.classList.contains('active')) showHistory(); else if (screens.completion.classList.contains('active')) goToMenu();
         }
 
         async function syncEntryToCloud(entry, action, originalDate = null) {
-             const url = getApiUrl(); if(!url) return;
-             try {
-                const payload = { action: action === 'create' ? undefined : 'edit', date: action === 'create' ? entry.date : originalDate, type: entry.type, duration: entry.duration, details: entry.details };
-                if(action === 'create') delete payload.action;
-                await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-             } catch(e) {}
+            const url = getApiUrl(); if(!url) return;
+            try { await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: action === 'create' ? undefined : 'edit', date: action === 'create' ? entry.date : originalDate, type: entry.type, duration: entry.duration, details: entry.details }) }); } catch(e) {}
         }
 
         async function saveWeightEntry() {
-            const weightVal = document.getElementById('weight-input').value;
-            if(!weightVal) return;
-            const entry = { date: new Date().toISOString(), type: "Weight Check-In", duration: "---", details: { weight: weightVal + " lbs" } };
-            const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
-            h.push(entry);
-            localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
-            await syncEntryToCloud(entry, 'create');
-            closeModal('weight-modal');
-            document.getElementById('weight-input').value = "";
-            alert("Weight Logged!");
+            const w = document.getElementById('weight-input').value; if(!w) return;
+            const entry = { date: new Date().toISOString(), type: "Weight Check-In", duration: "---", details: { weight: w + " lbs" } };
+            const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || []; h.push(entry); localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
+            await syncEntryToCloud(entry, 'create'); closeModal('weight-modal'); document.getElementById('weight-input').value = ""; alert("Weight Logged.");
         }
 
-        // --- WORKOUT MANAGER ---
         function openManager() { renderManagerList(); openModal('editor-select-modal'); }
         function renderManagerList() {
             els.managerList.innerHTML = '';
-            const apexItem = document.createElement('div');
-            apexItem.className = "flex justify-between items-center bg-wolf-bg p-3 rounded border border-wolf-border";
-            apexItem.innerHTML = `<span class="text-wolf-text font-bold">APEX PROTOCOL</span><button onclick="openEditor('apex')" class="text-wolf-accent text-sm font-bold uppercase hover:text-white">Edit</button>`;
-            els.managerList.appendChild(apexItem);
             Object.keys(routines).forEach(key => {
-                if(key === 'apex_config') return;
-                const item = document.createElement('div');
-                item.className = "flex flex-col bg-wolf-bg p-3 rounded border border-wolf-border gap-2";
-                item.innerHTML = `<div class="flex justify-between items-center"><span class="text-wolf-text truncate font-bold">${key}</span></div><div class="flex gap-2 justify-end mt-1"><button onclick="renameWorkout('${key}')" class="text-wolf-muted text-xs font-bold uppercase hover:text-white px-2 py-1 border border-wolf-border rounded">Rename</button><button onclick="openEditor('${key}')" class="text-wolf-muted text-xs font-bold uppercase hover:text-white px-2 py-1 border border-wolf-border rounded">Edit</button><button onclick="deleteWorkout('${key}')" class="text-red-900 text-xs font-bold uppercase hover:text-red-500 px-2 py-1 border border-red-900/30 rounded">Delete</button></div>`;
-                els.managerList.appendChild(item);
+                if(key === 'apex_config') {
+                    const d = document.createElement('div'); d.className = "flex justify-between items-center bg-wolf-bg p-3 rounded border border-wolf-border";
+                    d.innerHTML = `<span class="text-wolf-text font-bold">APEX</span><button onclick="openEditor('apex')" class="text-wolf-accent text-sm font-bold uppercase">Edit</button>`;
+                    els.managerList.appendChild(d); return;
+                }
+                const div = document.createElement('div'); div.className = "flex flex-col bg-wolf-bg p-3 rounded border border-wolf-border gap-2";
+                div.innerHTML = `<div class="flex justify-between items-center"><span class="text-wolf-text truncate font-bold">${key}</span></div><div class="flex gap-2 justify-end"><button onclick="renameWorkout('${key}')" class="text-wolf-muted text-xs uppercase">Rename</button><button onclick="openEditor('${key}')" class="text-wolf-muted text-xs uppercase">Edit</button><button onclick="deleteWorkout('${key}')" class="text-red-900 text-xs uppercase">Del</button></div>`;
+                els.managerList.appendChild(div);
             });
         }
-        async function createNewWorkout() {
-            const name = els.newWorkoutName.value.trim();
-            if(!name || routines[name]) return alert("Invalid Name");
-            routines[name] = [{ type: 'work', name: 'Exercise', duration: 30 }];
-            await saveRoutinesToStorage();
-            els.newWorkoutName.value = '';
-            renderManagerList(); renderMenuWorkouts();
-        }
-        async function saveRoutinesToStorage() {
-            localStorage.setItem(STORAGE_KEY_ROUTINES, JSON.stringify(routines));
-            const url = getApiUrl();
-            if(url) try { await fetch(url, { method: 'POST', mode: 'no-cors', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'save_routine', data: routines }) }); } catch(e) {}
-        }
+        async function createNewWorkout() { const n = els.newWorkoutName.value.trim(); if(!n || routines[n]) return; routines[n] = [{type:'work', name:'Exercise', duration:30}]; await saveRoutinesToStorage(); els.newWorkoutName.value=''; renderManagerList(); renderMenuWorkouts(); }
+        async function saveRoutinesToStorage() { localStorage.setItem(STORAGE_KEY_ROUTINES, JSON.stringify(routines)); const url = getApiUrl(); if(url) try { await fetch(url, { method:'POST', mode:'no-cors', body: JSON.stringify({action:'save_routine', data:routines}) }); } catch(e){} }
 
-        // --- RUNTIME ---
         function selectWorkout(type) { currentWorkoutType = type; activeRoutine = routines[type]; goToQuote(); }
         function confirmApexStart() {
-            const max = parseInt(document.getElementById('apex-max-reps').value) || 8;
-            const weight = document.getElementById('apex-weight').value || "Bodyweight";
-            currentWorkoutType = 'apex';
-            activeRoutine = generateApexRoutine(routines.apex_config, max);
-            activeRoutine.details = { maxReps: max, weight: weight };
+            const m = parseInt(document.getElementById('apex-max-reps').value) || 8; const w = document.getElementById('apex-weight').value || "Bodyweight";
+            activeRoutine = generateApexRoutine(routines.apex_config, m); activeRoutine.details = { maxReps: m, weight: w }; currentWorkoutType = 'apex';
             closeModal('apex-config-modal'); goToQuote();
         }
-        function startWorkoutSession() { initAudio(); stepIndex = 0; startTime = null; manualRoundCount = 0; switchScreen('workout'); startCountdown(); }
-        function startCountdown() { runStep({ type: 'countdown', duration: 10, name: '' }); }
-        function startMissionClock() {
-            startTime = Date.now();
-            totalInt = setInterval(() => { const s = Math.floor((Date.now() - startTime) / 1000); els.totalTime.textContent = formatTime(s); }, 1000);
-        }
-        
+        function startWorkoutSession() { initAudio(); stepIndex = 0; startTime = null; manualRoundCount = 0; switchScreen('workout'); runStep({ type: 'countdown', duration: 10, name: '' }); }
         function runStep(step) {
-            clearInterval(timerInt);
-            const pct = (stepIndex / activeRoutine.length) * 100;
-            els.bar.style.width = `${pct}%`;
-            els.status.textContent = step.type === 'countdown' ? 'GET READY' : step.type.toUpperCase();
-            
-            if (step.type !== 'countdown') {
-                els.currEx.textContent = step.name + (step.round ? ` (${step.round})` : '');
-                const next = activeRoutine[stepIndex + 1];
-                els.nextEx.textContent = next ? next.name : 'COMPLETE';
-            }
-
-            const isAmrap = step.type === 'amrap';
-            if(isAmrap && step.type !== 'countdown') { els.amrapContainer.classList.remove('hidden'); els.amrapRounds.textContent = manualRoundCount; } else { els.amrapContainer.classList.add('hidden'); }
-
+            clearInterval(timerInt); els.bar.style.width = `${(stepIndex/activeRoutine.length)*100}%`; els.status.textContent = step.type.toUpperCase();
+            if (step.type !== 'countdown') { els.currEx.textContent = step.name + (step.round?` (${step.round})`:''); els.nextEx.textContent = activeRoutine[stepIndex+1] ? activeRoutine[stepIndex+1].name : 'FINISH'; }
             if (step.type === 'rep_work' || step.type === 'amrap') {
-                if(step.type === 'rep_work') { els.timed.classList.add('hidden'); els.rep.classList.remove('hidden'); } 
-                else { els.timed.classList.remove('hidden'); els.rep.classList.remove('hidden'); document.getElementById('round-complete-btn').classList.add('hidden'); }
+                els.timed.classList.toggle('hidden', step.type === 'rep_work'); els.rep.classList.remove('hidden');
                 if(step.exercises) els.apexList.innerHTML = step.exercises.map(e => `<div class="flex items-center"><span class="w-1.5 h-1.5 bg-wolf-accent mr-3 rounded-full"></span><span class="text-white">${e}</span></div>`).join('');
-            } 
-            
+                if(step.type === 'amrap') { els.amrapContainer.classList.remove('hidden'); els.amrapRounds.textContent = manualRoundCount; }
+            } else { els.timed.classList.remove('hidden'); els.rep.classList.add('hidden'); els.amrapContainer.classList.add('hidden'); }
             if (step.type !== 'rep_work' || step.type === 'amrap') {
-                if(step.type !== 'amrap') { els.timed.classList.remove('hidden'); els.rep.classList.add('hidden'); }
-                let timeLeft = step.duration;
-                els.timer.textContent = formatTime(timeLeft);
-                timerInt = setInterval(() => {
-                    timeLeft--; els.timer.textContent = formatTime(timeLeft);
-                    if (timeLeft <= 3 && timeLeft > 0) beep('Low');
-                    if (timeLeft <= 0) { clearInterval(timerInt); beep('High'); if (step.type === 'countdown') { startMissionClock(); nextStep(); } else { nextStep(); } }
-                }, 1000);
+                let t = step.duration; els.timer.textContent = formatTime(t);
+                timerInt = setInterval(() => { t--; els.timer.textContent = formatTime(t); if(t<=3 && t>0) beep('Low'); if(t<=0) { clearInterval(timerInt); beep('High'); if(step.type==='countdown'){ startTime=Date.now(); totalInt=setInterval(()=>els.totalTime.textContent=formatTime(Math.floor((Date.now()-startTime)/1000)),1000); nextStep(); } else nextStep(); } },1000);
             }
         }
-        function nextStep() { stepIndex++; if (stepIndex >= activeRoutine.length) { finishWorkout(); return; } runStep(activeRoutine[stepIndex]); }
+        function nextStep() { if(els.status.textContent !== 'GET READY') stepIndex++; if (stepIndex >= activeRoutine.length) { clearInterval(totalInt); switchScreen('completion'); els.finalTime.textContent = els.totalTime.textContent; return; } runStep(activeRoutine[stepIndex]); }
         window.incrementRound = () => { manualRoundCount++; els.amrapRounds.textContent = manualRoundCount; beep('Mid'); };
-        document.getElementById('round-complete-btn').addEventListener('click', () => { beep('Mid'); nextStep(); });
-        
-        function finishWorkout() {
-            clearInterval(totalInt); beep('High');
-            const s = Math.floor((Date.now() - startTime) / 1000);
-            completedWorkoutStats = { type: currentWorkoutType, duration: formatTime(s), details: activeRoutine.details || { roundsCompleted: manualRoundCount } };
-            els.finalTime.textContent = formatTime(s);
-            switchScreen('completion');
-        }
-        function logWorkoutToActivity() { openActivityModal('workout_complete'); }
 
-        // --- TOOLS ---
-        function switchTool(tool) {
-            clearInterval(toolInt);
-            document.querySelectorAll('[id^="tool-"]').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`tool-${tool}`).classList.remove('hidden');
-        }
-        function toggleStopwatch() {
-            if(toolInt) { clearInterval(toolInt); toolInt = null; }
-            else { const start = Date.now() - swTime; toolInt = setInterval(() => { swTime = Date.now() - start; document.getElementById('sw-display').textContent = formatTimeTenths(swTime); }, 50); }
-        }
-        function resetStopwatch() { clearInterval(toolInt); toolInt = null; swTime = 0; document.getElementById('sw-display').textContent = "00:00.0"; }
-
-        // --- UTILS ---
-        function formatTime(s) { const min = Math.floor(s / 60).toString().padStart(2, '0'); const sec = (s % 60).toString().padStart(2, '0'); return `${min}:${sec}`; }
+        function switchTool(tool) { initAudio(); clearInterval(toolInt); document.querySelectorAll('[id^="tool-"]').forEach(el => el.classList.add('hidden')); document.getElementById(`tool-${tool}`).classList.remove('hidden'); }
+        function toggleStopwatch() { if(toolInt) { clearInterval(toolInt); toolInt = null; } else { const s = Date.now() - swTime; toolInt = setInterval(() => { swTime = Date.now() - s; document.getElementById('sw-display').textContent = formatTimeTenths(swTime); }, 50); } }
+        function formatTime(s) { const m = Math.floor(s/60).toString().padStart(2,'0'); const sc = (s%60).toString().padStart(2,'0'); return `${m}:${sc}`; }
         function formatTimeTenths(ms) { const m = Math.floor(ms/60000).toString().padStart(2,'0'); const s = Math.floor((ms%60000)/1000).toString().padStart(2,'0'); const ds = Math.floor((ms%1000)/100); return `${m}:${s}.${ds}`; }
-        function generateApexRoutine(config, maxReps) { const r = []; const reps = []; for(let i=1;i<=maxReps;i++) reps.push(i); for(let i=maxReps-1;i>=1;i--) reps.push(i); reps.forEach((c, i) => { r.push({type:'rep_work', name:`${c} Reps`, exercises: config.exercises}); if(i<reps.length-1) r.push({type:'rest', name:'Rest', duration: config.restTime}); }); return r; }
-        
-        function openEditor(key) { editingRoutineKey = key; editingCopy = JSON.parse(JSON.stringify(routines[key] || routines.apex_config)); renderEditor(); switchScreen('editor'); }
-        function renderEditor() {
-            const container = document.getElementById('editor-content');
-            container.innerHTML = `<p class="text-wolf-muted text-center p-4">Edit Mode Active for ${editingRoutineKey}</p>`;
-        }
-        async function saveRoutineChanges() { if(editingRoutineKey === 'apex') routines.apex_config = editingCopy; else routines[editingRoutineKey] = editingCopy; await saveRoutinesToStorage(); switchScreen('menu'); }
-
-        async function showHistory() {
-            switchScreen('history');
-            const list = document.getElementById('history-list');
-            list.innerHTML = '';
-            let history = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
-            history.sort((a,b) => new Date(b.date) - new Date(a.date));
-            history.forEach(log => {
-                const el = document.createElement('div');
-                el.className = 'bg-wolf-surface border-l-4 border-wolf-border p-4 flex justify-between items-center rounded shadow-sm';
-                el.innerHTML = `<div><p class="text-white font-bold uppercase font-heading">${log.type}</p><p class="text-wolf-muted text-[10px]">${new Date(log.date).toLocaleString()}</p><p class="text-[10px] text-wolf-accent mt-1">${log.details.notes || ''}</p></div><div class="text-xl text-wolf-text font-heading">${log.duration}</div>`;
-                list.appendChild(el);
+        function generateApexRoutine(c, m) { const r = []; const reps = []; for(let i=1;i<=m;i++) reps.push(i); for(let i=m-1;i>=1;i--) reps.push(i); reps.forEach((cnt, idx) => { r.push({type:'rep_work', name:`${cnt} Reps`, exercises: c.exercises}); if(idx<reps.length-1) r.push({type:'rest', name:'Rest', duration: c.restTime}); }); return r; }
+        function showHistory() {
+            switchScreen('history'); const list = document.getElementById('history-list'); list.innerHTML = '';
+            let h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || []; h.sort((a,b)=>new Date(b.date)-new Date(a.date));
+            h.forEach(log => {
+                const div = document.createElement('div'); div.className = 'bg-wolf-surface border-l-4 border-wolf-border p-4 flex justify-between items-center rounded';
+                div.innerHTML = `<div><p class="text-white font-bold uppercase">${log.type}</p><p class="text-wolf-muted text-[10px]">${new Date(log.date).toLocaleString()}</p><p class="text-[10px] text-wolf-accent mt-1">${log.details.notes||''}</p></div><div class="text-xl text-wolf-text font-heading">${log.duration}</div>`;
+                list.appendChild(div);
             });
         }
-
         function switchScreen(name) { Object.values(screens).forEach(s => s.classList.remove('active')); screens[name].classList.add('active'); }
         window.openModal = (id) => { document.getElementById(id).classList.remove('hidden'); };
         window.closeModal = (id) => { document.getElementById(id).classList.add('hidden'); };
-        window.openApexConfig = () => openModal('apex-config-modal');
-        window.adjustRep = (delta) => { const input = document.getElementById('apex-max-reps'); input.value = Math.max(1, parseInt(input.value) + delta); };
         window.goToMenu = () => { clearInterval(timerInt); clearInterval(totalInt); switchScreen('menu'); };
-        function goToQuote() { switchScreen('quote'); }
+        function goToQuote() { const qs = [{q: "Pain is weakness leaving the body.", a: "USMC"}, {q: "I don't stop when I'm tired.", a: "Goggins"}]; const r = qs[Math.floor(Math.random()*qs.length)]; document.getElementById('quote-text').textContent = `"${r.q}"`; document.getElementById('quote-author').textContent = r.a; switchScreen('quote'); }
         function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-        function beep(type) { if (!audioCtx) return; const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.frequency.value = type === 'High' ? 800 : 200; osc.start(); osc.stop(audioCtx.currentTime + 0.1); }
+        function beep(t) { if (!audioCtx) return; const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value = t==='High'?800:200; o.start(); o.stop(audioCtx.currentTime+0.1); }
     </script>
 </body>
 </html>
