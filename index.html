@@ -123,7 +123,6 @@
 </head>
 <body class="h-screen overflow-hidden selection:bg-wolf-accent selection:text-white">
 
-    <!-- SYNC MODAL -->
     <div id="sync-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl shadow-2xl">
             <h2 class="font-heading text-2xl text-wolf-accent mb-2 tracking-wide">CLOUD SYNC</h2>
@@ -136,7 +135,6 @@
         </div>
     </div>
 
-    <!-- WEIGHT MODAL (RESTORED) -->
     <div id="weight-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-sm rounded-xl shadow-2xl text-center">
             <h2 class="font-heading text-3xl text-wolf-accent mb-6">WEIGHT CHECK</h2>
@@ -151,19 +149,38 @@
         </div>
     </div>
 
-    <!-- ACTIVITY LOG MODAL (UNIFIED) -->
+    <div id="checkin-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl shadow-2xl">
+            <h2 class="font-heading text-3xl text-wolf-accent mb-6 text-center">END OF DAY CHECK</h2>
+            <div id="checkin-questions-container" class="space-y-4 mb-8">
+                </div>
+            <button onclick="saveDailyCheckin()" class="w-full btn-primary py-4 text-xl">CONFIRM CHECK-IN</button>
+            <button onclick="closeModal('checkin-modal')" class="mt-4 w-full text-wolf-muted text-xs uppercase tracking-widest hover:text-white text-center">Cancel</button>
+        </div>
+    </div>
+
+    <div id="checkin-manager-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl flex flex-col max-h-[90vh]">
+            <h2 class="font-heading text-2xl text-wolf-accent mb-6 tracking-wide text-center">MANAGE DAILY TASKS</h2>
+            <div class="flex gap-2 mb-6 border-b border-wolf-border pb-6">
+                <input type="text" id="new-checkin-item" placeholder="Add new task..." class="flex-1 bg-wolf-bg border border-wolf-border text-white px-4 py-2 rounded text-sm focus:border-wolf-accent outline-none">
+                <button onclick="addCheckinItem()" class="btn-primary px-4 py-2 text-xl font-bold">+</button>
+            </div>
+            <div id="checkin-manager-list" class="flex-grow overflow-y-auto space-y-3 pr-1"></div>
+            <button onclick="closeModal('checkin-manager-modal')" class="mt-6 text-wolf-muted hover:text-white uppercase text-xs tracking-widest text-center">Close</button>
+        </div>
+    </div>
+
     <div id="activity-modal" class="hidden fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-wolf-surface border border-wolf-border p-5 w-full max-w-md rounded-xl shadow-2xl flex flex-col max-h-[95vh] overflow-y-auto">
             <h2 id="act-modal-title" class="font-heading text-2xl text-wolf-accent mb-4">LOG ACTIVITY</h2>
             
             <div class="space-y-3">
-                <!-- Activity Name -->
                 <div>
                     <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Activity</label>
                     <input type="text" id="act-name" placeholder="e.g. Workout, Reading, Sleep" class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none">
                 </div>
                 
-                <!-- Time & Amount -->
                 <div class="flex gap-2">
                     <div class="flex-1">
                         <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Time</label>
@@ -179,7 +196,6 @@
                     </div>
                 </div>
 
-                <!-- Rating & Focus -->
                 <div class="flex gap-2">
                     <div class="flex-1">
                         <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Rating</label>
@@ -200,7 +216,6 @@
                     </div>
                 </div>
 
-                <!-- Notes -->
                 <div>
                     <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Note</label>
                     <textarea id="act-note" rows="3" placeholder="Details..." class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none"></textarea>
@@ -212,7 +227,6 @@
         </div>
     </div>
 
-    <!-- TOOLS SCREEN -->
     <div id="tools-screen" class="screen h-full w-full flex-col bg-wolf-bg p-4">
         <div class="flex justify-between items-center mb-6 pb-4 border-b border-wolf-border">
             <h2 class="font-heading text-3xl text-wolf-text">TOOLS</h2>
@@ -225,7 +239,6 @@
             <button onclick="switchTool('tabata')" id="tab-tabata" class="flex-1 py-2 rounded text-xs uppercase font-bold bg-wolf-surface text-wolf-muted hover:text-white transition">Tabata</button>
         </div>
 
-        <!-- Stopwatch -->
         <div id="tool-stopwatch" class="flex-grow flex flex-col items-center justify-start text-center pt-10">
             <div id="sw-status" class="hidden text-wolf-accent uppercase tracking-widest text-2xl mb-2 font-heading animate-pulse">GET READY</div>
             <div id="sw-display" class="font-heading text-7xl md:text-9xl text-white mb-4 tabular-nums">00:00.0</div>
@@ -243,7 +256,6 @@
              <button onclick="resetStopwatch()" class="mt-4 text-wolf-muted text-xs uppercase tracking-widest hover:text-white">Reset All</button>
         </div>
 
-        <!-- Timer -->
         <div id="tool-timer" class="hidden flex-grow flex flex-col items-center justify-start text-center pt-10">
             <div id="tm-config-container" class="flex flex-col items-center">
                 <div class="flex gap-4 items-center mb-8">
@@ -291,7 +303,6 @@
             </div>
         </div>
 
-        <!-- Tabata -->
         <div id="tool-tabata" class="hidden flex-grow flex flex-col items-center justify-center text-center">
             <div id="tb-config" class="w-full max-w-sm space-y-4 mb-8">
                 <div class="flex justify-between items-center">
@@ -321,7 +332,6 @@
         </div>
     </div>
 
-    <!-- LIST SCREEN (PROTOCOLS) -->
     <div id="list-screen" class="screen h-full w-full flex-col bg-wolf-bg p-4">
         <div class="flex justify-between items-center mb-6 pb-4 border-b border-wolf-border">
             <h2 class="font-heading text-3xl text-wolf-text">PROTOCOLS</h2>
@@ -330,7 +340,6 @@
         <div id="workout-list-container" class="flex-grow overflow-y-auto space-y-3 pb-20"></div>
     </div>
 
-    <!-- EDITOR MODALS -->
     <div id="editor-select-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl flex flex-col max-h-[90vh]">
             <h2 class="font-heading text-2xl text-wolf-accent mb-6 tracking-wide text-center">MANAGE PROTOCOLS</h2>
@@ -357,7 +366,6 @@
         </div>
     </div>
 
-    <!-- MENU SCREEN -->
     <div id="menu-screen" class="screen active h-full w-full flex-col items-center justify-center p-6 relative">
         <button onclick="openModal('sync-modal')" class="absolute top-6 right-6 text-wolf-muted hover:text-wolf-accent transition">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -369,6 +377,8 @@
 
             <div class="w-full space-y-3 mb-6">
                  <button onclick="switchScreen('list')" class="w-full btn-primary py-4 text-xl shadow-lg shadow-orange-900/20">WORKOUTS</button>
+                 <button onclick="openCheckinModal()" class="w-full btn-primary py-4 text-xl shadow-lg shadow-orange-900/10 border border-wolf-accent/30">DAILY CHECK-IN</button>
+                 
                  <div class="flex gap-3">
                     <button onclick="toggleVoiceInput()" class="w-1/4 btn-secondary py-4 flex items-center justify-center text-wolf-accent border-wolf-accent relative group overflow-hidden">
                         <svg id="mic-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
@@ -386,16 +396,15 @@
                     <button onclick="showHistory()" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">History</button>
                     <button onclick="switchScreen('tools')" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">Tools</button>
                     <button onclick="openManager()" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">Edit Pgm</button>
+                    <button onclick="openCheckinManager()" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">Edit Tasks</button>
+                    <button onclick="openModal('weight-modal')" class="btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold">Log Weight</button>
                 </div>
-                 <!-- RESTORED WEIGHT BUTTON -->
-                 <button onclick="openModal('weight-modal')" class="w-full btn-secondary py-3 text-[10px] tracking-widest text-wolf-muted uppercase font-bold mt-3">Log Weight</button>
             </div>
             
             <div id="sync-status" class="mt-6 text-[10px] text-wolf-muted uppercase tracking-widest opacity-50">Connecting...</div>
         </div>
     </div>
 
-    <!-- APEX CONFIG -->
     <div id="apex-config-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-wolf-surface border border-wolf-border p-8 w-full max-w-sm rounded-xl text-center shadow-2xl">
             <h2 class="font-heading text-4xl text-wolf-accent mb-6">APEX CONFIG</h2>
@@ -418,7 +427,6 @@
         </div>
     </div>
 
-    <!-- QUOTE SCREEN -->
     <div id="quote-screen" class="screen min-h-screen w-full flex-col items-center justify-center p-8 text-center bg-wolf-bg">
         <div class="z-10 max-w-2xl">
             <div class="w-16 h-1 bg-wolf-accent mx-auto mb-8 rounded-full"></div>
@@ -428,7 +436,6 @@
         <button id="start-btn" class="z-10 mt-16 btn-primary py-4 px-12 text-2xl shadow-xl shadow-orange-900/10">BEGIN</button>
     </div>
 
-    <!-- WORKOUT SCREEN -->
     <div id="workout-screen" class="screen h-full w-full flex-col relative bg-wolf-bg">
         <div class="absolute top-0 left-0 w-full p-6 flex justify-between items-start z-20">
             <div>
@@ -472,7 +479,6 @@
         </div>
     </div>
 
-    <!-- COMPLETION SCREEN -->
     <div id="completion-screen" class="screen min-h-screen w-full flex-col items-center justify-center p-6 text-center bg-wolf-bg">
         <h2 class="font-heading text-5xl md:text-8xl text-wolf-accent mb-2">COMPLETE</h2>
         <p class="text-wolf-muted uppercase tracking-widest mb-12 text-sm">Well Done</p>
@@ -489,7 +495,6 @@
         </div>
     </div>
 
-    <!-- HISTORY SCREEN -->
     <div id="history-screen" class="screen min-h-screen w-full flex-col p-6 bg-wolf-bg">
         <div class="max-w-2xl mx-auto w-full flex flex-col h-full">
             <div class="flex items-center justify-between mb-8 pb-4 border-b border-wolf-border">
@@ -510,6 +515,7 @@
 
         const STORAGE_KEY_HIST = 'wolf_history';
         const STORAGE_KEY_ROUTINES = 'wolf_routines';
+        const STORAGE_KEY_CHECKINS = 'wolf_checkin_tasks';
         
         // DEFAULT DATA
         const defaultRoutines = {
@@ -543,6 +549,7 @@
         };
 
         let routines = JSON.parse(localStorage.getItem(STORAGE_KEY_ROUTINES)) || JSON.parse(JSON.stringify(defaultRoutines));
+        let checkinItems = JSON.parse(localStorage.getItem(STORAGE_KEY_CHECKINS)) || ["Read Bible", "In bed by 2200"];
 
         const screens = {
             menu: document.getElementById('menu-screen'),
@@ -697,6 +704,67 @@
                 els.workoutList.appendChild(btn);
             });
         }
+
+        // --- DAILY CHECK-IN LOGIC (NEW) ---
+        function openCheckinModal() {
+            const container = document.getElementById('checkin-questions-container');
+            container.innerHTML = '';
+            checkinItems.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = "bg-wolf-bg p-4 rounded-lg border border-wolf-border flex justify-between items-center";
+                div.innerHTML = `
+                    <span class="text-white text-sm font-bold uppercase tracking-wide">${item}?</span>
+                    <div class="flex gap-2">
+                        <input type="radio" name="check-${index}" id="yes-${index}" value="Yes" class="hidden peer/yes" checked>
+                        <label for="yes-${index}" class="px-4 py-2 border border-wolf-border rounded text-[10px] font-bold peer-checked/yes:bg-wolf-pos peer-checked/yes:border-wolf-pos cursor-pointer transition">YES</label>
+                        <input type="radio" name="check-${index}" id="no-${index}" value="No" class="hidden peer/no">
+                        <label for="no-${index}" class="px-4 py-2 border border-wolf-border rounded text-[10px] font-bold peer-checked/no:bg-wolf-neg peer-checked/no:border-wolf-neg cursor-pointer transition">NO</label>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            openModal('checkin-modal');
+        }
+
+        async function saveDailyCheckin() {
+            const results = [];
+            checkinItems.forEach((item, index) => {
+                const val = document.querySelector(`input[name="check-${index}"]:checked`).value;
+                results.push(`${item}: ${val}`);
+            });
+            const entry = {
+                date: new Date().toISOString(), type: "Daily Check-In", duration: "Check-in",
+                details: { notes: results.join(' | '), rating: "Positive" }
+            };
+            const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
+            h.push(entry);
+            localStorage.setItem(STORAGE_KEY_HIST, JSON.stringify(h));
+            await syncEntryToCloud(entry, 'create');
+            closeModal('checkin-modal'); alert("Daily Check-in recorded.");
+            if(screens.history.classList.contains('active')) showHistory();
+        }
+
+        function openCheckinManager() {
+            const list = document.getElementById('checkin-manager-list');
+            list.innerHTML = '';
+            checkinItems.forEach((item, idx) => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center bg-wolf-bg p-3 rounded border border-wolf-border";
+                div.innerHTML = `<span class="text-white font-bold text-sm">${item}</span><div class="flex gap-2"><button onclick="editCheckinItem(${idx})" class="text-wolf-muted text-[10px] uppercase font-bold hover:text-white">Edit</button><button onclick="deleteCheckinItem(${idx})" class="text-red-900 text-[10px] uppercase font-bold hover:text-red-500">Del</button></div>`;
+                list.appendChild(div);
+            });
+            openModal('checkin-manager-modal');
+        }
+
+        function addCheckinItem() {
+            const val = document.getElementById('new-checkin-item').value.trim();
+            if(!val) return;
+            checkinItems.push(val); localStorage.setItem(STORAGE_KEY_CHECKINS, JSON.stringify(checkinItems));
+            document.getElementById('new-checkin-item').value = ''; openCheckinManager();
+        }
+        function deleteCheckinItem(idx) { if(confirm("Remove this task?")) { checkinItems.splice(idx,1); localStorage.setItem(STORAGE_KEY_CHECKINS, JSON.stringify(checkinItems)); openCheckinManager(); } }
+        function editCheckinItem(idx) { const v = prompt("Edit Task:", checkinItems[idx]); if(v) { checkinItems[idx] = v; localStorage.setItem(STORAGE_KEY_CHECKINS, JSON.stringify(checkinItems)); openCheckinManager(); } }
+
 
         // --- ACTIVITY LOGIC ---
         function toggleVoiceInput() {
