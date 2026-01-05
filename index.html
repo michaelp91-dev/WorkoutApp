@@ -154,8 +154,8 @@
             <h2 class="font-heading text-3xl text-wolf-accent mb-6 text-center">END OF DAY CHECK</h2>
             
             <div class="mb-6">
-                <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1 text-center">Date & Time</label>
-                <input type="datetime-local" id="checkin-date" class="w-full bg-wolf-bg border border-wolf-border text-white p-2 text-xs rounded focus:border-wolf-accent outline-none text-center">
+                <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1 text-center">Date</label>
+                <input type="date" id="checkin-date" class="w-full bg-wolf-bg border border-wolf-border text-white p-2 text-xs rounded focus:border-wolf-accent outline-none text-center">
             </div>
 
             <div id="checkin-questions-container" class="space-y-4 mb-8">
@@ -730,13 +730,13 @@
                 container.appendChild(div);
             });
             
-            // Set default date to now
+            // Set default date to now (YYYY-MM-DD)
             const now = new Date();
             const pad = (n) => n.toString().padStart(2,'0');
-            const defaultTime = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+            const defaultDate = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
             
             const dateInput = document.getElementById('checkin-date');
-            if (dateInput) dateInput.value = defaultTime;
+            if (dateInput) dateInput.value = defaultDate;
 
             openModal('checkin-modal');
         }
@@ -752,7 +752,8 @@
             let checkinDateVal = document.getElementById('checkin-date').value;
             let isoDate;
             if (checkinDateVal) {
-                isoDate = new Date(checkinDateVal).toISOString();
+                // Append noon to avoid timezone shifts when displaying just date later
+                isoDate = new Date(checkinDateVal + 'T12:00:00').toISOString();
             } else {
                 isoDate = new Date().toISOString();
             }
