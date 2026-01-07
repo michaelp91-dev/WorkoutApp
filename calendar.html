@@ -38,17 +38,20 @@
         ::-webkit-scrollbar-thumb { background: #44403c; border-radius: 3px; }
 
         /* Timeline Grid */
-        .time-slot { height: 90px; border-bottom: 1px solid #292524; position: relative; } /* 90px = 60 mins (1.5px per min) */
+        .time-slot { height: 90px; border-bottom: 1px solid #292524; position: relative; } 
         .time-label { position: absolute; top: -10px; left: 2px; font-size: 10px; color: #78716c; background: #0c0a09; padding-right: 4px; }
+        
         .event-card {
             position: absolute; left: 50px; right: 10px;
             background: #292524; border-left: 4px solid #b45309;
             padding: 4px 8px; font-size: 12px; overflow: hidden;
             border-radius: 4px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.5);
             transition: transform 0.1s;
+            z-index: 10;
         }
         .event-card:active { transform: scale(0.98); }
         .event-card.completed { opacity: 0.5; border-left-color: #15803d; text-decoration: line-through; }
+        .event-card.recurring { border-right: 2px solid #b45309; }
         
         .tab-btn.active { border-bottom: 2px solid #b45309; color: white; }
         .tab-btn { color: #78716c; }
@@ -56,12 +59,25 @@
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
 
-    <div class="flex justify-between items-center p-4 border-b border-wolf-border bg-wolf-bg z-20">
-        <div class="flex items-center gap-4">
-            <a href="index.html" class="text-wolf-muted hover:text-white text-xs font-bold uppercase tracking-widest no-underline">&larr; Home</a>
-            <h1 class="font-heading text-2xl text-wolf-accent tracking-wide">PLANNER</h1>
+    <div class="flex flex-col md:flex-row md:justify-between md:items-center p-4 border-b border-wolf-border bg-wolf-bg z-20 gap-4 md:gap-0">
+        <div class="flex items-center gap-4 justify-between md:justify-start">
+            <div class="flex items-center gap-4">
+                <a href="index.html" class="text-wolf-muted hover:text-white text-xs font-bold uppercase tracking-widest no-underline">&larr; Home</a>
+                <h1 class="font-heading text-2xl text-wolf-accent tracking-wide">PLANNER</h1>
+            </div>
+            <div class="flex items-center gap-2 md:hidden">
+                <button onclick="changeDate(-1)" class="text-wolf-muted hover:text-white p-1">&larr;</button>
+                <div id="current-date-mobile" class="text-wolf-text text-xs font-bold uppercase tracking-widest text-center min-w-[100px]"></div>
+                <button onclick="changeDate(1)" class="text-wolf-muted hover:text-white p-1">&rarr;</button>
+            </div>
         </div>
-        <div id="current-date" class="text-wolf-text text-sm font-bold uppercase tracking-widest"></div>
+
+        <div class="hidden md:flex items-center gap-4 bg-wolf-surface/50 px-4 py-2 rounded-lg border border-wolf-border">
+            <button onclick="changeDate(-1)" class="text-wolf-muted hover:text-white font-heading text-lg">&larr;</button>
+            <button onclick="setDateToToday()" class="text-xs uppercase font-bold text-wolf-accent tracking-widest hover:text-white">Today</button>
+            <div id="current-date-desktop" class="text-wolf-text text-sm font-bold uppercase tracking-widest text-center min-w-[150px]"></div>
+            <button onclick="changeDate(1)" class="text-wolf-muted hover:text-white font-heading text-lg">&rarr;</button>
+        </div>
     </div>
 
     <div class="flex md:hidden border-b border-wolf-border bg-wolf-surface">
@@ -79,8 +95,7 @@
                     <button onclick="addTodo()" class="bg-wolf-accent text-white px-3 py-2 rounded font-heading font-bold">+</button>
                 </div>
             </div>
-            <div id="todo-list" class="flex-grow overflow-y-auto p-4 space-y-2 pb-20">
-                </div>
+            <div id="todo-list" class="flex-grow overflow-y-auto p-4 space-y-2 pb-20"></div>
         </div>
 
         <div id="panel-calendar" class="flex-grow flex flex-col h-full w-full bg-wolf-bg relative">
@@ -88,8 +103,7 @@
                 <span class="absolute right-0 -top-2.5 bg-red-500 text-white text-[9px] px-1 rounded">NOW</span>
             </div>
 
-            <div id="timeline-container" class="flex-grow overflow-y-auto relative pb-20 pt-2">
-                </div>
+            <div id="timeline-container" class="flex-grow overflow-y-auto relative pb-20 pt-2"></div>
             
             <button onclick="openEventModal()" class="absolute bottom-6 right-6 bg-wolf-accent text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-3xl font-heading hover:bg-wolf-accentHover z-20 shadow-orange-900/40">
                 +
@@ -102,12 +116,15 @@
         <div class="bg-wolf-surface border border-wolf-border p-6 w-full max-w-md rounded-xl shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto">
             <h2 id="modal-title" class="font-heading text-2xl text-wolf-accent mb-6">PLAN EVENT</h2>
             
-            <input type="hidden" id="event-id">
-            
             <div class="space-y-4">
                 <div>
                     <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Title</label>
                     <input type="text" id="event-title" placeholder="What are you doing?" class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Date</label>
+                    <input type="date" id="event-date" class="w-full bg-wolf-bg border border-wolf-border text-white p-2 rounded text-sm focus:border-wolf-accent outline-none">
                 </div>
 
                 <div class="flex gap-3">
@@ -122,7 +139,19 @@
                 </div>
 
                 <div>
-                    <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Link To-Do Item (Optional)</label>
+                    <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Repeat</label>
+                    <select id="event-recurrence" class="w-full bg-wolf-bg border border-wolf-border text-white p-2 rounded text-sm form-select focus:border-wolf-accent outline-none">
+                        <option value="none">Don't Repeat</option>
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="quarterly">Every 3 Months</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Link To-Do Item</label>
                     <select id="event-todo-link" class="w-full bg-wolf-bg border border-wolf-border text-white p-2 rounded text-sm focus:border-wolf-accent outline-none">
                         <option value="">-- None --</option>
                     </select>
@@ -130,7 +159,7 @@
 
                 <div>
                     <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Notes</label>
-                    <textarea id="event-note" rows="3" placeholder="Details (e.g. Use bleach for tub)..." class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none"></textarea>
+                    <textarea id="event-note" rows="3" placeholder="Details..." class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none"></textarea>
                 </div>
 
                 <div class="flex items-center gap-2 pt-2">
@@ -155,6 +184,15 @@
         // State
         let todos = JSON.parse(localStorage.getItem(STORAGE_TODOS)) || [];
         let events = JSON.parse(localStorage.getItem(STORAGE_EVENTS)) || [];
+        
+        // Migration: Ensure legacy events have a date (default to today if missing)
+        const todayStr = new Date().toISOString().split('T')[0];
+        events = events.map(e => {
+            if(!e.date) e.date = todayStr;
+            return e;
+        });
+
+        let viewDate = new Date(); // Current date being viewed
         let editingEventId = null;
 
         // DOM Elements
@@ -165,39 +203,69 @@
             modal: document.getElementById('event-modal'),
             modalTitle: document.getElementById('modal-title'),
             inpTitle: document.getElementById('event-title'),
+            inpDate: document.getElementById('event-date'),
             inpStart: document.getElementById('event-start'),
             inpEnd: document.getElementById('event-end'),
+            inpRecur: document.getElementById('event-recurrence'),
             inpNote: document.getElementById('event-note'),
             inpTodo: document.getElementById('event-todo-link'),
             inpComp: document.getElementById('event-completed'),
             btnDelete: document.getElementById('btn-delete'),
-            dateDisplay: document.getElementById('current-date'),
+            dateDesktop: document.getElementById('current-date-desktop'),
+            dateMobile: document.getElementById('current-date-mobile'),
             timeMarker: document.getElementById('time-marker')
         };
 
         // --- INIT ---
         window.addEventListener('DOMContentLoaded', () => {
-            renderDate();
+            renderHeaderDate();
             renderTimelineBackground();
             renderTodos();
             renderEvents();
-            setInterval(updateTimeMarker, 60000); // Update "Now" line every minute
-            updateTimeMarker();
             
-            // Set default view for mobile
+            setInterval(() => {
+                if(isToday(viewDate)) updateTimeMarker();
+                else els.timeMarker.style.display = 'none';
+            }, 60000);
+            
             if(window.innerWidth < 768) switchTab('calendar');
         });
 
-        function renderDate() {
+        // --- DATE LOGIC ---
+        window.changeDate = (delta) => {
+            viewDate.setDate(viewDate.getDate() + delta);
+            renderHeaderDate();
+            renderEvents();
+            if(isToday(viewDate)) updateTimeMarker();
+            else els.timeMarker.style.display = 'none';
+        };
+
+        window.setDateToToday = () => {
+            viewDate = new Date();
+            renderHeaderDate();
+            renderEvents();
+            updateTimeMarker();
+        };
+
+        function renderHeaderDate() {
+            const str = viewDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+            els.dateDesktop.textContent = str;
+            els.dateMobile.textContent = str;
+        }
+
+        function isToday(d) {
             const now = new Date();
-            els.dateDisplay.textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            return d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        }
+
+        function toISODate(d) {
+            return d.toISOString().split('T')[0];
         }
 
         // --- TABS (Mobile) ---
         window.switchTab = (tab) => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(`tab-${tab}`).classList.add('active');
-            
             if (tab === 'todo') {
                 document.getElementById('panel-todo').classList.remove('hidden');
                 document.getElementById('panel-calendar').classList.add('hidden');
@@ -210,7 +278,6 @@
         // --- TIMELINE RENDERER ---
         function renderTimelineBackground() {
             els.timeline.innerHTML = '';
-            // Generate 24 hours
             for(let i=0; i<24; i++) {
                 const slot = document.createElement('div');
                 slot.className = 'time-slot w-full';
@@ -219,59 +286,13 @@
                 label.textContent = `${i.toString().padStart(2,'0')}:00`;
                 slot.appendChild(label);
                 
-                // Add click to create event at this time
                 slot.addEventListener('click', (e) => {
                     if(e.target === slot) openEventModal(null, i);
                 });
                 
                 els.timeline.appendChild(slot);
             }
-            // Re-append events after clearing
-            renderEvents();
-        }
-
-        function renderEvents() {
-            // Remove existing event cards first (keep slots)
-            document.querySelectorAll('.event-card').forEach(e => e.remove());
-
-            events.forEach(evt => {
-                const startMins = getMinutesFromTime(evt.start);
-                const endMins = getMinutesFromTime(evt.end);
-                const duration = endMins - startMins;
-                
-                const top = startMins * PIXELS_PER_MIN;
-                const height = Math.max(duration * PIXELS_PER_MIN, 20); // Min height 20px
-
-                const card = document.createElement('div');
-                card.className = `event-card ${evt.completed ? 'completed' : ''}`;
-                card.style.top = `${top}px`;
-                card.style.height = `${height}px`;
-                
-                // Check if linked todo is completed, if so, visually complete this too
-                if(evt.todoId) {
-                    const linkedTodo = todos.find(t => t.id === evt.todoId);
-                    if(linkedTodo && linkedTodo.completed && !evt.completed) {
-                        // Optional: Auto-complete event if todo is done? 
-                        // For now, let's just show the icon
-                    }
-                }
-
-                let noteIcon = evt.note ? '<span class="text-[10px] opacity-70">📝 </span>' : '';
-                let todoIcon = evt.todoId ? '<span class="text-[10px] opacity-70">🔗 </span>' : '';
-                
-                card.innerHTML = `
-                    <div class="font-bold truncate leading-tight">${todoIcon}${evt.title}</div>
-                    <div class="text-[10px] opacity-80 truncate">${evt.start} - ${evt.end} ${noteIcon}</div>
-                    ${evt.note ? `<div class="text-[9px] text-wolf-muted truncate mt-1 italic">"${evt.note}"</div>` : ''}
-                `;
-                
-                card.onclick = (e) => {
-                    e.stopPropagation();
-                    openEventModal(evt);
-                };
-
-                els.timeline.appendChild(card);
-            });
+            if(isToday(viewDate)) updateTimeMarker();
         }
 
         function updateTimeMarker() {
@@ -280,6 +301,79 @@
             const top = mins * PIXELS_PER_MIN;
             els.timeMarker.style.display = 'block';
             els.timeMarker.style.top = `${top}px`;
+        }
+
+        function renderEvents() {
+            document.querySelectorAll('.event-card').forEach(e => e.remove());
+            
+            const viewDateStr = toISODate(viewDate);
+
+            events.forEach(evt => {
+                let shouldRender = false;
+
+                // 1. Check Exact Date
+                if (evt.date === viewDateStr) {
+                    shouldRender = true;
+                }
+                // 2. Check Recurrence
+                else if (evt.recurrence && evt.recurrence !== 'none') {
+                    shouldRender = checkRecurrence(evt, viewDate);
+                }
+
+                if (shouldRender) {
+                    const startMins = getMinutesFromTime(evt.start);
+                    const endMins = getMinutesFromTime(evt.end);
+                    const duration = endMins - startMins;
+                    const top = startMins * PIXELS_PER_MIN;
+                    const height = Math.max(duration * PIXELS_PER_MIN, 20);
+
+                    const card = document.createElement('div');
+                    card.className = `event-card ${evt.completed ? 'completed' : ''} ${evt.recurrence !== 'none' ? 'recurring' : ''}`;
+                    card.style.top = `${top}px`;
+                    card.style.height = `${height}px`;
+
+                    let noteIcon = evt.note ? '<span class="text-[10px] opacity-70">📝 </span>' : '';
+                    let recurIcon = evt.recurrence !== 'none' ? '<span class="text-[10px] opacity-70">↻ </span>' : '';
+                    
+                    card.innerHTML = `
+                        <div class="font-bold truncate leading-tight">${recurIcon}${evt.title}</div>
+                        <div class="text-[10px] opacity-80 truncate">${evt.start} - ${evt.end} ${noteIcon}</div>
+                        ${evt.note ? `<div class="text-[9px] text-wolf-muted truncate mt-1 italic">"${evt.note}"</div>` : ''}
+                    `;
+                    
+                    card.onclick = (e) => {
+                        e.stopPropagation();
+                        // If it's a recurring instance, we might want to edit just this one or the series.
+                        // For simplicity in this version: We edit the main event source.
+                        openEventModal(evt);
+                    };
+                    els.timeline.appendChild(card);
+                }
+            });
+        }
+
+        function checkRecurrence(evt, currentViewDate) {
+            const evtDate = new Date(evt.date + 'T00:00:00');
+            const view = new Date(toISODate(currentViewDate) + 'T00:00:00');
+            
+            // If view is before start date, don't show
+            if (view < evtDate) return false;
+
+            const diffTime = Math.abs(view - evtDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            
+            if (evt.recurrence === 'daily') return true;
+            if (evt.recurrence === 'weekly') return diffDays % 7 === 0;
+            if (evt.recurrence === 'monthly') return view.getDate() === evtDate.getDate();
+            if (evt.recurrence === 'quarterly') {
+                // Same day of month AND month difference is multiple of 3
+                let months = (view.getFullYear() - evtDate.getFullYear()) * 12 + (view.getMonth() - evtDate.getMonth());
+                return view.getDate() === evtDate.getDate() && months % 3 === 0;
+            }
+            if (evt.recurrence === 'yearly') {
+                return view.getMonth() === evtDate.getMonth() && view.getDate() === evtDate.getDate();
+            }
+            return false;
         }
 
         // --- TODO LOGIC ---
@@ -299,17 +393,16 @@
                 `;
                 els.todoList.appendChild(div);
             });
-            saveTodos();
+            localStorage.setItem(STORAGE_TODOS, JSON.stringify(todos));
         }
 
         window.addTodo = () => {
             const val = els.todoInput.value.trim();
             if(!val) return;
-            const newTodo = { id: Date.now().toString(), title: val, completed: false };
-            todos.push(newTodo);
+            todos.push({ id: Date.now().toString(), title: val, completed: false });
             els.todoInput.value = '';
             renderTodos();
-            updateModalDropdown(); // Refresh dropdown if open
+            updateModalDropdown();
         };
 
         window.toggleTodo = (id) => {
@@ -317,9 +410,7 @@
             if(t) {
                 t.completed = !t.completed;
                 renderTodos();
-                // If this todo is linked to an event, update the event completion status?
-                // The prompt says "When I do something on the calendar... mark to-do off".
-                // We should probably check the reverse too.
+                // Link Check: Sync with Event if connected
                 const linkedEvent = events.find(e => e.todoId === id);
                 if(linkedEvent) {
                     linkedEvent.completed = t.completed;
@@ -335,46 +426,41 @@
             renderTodos();
         };
 
-        function saveTodos() {
-            localStorage.setItem(STORAGE_TODOS, JSON.stringify(todos));
-        }
-
         // --- EVENT LOGIC ---
         window.openEventModal = (evt = null, hour = null) => {
             updateModalDropdown();
             els.modal.classList.remove('hidden');
             
             if(evt) {
-                // Edit Mode
                 editingEventId = evt.id;
                 els.modalTitle.textContent = "EDIT EVENT";
                 els.inpTitle.value = evt.title;
+                els.inpDate.value = evt.date;
                 els.inpStart.value = evt.start;
                 els.inpEnd.value = evt.end;
+                els.inpRecur.value = evt.recurrence || 'none';
                 els.inpNote.value = evt.note || '';
                 els.inpTodo.value = evt.todoId || '';
                 els.inpComp.checked = evt.completed;
                 els.btnDelete.classList.remove('hidden');
             } else {
-                // Create Mode
                 editingEventId = null;
                 els.modalTitle.textContent = "PLAN EVENT";
                 els.inpTitle.value = '';
+                els.inpDate.value = toISODate(viewDate); // Default to current view
+                els.inpRecur.value = 'none';
                 els.inpNote.value = '';
                 els.inpTodo.value = '';
                 els.inpComp.checked = false;
                 els.btnDelete.classList.add('hidden');
                 
-                // Default times
                 const hStr = (hour !== null ? hour : new Date().getHours()).toString().padStart(2,'0');
                 els.inpStart.value = `${hStr}:00`;
                 els.inpEnd.value = `${hStr}:30`;
             }
         };
 
-        window.closeModal = () => {
-            els.modal.classList.add('hidden');
-        };
+        window.closeModal = () => els.modal.classList.add('hidden');
 
         function updateModalDropdown() {
             els.inpTodo.innerHTML = '<option value="">-- None --</option>';
@@ -388,36 +474,34 @@
 
         window.saveEvent = () => {
             const title = els.inpTitle.value.trim();
+            const date = els.inpDate.value;
             const start = els.inpStart.value;
             const end = els.inpEnd.value;
+            const recurrence = els.inpRecur.value;
             const note = els.inpNote.value;
             const todoId = els.inpTodo.value;
             const completed = els.inpComp.checked;
 
-            if(!title || !start || !end) return alert("Please fill title and times");
+            if(!title || !start || !end || !date) return alert("Please fill title, date, and times");
 
             if(editingEventId) {
-                // Update
                 const idx = events.findIndex(e => e.id === editingEventId);
                 if(idx > -1) {
-                    events[idx] = { ...events[idx], title, start, end, note, todoId, completed };
+                    events[idx] = { ...events[idx], title, date, start, end, recurrence, note, todoId, completed };
                 }
             } else {
-                // Create
-                const newEvt = {
+                events.push({
                     id: Date.now().toString(),
-                    title, start, end, note, todoId, completed
-                };
-                events.push(newEvt);
+                    title, date, start, end, recurrence, note, todoId, completed
+                });
             }
 
-            // Sync Logic: If Event is marked complete, mark linked Todo complete
+            // Sync Todo Completion
             if(completed && todoId) {
                 const t = todos.find(x => x.id === todoId);
                 if(t && !t.completed) {
                     t.completed = true;
-                    saveTodos(); // Save todo state
-                    renderTodos(); // Refresh list UI
+                    renderTodos();
                 }
             }
 
@@ -438,12 +522,10 @@
             localStorage.setItem(STORAGE_EVENTS, JSON.stringify(events));
         }
 
-        // Utils
         function getMinutesFromTime(timeStr) {
             const [h, m] = timeStr.split(':').map(Number);
             return h * 60 + m;
         }
-
     </script>
 </body>
 </html>
