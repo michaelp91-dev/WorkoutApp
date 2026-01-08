@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOLF TO-DO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    
+    <meta name="theme-color" content="#1c1917">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        wolf: {
+                            bg: '#0c0a09', surface: '#1c1917', border: '#44403c',  
+                            text: '#e7e5e4', accent: '#b45309', accentHover: '#92400e',
+                            muted: '#78716c', pos: '#15803d'
+                        }
+                    },
+                    fontFamily: { heading: ['Oswald', 'sans-serif'], body: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #0c0a09; color: #e7e5e4; font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .font-heading { font-family: 'Oswald', sans-serif; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0c0a09; }
+        ::-webkit-scrollbar-thumb { background: #44403c; border-radius: 3px; }
+
+        .task-item { transition: all 0.2s; }
+        .task-item:active { transform: scale(0.99); }
+        
+        .check-box {
+            width: 24px; height: 24px;
+            border: 2px solid #78716c;
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .check-box.checked {
+            background-color: #15803d;
+            border-color: #15803d;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden bg-wolf-bg">
+
+    <div class="flex justify-between items-center p-6 border-b border-wolf-border bg-wolf-bg z-20 shrink-0">
+        <div class="flex items-center gap-4">
+            <a href="index.html" class="text-wolf-muted hover:text-white text-xs font-bold uppercase tracking-widest no-underline">&larr; Home</a>
+            <h1 class="font-heading text-3xl text-wolf-accent tracking-wide">TASK LIST</h1>
+        </div>
+    </div>
+
+    <div class="p-6 border-b border-wolf-border bg-wolf-surface/50 shrink-0 space-y-3">
+        <div>
+            <label class="text-[10px] uppercase text-wolf-muted font-bold tracking-wider">Task Name</label>
+            <input type="text" id="task-name" placeholder="e.g. Change Air Filter" class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none">
+        </div>
+        
+        <div class="flex gap-3">
+            <div class="flex-1">
+                <label class="text-[10px] uppercase text-wolf-muted font-bold tracking-wider">Due By (Optional)</label>
+                <input type="date" id="task-date" class="w-full bg-wolf-bg border border-wolf-border text-white p-2 rounded text-sm focus:border-wolf-accent outline-none text-wolf-muted">
+            </div>
+            <div class="w-1/3">
+                <label class="text-[10px] uppercase text-wolf-muted font-bold tracking-wider">Repeat</label>
+                <select id="task-recur" class="w-full bg-wolf-bg border border-wolf-border text-white p-2 rounded text-sm focus:border-wolf-accent outline-none">
+                    <option value="none">None</option>
+                    <option value="1_day">1 Day</option>
+                    <option value="1_week">1 Week</option>
+                    <option value="2_weeks">2 Weeks</option>
+                    <option value="1_month">1 Month</option>
+                    <option value="2_months">2 Months</option>
+                    <option value="3_months">3 Months</option>
+                    <option value="6_months">6 Months</option>
+                </select>
+            </div>
+        </div>
+        
+        <button onclick="addTask()" class="w-full bg-wolf-accent text-white py-3 rounded font-heading tracking-wider hover:bg-wolf-accentHover shadow-lg shadow-orange-900/20 mt-2">ADD TASK</button>
+    </div>
+
+    <div id="list-container" class="flex-grow overflow-y-auto p-4 space-y-3 pb-20">
+        </div>
+
+    <script>
+        const STORAGE_KEY = 'wolf_simple_todos';
+        let tasks = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+        const els = {
+            list: document.getElementById('list-container'),
+            name: document.getElementById('task-name'),
+            date: document.getElementById('task-date'),
+            recur: document.getElementById('task-recur')
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderList();
+        });
+
+        function addTask() {
+            const name = els.name.value.trim();
+            if(!name) return alert("Please enter a task name.");
+            
+            const task = {
+                id: Date.now().toString(),
+                name: name,
+                dueDate: els.date.value || null, // YYYY-MM-DD
+                recurrence: els.recur.value
+            };
+            
+            tasks.push(task);
+            saveAndRender();
+            
+            // Reset inputs
+            els.name.value = '';
+            els.date.value = '';
+            els.recur.value = 'none';
+        }
+
+        function completeTask(id) {
+            const index = tasks.findIndex(t => t.id === id);
+            if(index === -1) return;
+            
+            const task = tasks[index];
+
+            if(task.recurrence && task.recurrence !== 'none') {
+                // If recurring, calculate new date
+                const baseDate = task.dueDate ? new Date(task.dueDate) : new Date();
+                const nextDate = calculateNextDate(baseDate, task.recurrence);
+                
+                // Update task
+                task.dueDate = nextDate.toISOString().split('T')[0];
+                
+                alert(`Task Completed! Rescheduled for ${task.dueDate}`);
+            } else {
+                // Not recurring, delete it
+                if(confirm("Mark task complete and remove?")) {
+                    tasks.splice(index, 1);
+                }
+            }
+            saveAndRender();
+        }
+
+        function deleteTask(id) {
+            if(!confirm("Delete this task permanently?")) return;
+            tasks = tasks.filter(t => t.id !== id);
+            saveAndRender();
+        }
+
+        function calculateNextDate(dateObj, interval) {
+            // Clone date to avoid mutation issues
+            const d = new Date(dateObj); 
+            // Fix timezone offset issue for "pure" dates by working in UTC or setting hours to noon
+            d.setHours(12,0,0,0);
+
+            switch(interval) {
+                case '1_day': d.setDate(d.getDate() + 1); break;
+                case '1_week': d.setDate(d.getDate() + 7); break;
+                case '2_weeks': d.setDate(d.getDate() + 14); break;
+                case '1_month': d.setMonth(d.getMonth() + 1); break;
+                case '2_months': d.setMonth(d.getMonth() + 2); break;
+                case '3_months': d.setMonth(d.getMonth() + 3); break;
+                case '6_months': d.setMonth(d.getMonth() + 6); break;
+            }
+            return d;
+        }
+
+        function renderList() {
+            els.list.innerHTML = '';
+            
+            // Sort: Overdue/Due Soon first, then by creation
+            tasks.sort((a, b) => {
+                if(a.dueDate && !b.dueDate) return -1;
+                if(!a.dueDate && b.dueDate) return 1;
+                if(a.dueDate && b.dueDate) return new Date(a.dueDate) - new Date(b.dueDate);
+                return 0;
+            });
+
+            if(tasks.length === 0) {
+                els.list.innerHTML = `<div class="text-center text-wolf-muted mt-10 italic">No pending tasks.</div>`;
+                return;
+            }
+
+            tasks.forEach(task => {
+                const isRecurring = task.recurrence && task.recurrence !== 'none';
+                let dateBadge = '';
+                
+                if(task.dueDate) {
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    const isOverdue = task.dueDate < todayStr;
+                    const dateDisplay = new Date(task.dueDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    
+                    const colorClass = isOverdue ? 'text-red-500 border-red-500' : 'text-wolf-accent border-wolf-accent';
+                    
+                    dateBadge = `<span class="text-[10px] px-2 py-0.5 border rounded uppercase font-bold ml-2 ${colorClass}">${isOverdue ? '!' : ''} ${dateDisplay}</span>`;
+                }
+
+                const recurBadge = isRecurring ? `<span class="text-[10px] text-wolf-muted ml-2 font-bold" title="Repeats: ${task.recurrence.replace('_',' ')}">↻</span>` : '';
+
+                const el = document.createElement('div');
+                el.className = "task-item bg-wolf-surface border border-wolf-border p-4 rounded-lg flex items-center justify-between";
+                el.innerHTML = `
+                    <div class="flex items-center gap-4 flex-grow cursor-pointer" onclick="completeTask('${task.id}')">
+                        <div class="check-box hover:border-wolf-pos"></div>
+                        <div class="flex flex-col">
+                            <div class="text-white font-medium flex items-center">
+                                ${task.name}
+                                ${recurBadge}
+                            </div>
+                            <div class="mt-1">${dateBadge}</div>
+                        </div>
+                    </div>
+                    <button onclick="deleteTask('${task.id}')" class="text-wolf-muted hover:text-red-500 px-3 py-2">✕</button>
+                `;
+                els.list.appendChild(el);
+            });
+        }
+
+        function saveAndRender() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+            renderList();
+        }
+
+    </script>
+</body>
+</html>
