@@ -763,7 +763,7 @@
                 date: isoDate, 
                 type: "Daily Check-In", 
                 duration: "Check-in",
-                details: { notes: results.join(' | '), rating: "Positive" }
+                details: { notes: results.join(' | '), rating: "Neutral" }
             };
             const h = JSON.parse(localStorage.getItem(STORAGE_KEY_HIST)) || [];
             h.push(entry);
