@@ -147,14 +147,17 @@
             <div class="w-full bg-wolf-surface h-1.5 mb-12 rounded-full overflow-hidden"><div id="progress-bar" class="bg-wolf-accent h-full transition-all duration-300 rounded-full" style="width: 0%"></div></div>
             <p id="status-text" class="font-heading text-3xl text-wolf-accent uppercase tracking-widest mb-2 animate-pulse">Prepare</p>
             <p id="current-exercise" class="text-4xl md:text-7xl font-bold text-white mb-8 text-center leading-none tracking-tight"></p>
+            <p id="current-reps" class="hidden text-5xl font-heading text-wolf-accent mb-4">x 0</p>
+            
             <div id="timed-content" class="w-full text-center">
                 <div id="timer-display" class="font-heading text-[8rem] md:text-[14rem] text-wolf-text leading-none select-none tabular-nums">10</div>
                 <div id="amrap-counter-container" class="hidden mt-6 flex flex-col items-center animate-in fade-in"><p class="text-wolf-muted uppercase text-xs tracking-widest mb-2">Round Tracker</p><div class="flex items-center gap-6"><div id="amrap-rounds" class="font-heading text-6xl text-white">0</div><button onclick="incrementRound()" class="btn-secondary px-6 py-4 text-xl font-bold border-wolf-accent text-wolf-accent hover:bg-wolf-accent hover:text-white">+ ROUND</button></div></div>
-                <button id="manual-next-btn" class="hidden mt-8 btn-primary px-10 py-4 text-xl mx-auto">Next</button>
             </div>
+
+            <button id="manual-next-btn" class="hidden mt-8 btn-primary px-16 py-6 text-2xl mx-auto shadow-xl shadow-wolf-accent/20">NEXT &rarr;</button>
+
             <div id="rep-content" class="hidden w-full text-center max-w-xl">
                 <div id="apex-exercise-list" class="text-left text-lg font-medium mb-10 space-y-3 bg-wolf-surface p-6 rounded-xl border border-wolf-border"></div>
-                <button id="round-complete-btn" class="btn-primary w-full md:w-auto px-16 py-5 text-2xl">Complete</button>
             </div>
         </div>
         <div class="p-6 z-20 pb-10 text-center"><span class="text-wolf-muted text-[10px] uppercase tracking-widest block mb-1">Up Next</span><span id="next-exercise" class="text-wolf-text text-xl font-heading uppercase"></span></div>
@@ -186,7 +189,7 @@
             bar: document.getElementById('progress-bar'), timed: document.getElementById('timed-content'), rep: document.getElementById('rep-content'), manualBtn: document.getElementById('manual-next-btn'),
             apexList: document.getElementById('apex-exercise-list'), totalTime: document.getElementById('total-time-display'), finalTime: document.getElementById('final-time-display'),
             amrapContainer: document.getElementById('amrap-counter-container'), amrapRounds: document.getElementById('amrap-rounds'),
-            previewList: document.getElementById('preview-list')
+            previewList: document.getElementById('preview-list'), currReps: document.getElementById('current-reps')
         };
         
         let routines = JSON.parse(localStorage.getItem(STORAGE_KEY_ROUTINES)) || {};
@@ -232,7 +235,6 @@
             const energy = document.getElementById('ai-energy').value;
             const location = document.getElementById('ai-location').value;
             
-            // CONSTRAINTS LOGIC
             let equipment = location === 'Garage' 
                 ? "Full Gym: Barbell, Bumper Plates, Pull-up Bar, Bands, Bench, Jump Rope, Running allowed." 
                 : "Minimal: Light Kettlebells, Abmat, Medicine Ball.";
@@ -241,15 +243,24 @@
                 equipment += " STRICT CONSTRAINT: SMALL SPACE. NO THROWING (NO WALL BALLS). NO RUNNING. NO JUMP ROPE.";
             }
 
-            const systemPrompt = `You are a CrossFit L4 Coach. Create a workout plan in strictly valid JSON format. The output must be a single JSON Array of objects. Each object represents a step and must have: "type" (one of ["work", "rest", "rep_work", "amrap", "cooldown"]), "name" (String), "duration" (Integer, Seconds. 0 for rep_work), "exercises" (Array of Strings). 
+            // CRITICAL: UPDATED SYSTEM PROMPT FOR LINEAR EXECUTION
+            const systemPrompt = `
+            You are a Compiler. You must convert a CrossFit workout logic into a LINEAR execution queue in JSON.
+            
+            RULES FOR JSON GENERATION:
+            1. UNROLL ALL LOOPS: If "3 Rounds of 10 Squats, 10 Pushups", you must generate 6 separate objects (Squat, Pushup, Squat, Pushup, Squat, Pushup).
+            2. WARMUP & COOLDOWN: Must also be unrolled into specific timed or rep steps. DO NOT group them into one block.
+            3. TYPES:
+               - "work": For time-based movement (e.g. Plank 30s). Fields: "type": "work", "name": "Plank", "duration": 30.
+               - "rep_work": For rep-based movement (e.g. 10 Pushups). Fields: "type": "rep_work", "name": "Pushups", "reps": "10", "duration": 0.
+               - "rest": For rest intervals. Fields: "type": "rest", "name": "Rest", "duration": 60.
+               - "amrap": ONLY use this for a true "As Many Rounds As Possible in X Mins" where flow is continuous. Fields: "type": "amrap", "name": "AMRAP", "duration": 600, "exercises": ["5 Pullups", "10 Pushups"].
 
-            CRITICAL INSTRUCTIONS:
-            1. For 'warmup' and 'cooldown' steps, you MUST use the "exercises" array to list the specific movements. Do not just write "Warmup" as the name.
-            2. Constraints: Total Time Limit: ${time} mins. Energy Level: ${energy}. Equipment: ${equipment}.
-            3. If Location is "Room", DO NOT PROGRAM WALL BALLS or anything that hits the ceiling.`;
+            Constraints: Time: ${time} mins. Energy: ${energy}. Equipment: ${equipment}.
+            Output strictly valid JSON array.
+            `;
 
             try {
-                // FORCE GEMINI-2.5-FLASH
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
                 });
@@ -287,92 +298,108 @@
         
         function renderPreview() {
             els.previewList.innerHTML = '';
-            
-            if(!activeRoutine || activeRoutine.length === 0) {
-                 els.previewList.innerHTML = '<p class="text-white">No mission data.</p>';
-                 return;
-            }
+            if(!activeRoutine || activeRoutine.length === 0) return;
 
             activeRoutine.forEach((step, index) => {
                 const el = document.createElement('div');
                 const isRest = step.type === 'rest';
-                const isWarmCool = step.type === 'cooldown' || step.name.toLowerCase().includes('warm');
                 
-                let borderClass = 'border-wolf-border';
-                let bgClass = 'bg-wolf-surface';
-                let textClass = 'text-white';
-                
-                if (isRest) { borderClass = 'border-transparent'; bgClass = 'bg-transparent'; textClass = 'text-wolf-muted'; }
-                else if (isWarmCool) { borderClass = 'border-wolf-muted'; }
-                else { borderClass = 'border-wolf-accent'; }
+                let borderClass = isRest ? 'border-transparent' : 'border-wolf-accent';
+                let bgClass = isRest ? 'bg-transparent' : 'bg-wolf-surface';
+                let textClass = isRest ? 'text-wolf-muted' : 'text-white';
 
                 el.className = `p-4 rounded-lg border-l-4 ${borderClass} ${bgClass} mb-2`;
                 
+                // Logic to display Reps OR Duration in preview
+                let detail = "";
+                if (step.duration > 0) detail = formatTime(step.duration);
+                if (step.reps) detail = `${step.reps} Reps`;
+
                 let contentHTML = `
-                    <div class="flex justify-between items-start">
+                    <div class="flex justify-between items-center">
                         <div>
                             <span class="text-[10px] uppercase font-bold tracking-widest text-wolf-muted block mb-1">${step.type.replace('_', ' ')}</span>
                             <h3 class="font-heading text-lg ${textClass} leading-none">${step.name}</h3>
                         </div>
-                        <div class="text-right">
-                             ${step.duration > 0 ? `<span class="font-bold font-heading text-xl ${textClass}">${formatTime(step.duration)}</span>` : ''}
-                             ${step.round ? `<span class="block text-xs text-wolf-muted">${step.round}</span>` : ''}
-                        </div>
+                        <div class="text-right font-bold font-heading text-xl ${textClass}">${detail}</div>
                     </div>
                 `;
                 
-                // FORCE RENDER EXERCISES LIST if present
                 if(step.exercises && step.exercises.length > 0) {
                     contentHTML += `<ul class="mt-3 space-y-1.5 pl-1 border-t border-white/5 pt-2">`;
-                    step.exercises.forEach(ex => {
-                        contentHTML += `<li class="text-xs text-wolf-muted flex items-start"><span class="w-1 h-1 bg-wolf-muted rounded-full mt-1.5 mr-2 shrink-0"></span>${ex}</li>`;
-                    });
+                    step.exercises.forEach(ex => contentHTML += `<li class="text-xs text-wolf-muted flex items-center"><span class="w-1 h-1 bg-wolf-muted rounded-full mr-2"></span>${ex}</li>`);
                     contentHTML += `</ul>`;
                 }
-
                 el.innerHTML = contentHTML;
                 els.previewList.appendChild(el);
             });
         }
         
-        function acceptMission() {
-             goToQuote();
-        }
+        function acceptMission() { goToQuote(); }
 
         function startWorkoutSession() { initAudio(); stepIndex = 0; startTime = null; manualRoundCount = 0; els.totalTime.textContent = "--:--"; switchScreen('workout'); startCountdown(); }
         function startCountdown() { els.currEx.textContent = ""; els.nextEx.textContent = ""; runStep({ type: 'countdown', duration: 10, name: '' }); }
         function startMissionClock() { startTime = Date.now(); clearInterval(totalInt); totalInt = setInterval(() => { const s = Math.floor((Date.now() - startTime) / 1000); els.totalTime.textContent = formatTime(s); }, 1000); els.totalTime.textContent = "00:00"; }
+        
         function runStep(step) {
             clearInterval(timerInt);
             const pct = (stepIndex / activeRoutine.length) * 100; els.bar.style.width = `${pct}%`;
-            els.status.textContent = step.type === 'countdown' ? 'GET READY' : step.type.toUpperCase();
-            if (step.type !== 'countdown') {
-                els.currEx.textContent = step.name + (step.round ? ` (${step.round})` : '');
-                const next = activeRoutine[stepIndex + 1]; els.nextEx.textContent = next ? next.name : 'COMPLETE';
-            }
-            const isAmrap = step.type === 'amrap' || (step.name && step.name.includes("AMRAP"));
-            if(isAmrap && step.type !== 'countdown') { els.amrapContainer.classList.remove('hidden'); els.amrapRounds.textContent = manualRoundCount; } else { els.amrapContainer.classList.add('hidden'); }
+            els.status.textContent = step.type === 'countdown' ? 'GET READY' : step.type.toUpperCase().replace('_', ' ');
             
-            if (step.type === 'rep_work' || step.type === 'amrap') {
-                els.timed.classList.add('hidden'); els.rep.classList.remove('hidden'); 
-                if (step.type === 'amrap') { els.timed.classList.remove('hidden'); document.getElementById('round-complete-btn').classList.add('hidden'); }
-                if(step.exercises) els.apexList.innerHTML = step.exercises.map(e => `<div class="flex items-center text-left"><span class="w-1.5 h-1.5 bg-wolf-accent mr-3 rounded-full flex-shrink-0"></span><span class="text-white">${e}</span></div>`).join('');
-            } else { els.timed.classList.remove('hidden'); els.rep.classList.add('hidden'); }
+            if (step.type !== 'countdown') {
+                els.currEx.textContent = step.name;
+                const next = activeRoutine[stepIndex + 1]; 
+                els.nextEx.textContent = next ? next.name : 'COMPLETE';
+            }
 
-            if (step.type !== 'rep_work' || step.type === 'amrap') {
-                els.manualBtn.classList.add('hidden'); let timeLeft = step.duration;
-                els.timer.textContent = (timeLeft > 59) ? formatTime(timeLeft) : timeLeft; els.timer.style.fontSize = (timeLeft > 99) ? "8rem" : ""; els.timer.classList.remove('text-wolf-accent');
+            // RESET UI STATE
+            els.timed.classList.add('hidden');
+            els.manualBtn.classList.add('hidden');
+            els.currReps.classList.add('hidden');
+            els.amrapContainer.classList.add('hidden');
+            els.rep.classList.add('hidden');
+
+            // --- MODE 1: TIMED STEP (Work, Rest, AMRAP) ---
+            if (step.duration > 0 || step.type === 'amrap') {
+                els.timed.classList.remove('hidden');
+                
+                // Show list for AMRAPs
+                if(step.type === 'amrap') {
+                     els.amrapContainer.classList.remove('hidden'); 
+                     els.amrapRounds.textContent = manualRoundCount;
+                     if(step.exercises) els.apexList.innerHTML = step.exercises.map(e => `<div class="flex items-center text-left"><span class="w-1.5 h-1.5 bg-wolf-accent mr-3 rounded-full flex-shrink-0"></span><span class="text-white">${e}</span></div>`).join('');
+                     els.rep.classList.remove('hidden'); // Re-use rep container for list
+                }
+
+                let timeLeft = step.duration;
+                els.timer.textContent = (timeLeft > 59) ? formatTime(timeLeft) : timeLeft;
+                els.timer.style.fontSize = (timeLeft > 99) ? "8rem" : "";
+                els.timer.classList.remove('text-wolf-accent');
+
                 timerInt = setInterval(() => {
-                    timeLeft--; els.timer.textContent = (timeLeft > 59) ? formatTime(timeLeft) : timeLeft;
+                    timeLeft--;
+                    els.timer.textContent = (timeLeft > 59) ? formatTime(timeLeft) : timeLeft;
                     if (timeLeft <= 3 && timeLeft > 0) { beep('Low'); els.timer.classList.add('text-wolf-accent'); }
-                    if (timeLeft <= 0) { clearInterval(timerInt); beep('High'); if (step.type === 'countdown') { startMissionClock(); nextStep(); } else { nextStep(); } }
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInt); beep('High');
+                        if (step.type === 'countdown') { startMissionClock(); nextStep(); } else { nextStep(); }
+                    }
                 }, 1000);
-            } else { els.manualBtn.classList.remove('hidden'); }
+
+            // --- MODE 2: MANUAL REP STEP ---
+            } else {
+                els.manualBtn.classList.remove('hidden');
+                if (step.reps) {
+                    els.currReps.textContent = `x ${step.reps}`;
+                    els.currReps.classList.remove('hidden');
+                }
+            }
         }
+
         function nextStep() { if(els.status.textContent !== 'GET READY') stepIndex++; if (stepIndex >= activeRoutine.length) { finishWorkout(); return; } runStep(activeRoutine[stepIndex]); }
         window.incrementRound = () => { manualRoundCount++; els.amrapRounds.textContent = manualRoundCount; beep('Mid'); };
         els.manualBtn.addEventListener('click', () => { beep('Mid'); nextStep(); });
-        document.getElementById('round-complete-btn').addEventListener('click', () => { beep('Mid'); nextStep(); });
+        
         function finishWorkout() { clearInterval(totalInt); beep('High'); els.finalTime.textContent = document.getElementById('total-time-display').textContent; switchScreen('completion'); }
         function formatTime(s) { const min = Math.floor(s / 60).toString().padStart(2, '0'); const sec = (s % 60).toString().padStart(2, '0'); return `${min}:${sec}`; }
         function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
