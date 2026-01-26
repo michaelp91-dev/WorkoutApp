@@ -55,6 +55,7 @@
                 <div id="api-key-container" class="hidden">
                     <label class="block text-[10px] uppercase text-wolf-muted font-bold mb-1">Gemini API Key</label>
                     <input type="password" id="ai-api-key" placeholder="Paste Key Here" class="w-full bg-wolf-bg border border-wolf-border text-white p-3 rounded focus:border-wolf-accent outline-none text-sm">
+                    <p class="text-[9px] text-wolf-muted mt-1">Key is stored locally on your device.</p>
                 </div>
 
                 <div class="flex gap-3">
@@ -151,7 +152,7 @@
 
     <script>
         const STORAGE_KEY_ROUTINES = 'wolf_routines';
-        const STORAGE_KEY_API = 'AIzaSyAQiFd9GGSu1T1sldMLfZyoPfudD0Z0u6A';
+        const STORAGE_KEY_API = 'wolf_ai_key';
         const screens = { menu: document.getElementById('menu-screen'), quote: document.getElementById('quote-screen'), workout: document.getElementById('workout-screen'), completion: document.getElementById('completion-screen') };
         const els = {
             timer: document.getElementById('timer-display'), currEx: document.getElementById('current-exercise'), nextEx: document.getElementById('next-exercise'), status: document.getElementById('status-text'),
@@ -164,7 +165,7 @@
         let activeRoutine = []; let stepIndex = 0; let timerInt = null; let totalInt = null; let startTime = null; let audioCtx; let manualRoundCount = 0;
 
         window.addEventListener('DOMContentLoaded', () => {
-            openAICoach(); // Auto-open on load
+            openAICoach(); 
             document.getElementById('start-btn').addEventListener('click', startWorkoutSession);
         });
 
@@ -211,7 +212,7 @@
                 activeRoutine = routines['AI Mission'];
                 goToQuote();
             } catch (error) {
-                console.error(error); alert("Mission Generation Failed."); localStorage.removeItem(STORAGE_KEY_API);
+                console.error(error); alert("Mission Generation Failed. Check Key."); localStorage.removeItem(STORAGE_KEY_API);
             } finally {
                 btn.disabled = false; txt.classList.remove('invisible'); loader.classList.add('hidden');
             }
