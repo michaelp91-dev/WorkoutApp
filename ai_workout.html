@@ -109,8 +109,7 @@
                 <button onclick="openAICoach()" class="text-wolf-muted hover:text-white text-xs uppercase font-bold tracking-widest">Abort</button>
             </div>
             
-            <div id="preview-list" class="flex-grow overflow-y-auto space-y-3 pb-8 pr-1">
-                </div>
+            <div id="preview-list" class="flex-grow overflow-y-auto space-y-3 pb-8 pr-1"></div>
 
             <div class="pt-4 mt-2 border-t border-wolf-border">
                 <button onclick="acceptMission()" class="w-full btn-primary py-4 text-xl shadow-lg shadow-orange-900/20">START MISSION</button>
@@ -232,9 +231,22 @@
             const time = document.getElementById('ai-time').value;
             const energy = document.getElementById('ai-energy').value;
             const location = document.getElementById('ai-location').value;
-            const equipment = location === 'Garage' ? "Full Gym: Barbell, Bumper Plates, Pull-up Bar, Bands, Bench, Jump Rope, Running allowed." : "Minimal: Light Kettlebells, Abmat, Medicine Ball. No Running.";
+            
+            // CONSTRAINTS LOGIC
+            let equipment = location === 'Garage' 
+                ? "Full Gym: Barbell, Bumper Plates, Pull-up Bar, Bands, Bench, Jump Rope, Running allowed." 
+                : "Minimal: Light Kettlebells, Abmat, Medicine Ball.";
+                
+            if (location === 'Room') {
+                equipment += " STRICT CONSTRAINT: SMALL SPACE. NO THROWING (NO WALL BALLS). NO RUNNING. NO JUMP ROPE.";
+            }
 
-            const systemPrompt = `You are a CrossFit L4 Coach. Create a workout plan in strictly valid JSON format. The output must be a single JSON Array of objects. Each object represents a step and must have: "type" (one of ["work", "rest", "rep_work", "amrap", "cooldown"]), "name" (String), "duration" (Integer, Seconds. 0 for rep_work), "exercises" (Array of Strings, only for 'rep_work' or 'amrap'). Constraints: Total Time Limit: ${time} mins. Energy Level: ${energy}. Equipment: ${equipment}. Include warm-up.`;
+            const systemPrompt = `You are a CrossFit L4 Coach. Create a workout plan in strictly valid JSON format. The output must be a single JSON Array of objects. Each object represents a step and must have: "type" (one of ["work", "rest", "rep_work", "amrap", "cooldown"]), "name" (String), "duration" (Integer, Seconds. 0 for rep_work), "exercises" (Array of Strings). 
+
+            CRITICAL INSTRUCTIONS:
+            1. For 'warmup' and 'cooldown' steps, you MUST use the "exercises" array to list the specific movements. Do not just write "Warmup" as the name.
+            2. Constraints: Total Time Limit: ${time} mins. Energy Level: ${energy}. Equipment: ${equipment}.
+            3. If Location is "Room", DO NOT PROGRAM WALL BALLS or anything that hits the ceiling.`;
 
             try {
                 // FORCE GEMINI-2.5-FLASH
@@ -309,10 +321,11 @@
                     </div>
                 `;
                 
+                // FORCE RENDER EXERCISES LIST if present
                 if(step.exercises && step.exercises.length > 0) {
-                    contentHTML += `<ul class="mt-2 space-y-1 pl-1">`;
+                    contentHTML += `<ul class="mt-3 space-y-1.5 pl-1 border-t border-white/5 pt-2">`;
                     step.exercises.forEach(ex => {
-                        contentHTML += `<li class="text-xs text-wolf-muted flex items-center"><span class="w-1 h-1 bg-wolf-muted rounded-full mr-2"></span>${ex}</li>`;
+                        contentHTML += `<li class="text-xs text-wolf-muted flex items-start"><span class="w-1 h-1 bg-wolf-muted rounded-full mt-1.5 mr-2 shrink-0"></span>${ex}</li>`;
                     });
                     contentHTML += `</ul>`;
                 }
