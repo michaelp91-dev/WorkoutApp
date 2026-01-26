@@ -357,7 +357,8 @@
         
         function compileRoutine(highLevelRoutine) {
             let queue = [];
-            highLevelRoutine.forEach(step => {
+            highLevelRoutine.forEach((step, index) => {
+                // 1. Process the current Step (unroll rounds if needed)
                 if (step.type === 'round' && step.exercises) {
                     const count = step.rounds || 1;
                     for(let i=0; i<count; i++) {
@@ -373,6 +374,17 @@
                     }
                 } else {
                     queue.push(step);
+                }
+
+                // 2. Insert Transition Step (if not the last block)
+                if (index < highLevelRoutine.length - 1) {
+                    const nextPhaseName = highLevelRoutine[index+1].name || "Next Phase";
+                    queue.push({
+                        type: 'transition',
+                        name: "SECTION COMPLETE",
+                        nextLabel: `START ${nextPhaseName.toUpperCase()}`,
+                        duration: 0
+                    });
                 }
             });
             return queue;
@@ -396,8 +408,12 @@
             clearInterval(timerInt);
             const pct = (stepIndex / executionQueue.length) * 100; els.bar.style.width = `${pct}%`;
             
+            // Status Text logic
             let statusStr = step.type === 'countdown' ? 'GET READY' : step.type.toUpperCase().replace('_', ' ');
             if(step.roundLabel) statusStr += ` • ${step.roundLabel}`;
+            // If transition, override status
+            if(step.type === 'transition') statusStr = "PAUSED";
+            
             els.status.textContent = statusStr;
             
             if (step.type !== 'countdown') {
@@ -412,6 +428,7 @@
             els.amrapContainer.classList.add('hidden');
             els.rep.classList.add('hidden');
 
+            // --- MODE 1: TIMED STEP (Work, Rest, AMRAP) ---
             if (step.duration > 0 || step.type === 'amrap') {
                 els.timed.classList.remove('hidden');
                 
@@ -437,11 +454,21 @@
                     }
                 }, 1000);
 
+            // --- MODE 2: MANUAL STEPS (Reps OR Transitions) ---
             } else {
                 els.manualBtn.classList.remove('hidden');
-                if (step.reps) {
-                    els.currReps.textContent = `x ${step.reps}`;
-                    els.currReps.classList.remove('hidden');
+                
+                if (step.type === 'transition') {
+                    // Transition Button Logic
+                    els.manualBtn.innerHTML = step.nextLabel || "START NEXT PHASE";
+                    // Transition doesn't show reps
+                } else {
+                    // Standard Reps Logic
+                    els.manualBtn.innerHTML = "NEXT &rarr;";
+                    if (step.reps) {
+                        els.currReps.textContent = `x ${step.reps}`;
+                        els.currReps.classList.remove('hidden');
+                    }
                 }
             }
         }
