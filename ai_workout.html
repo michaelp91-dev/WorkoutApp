@@ -197,14 +197,24 @@
             const systemPrompt = `You are a CrossFit L4 Coach. Create a workout plan in strictly valid JSON format. The output must be a single JSON Array of objects. Each object represents a step and must have: "type" (one of ["work", "rest", "rep_work", "amrap", "cooldown"]), "name" (String), "duration" (Integer, Seconds. 0 for rep_work), "exercises" (Array of Strings, only for 'rep_work' or 'amrap'). Constraints: Total Time Limit: ${time} mins. Energy Level: ${energy}. Equipment: ${equipment}. Include warm-up.`;
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
+                // CHANGED: Switched to gemini-1.5-flash for better speed/reliability
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
                 });
-                if (!response.ok) throw new Error("API Call Failed");
+                
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.error?.message || "API Server Error");
+                }
+                
                 const data = await response.json();
-                let rawText = data.candidates[0].content.parts[0].text;
-                rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-                const generatedRoutine = JSON.parse(rawText);
+                const rawText = data.candidates[0].content.parts[0].text;
+                
+                // CHANGED: Smarter extractor finds the JSON array [...] even if there is text around it
+                const jsonMatch = rawText.match(/\[[\s\S]*\]/);
+                if (!jsonMatch) throw new Error("AI response format error. Try again.");
+                
+                const generatedRoutine = JSON.parse(jsonMatch[0]);
 
                 routines['AI Mission'] = generatedRoutine;
                 localStorage.setItem(STORAGE_KEY_ROUTINES, JSON.stringify(routines));
@@ -212,7 +222,9 @@
                 activeRoutine = routines['AI Mission'];
                 goToQuote();
             } catch (error) {
-                console.error(error); alert("Mission Generation Failed. Check Key."); localStorage.removeItem(STORAGE_KEY_API);
+                console.error(error); 
+                alert(`Mission Failed: ${error.message}`); 
+                // Removed the auto-delete key function so you don't have to keep pasting it
             } finally {
                 btn.disabled = false; txt.classList.remove('invisible'); loader.classList.add('hidden');
             }
